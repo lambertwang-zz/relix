@@ -17,13 +17,14 @@ int loop() {
     int loop_time = 0;
     int loop_time_saved = 0;
 
-    while (frame_count++ < 600) {
+    while (1) {
         fflush(stdout);
         // !this->game_over) {
         // Reset clock
         delta(&game_clock);
         // Increment step count
         // this->step_count++;
+        frame_count++;
 
         // Send EVENT_STEP to all objects
         // df::EventStep p_step_event = df::EventStep(this->step_count);
@@ -43,19 +44,33 @@ int loop() {
 
         // Call worldManager draw
         // world_manager.draw();
-        swapScreen();
+        //
+        int i, j;
 
-        // printf("\e[1;0HLoop time: %d", loop_time);
-        if (frame_count % 60 == 0) {
-            loop_time_saved = loop_time;
+
+        for (i = 0; i < screen.ts.lines; i++) {
+            int sat = (int)(((float)i / (float)screen.ts.lines) * 192.0) + 63;
+            for (j = 0; j < screen.ts.cols; j++) {
+                putPixelRgb(j, i, hslToRgb((Color){(i * 3 + j + frame_count / 5) % 256, sat, 255}));
+                // putPixelRgb(j, i, (Color){i * 40, j * 40, 255});
+                // putPixelHSL(i, j, (Color){255, 255, 255});
+                // putPixelRgb(j, i, (Color){0, 0, 0});
+                // putPixel(j, i, i * 16 + j);
+            }
         }
 
-        struct Screen *screen = getScreen();
-        printf("Loop time: %5d  ", loop_time_saved);
-        printf("Frame_count: %3d  ", frame_count);
-        printf("Times_init: %3d  ", screen->times_init);
-        printf("Lines: %3d  ", screen->ts.lines);
-        printf("Columns: %3d  ", screen->ts.cols);
+
+        swapScreen();
+
+        if (frame_count % 30 == 0) {
+            loop_time_saved = loop_time;
+        }
+        printf("\e[F\e[%dC", screen.margin_x);
+        printf(" Loop time: %5d ", loop_time_saved);
+        printf("Frame_count: %3d ", frame_count);
+        printf("Times_init: %3d ", screen.times_init);
+        printf("Lines: %3d ", screen.ts.lines);
+        printf("Columns: %3d ", screen.ts.cols);
         fflush(stdout);
 
         // Swap graphics buffers
@@ -71,9 +86,7 @@ int loop() {
         // Multiply microseconds to obtain sleep time in nanoseconds
         if (sleep_time > 0) {
             uSleep(sleep_time);
-            // Calculate adjust from difference between expected and actual
-            // sleep
-            // times
+            // Calculate adjust from difference between expected and actual sleep times
             adjust_time = split(&game_clock) - sleep_time;
         }
     }

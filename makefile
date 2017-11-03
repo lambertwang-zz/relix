@@ -18,8 +18,6 @@ relix: $(SRC_OBJ)
 
 clear:
 	clear
-	@echo $(SRC)
-	@echo $(SRC_OBJ)
 
 clean_exe:
 	rm -rf $(EXECUTABLE)
