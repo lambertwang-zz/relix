@@ -1,12 +1,10 @@
-#include "../src/game/game.h"
-#include "../src/term/screen.h"
 #include "../src/log/log.h"
 
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../src/list/rbTree.h"
+#include "../src/list/tree.h"
 
 void terminate(int a) {
     closeScreen();
