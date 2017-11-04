@@ -20,7 +20,6 @@ int checkRedChildren(const struct Node *node) {
         if ((node->left != NULL && node->left->isRed) ||
             (node->right != NULL && node->right->isRed)) {
             writeLog(10, "ERROR: RED CHILDREN MUST BE BLACK");
-            printf("ERROR: RED CHILDREN MUST BE BLACK\n");
             printTree(node);
             return 1;
         }
@@ -54,7 +53,6 @@ int checkNilDist(const struct Node *node) {
     }
     if (minDistToNil(node) != maxDistToNil(node)) {
         writeLog(10, "ERROR: DISTANCE TO NIL INCONSISTENT %d!!", node->id);
-        printf("ERROR: DISTANCE TO NIL INCONSISTENT\n");
         printTree(node);
         return 1;
     }
@@ -79,28 +77,22 @@ int checkRefs(const struct Node *node) {
 		node->right!= NULL ? node->right->id : -1);
 
     if (node->left != NULL && node->right != NULL && node->left->id == node->right->id) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
     if (node->left != NULL && node->parent != NULL && node->left->id == node->parent->id) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
     if (node->parent != NULL && node->right != NULL && node->parent->id == node->right->id) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
     if (!(node->parent == NULL || (node->parent != NULL && node->parent->left != NULL && node->id == node->parent->left->id) ||
           (node->parent != NULL && node->parent->right!= NULL && node->id == node->parent->right->id))) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
     if (node->left != NULL && node->left->parent->id != node->id) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
     if (node->right != NULL && node->right->parent->id != node->id) {
-        printf("DANGER! %s\n", buffer);
 	    writeLog(10, "DANGER!");
     }
 
@@ -113,7 +105,6 @@ int validateTree(const struct Tree *tree) {
     // Root must be black
     if (tree->root != NULL && tree->root->isRed) {
         writeLog(10, "ERROR: ROOT NOT BLACK");
-        printf("ERROR: ROOT NOT BLACK\n");
         printTree(tree->root);
     }
     checkRedChildren(tree->root);
@@ -181,7 +172,6 @@ void printNode(const struct Node *node) {
 
 void rotateLeft(struct Node *node) {
     struct Node *new = node->right;
-	writeLog(10, "Rotate L node %d, new %d", node->id, new->id);
     node->right = new->left;
 	if (node->right != NULL) {
 		node->right->parent = node;
@@ -198,7 +188,6 @@ void rotateLeft(struct Node *node) {
     node->parent = new;
 
     if (node->tree != NULL) {
-		writeLog(10, "replacing root");
         node->tree->root = new;
         new->tree = node->tree;
         node->tree = NULL;
@@ -207,7 +196,6 @@ void rotateLeft(struct Node *node) {
 
 void rotateRight(struct Node *node) {
     struct Node *new = node->left;
-	writeLog(10, "Rotate R node %d, new %d", node->id, new->id);
     node->left= new->right;
 	if (node->left != NULL) {
 		node->left->parent = node;
@@ -224,7 +212,6 @@ void rotateRight(struct Node *node) {
     node->parent = new;
 
     if (node->tree != NULL) {
-		writeLog(10, "replacing root");
         node->tree->root = new;
         new->tree = node->tree;
         node->tree = NULL;
