@@ -3,7 +3,7 @@
 
 #include "../geometry/geometry.h"
 
-unsigned int id_iterator;
+unsigned int id_iterator = 1;
 
 struct Object {
     unsigned int id;

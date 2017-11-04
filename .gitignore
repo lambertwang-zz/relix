@@ -1,3 +1,5 @@
 relix
 *.o
 .vscode*
+*.log
+test/tree
