@@ -65,7 +65,7 @@ int loop() {
         if (frame_count % 30 == 0) {
             loop_time_saved = loop_time;
         }
-        printf("\e[F\e[%dC", screen.margin_x);
+        printf("\e[1G\e[%dC", screen.margin_x);
         printf(" Loop time: %5d ", loop_time_saved);
         printf("Frame_count: %3d ", frame_count);
         printf("Times_init: %3d ", screen.times_init);

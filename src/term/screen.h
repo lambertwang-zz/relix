@@ -4,8 +4,8 @@
 #include "color.h"
 #include "term.h"
 
-#define MAX_WIDTH 192
-#define MAX_HEIGHT 60
+#define MAX_WIDTH 1920
+#define MAX_HEIGHT 600
 
 struct Screen {
     struct TermSize ts;

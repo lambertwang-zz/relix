@@ -3,3 +3,4 @@ relix
 .vscode*
 *.log
 test/tree
+*.swp

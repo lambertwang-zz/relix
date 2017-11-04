@@ -98,14 +98,16 @@ int insert(struct Tree *tree, void *data, unsigned int id) {
         tree->root->isRed = 0;
         tree->count = 1;
         new->tree = tree;
+        validateTree(tree);
         return 0;
     }
 
     int result = insertRecurse(tree->root, new);
 
     if (result) {
-	printf("FREEING %d", new->id);
+	    printf("FREEING %d", new->id);
         free(new);
+        validateTree(tree);
         return 1;
     }
     tree->count++;
@@ -115,6 +117,7 @@ int insert(struct Tree *tree, void *data, unsigned int id) {
     	forRepair = insert_repair(forRepair);
 	} while (forRepair != NULL);
 
+    validateTree(tree);
     return 0;
 }
 

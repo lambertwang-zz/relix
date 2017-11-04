@@ -21,10 +21,11 @@ relix: $(SRC_OBJ)
 .c.o:
 	$(CC) -c $< -o $@
 
-test: clear $(SRC_OBJ) $(TEST_EXE)
+test: clear clean $(SRC_OBJ) $(TEST_EXE)
 
 $(TEST_EXE):
 	$(CC) $@.c -o $@ $(SRC_OBJ)
+	./$@
 
 clear:
 	clear

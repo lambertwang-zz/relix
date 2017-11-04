@@ -19,13 +19,13 @@ void replaceNode(struct Node *dest, struct Node *target) {
 	writeLog(10, "Dest %d, target %d", dest->id, target->id);
     dest->data = target->data;
     dest->id = target->id;
-    if (target->parent != NULL) {
-        if (target->parent->left == target) {
-            target->parent->left = NULL;
-        } else {
-            target->parent->right= NULL;
-        }
-    }
+    // if (target->parent != NULL) {
+    //     if (target->parent->left == target) {
+    //         target->parent->left = NULL;
+    //     } else {
+    //         target->parent->right= NULL;
+    //     }
+    // }
 }
 
 // Swaps all references to the nodes 
@@ -62,7 +62,8 @@ void delete1(struct Node *node) {
 }
 
 void delete2(struct Node *node) {
-	writeLog(10, "delete2");
+	writeLog(10, "delete2 id %d", node->id);
+    printTree(node->parent);
    	struct Node *s = sibling(node);
 
     if (s != NULL && s->isRed) {
@@ -78,7 +79,8 @@ void delete2(struct Node *node) {
 }
 
 void delete3(struct Node *node) {
-	writeLog(10, "delete3");
+	writeLog(10, "delete3 id %d", node->id);
+    printTree(node->parent);
     struct Node *s = sibling(node);
 
     if (!node->parent->isRed &&
@@ -93,7 +95,8 @@ void delete3(struct Node *node) {
 }
 
 void delete4(struct Node *node) {
-	writeLog(10, "delete4");
+	writeLog(10, "delete4 id %d", node->id);
+    printTree(node->parent);
     struct Node *s = sibling(node);
     if (node->parent->isRed &&
         (s == NULL || !s->isRed) &&
@@ -107,7 +110,8 @@ void delete4(struct Node *node) {
 }
 
 void delete5(struct Node *node) {
-	writeLog(10, "delete5");
+	writeLog(10, "delete5 id %d", node->id);
+    printTree(node->parent);
     struct Node *s = sibling(node);
 
     if  (!s->isRed) { /* this if statement is trivial,
@@ -116,14 +120,14 @@ void delete5(struct Node *node) {
         /* the following statements just force the red to be on the left of the left of the parent,
          *    or right of the right, so case six will rotate correctly. */
         if (node == node->parent->left &&
-            !s->right->isRed &&
-            s->left->isRed) { /* this last test is trivial too due to cases 2-4. */
+            (s->right == NULL || !s->right->isRed) &&
+            (s->left != NULL && s->left->isRed)) { /* this last test is trivial too due to cases 2-4. */
             s->isRed = 1;
             s->left->isRed= 0;
             rotateRight(s);
         } else if (node == node->parent->right &&
-            !s->left->isRed &&
-            s->right->isRed) {/* this last test is trivial too due to cases 2-4. */
+            (s->left == NULL || !s->left->isRed) &&
+            (s->right != NULL && s->right->isRed)) {/* this last test is trivial too due to cases 2-4. */
             s->isRed = 1;
             s->right->isRed= 0;
             rotateLeft(s);
@@ -154,6 +158,10 @@ int removeNodeOneChild(struct Node **indirect) {
     struct Node *child = node->left == NULL ? node->right : node->left;
     if (child == NULL) {
 		writeLog(10, "No children. Node will not be missed");
+        printTree(node);
+        if (!node->isRed) {
+            delete1(node);
+        }
         *indirect = NULL;
         free(node);
 		return 0;
@@ -161,11 +169,6 @@ int removeNodeOneChild(struct Node **indirect) {
 
 	writeLog(10, "Parent of 1");
     swapNode(indirect, child);
-	if (child->parent != NULL) {
-		printTree(child->parent);
-	} else {
-		printTree(child);
-	}
     if (!node->isRed) {
         if (child->isRed) {
             child->isRed = 0;
@@ -178,24 +181,29 @@ int removeNodeOneChild(struct Node **indirect) {
 	return 0;
 }
 
-void removeNode(struct Node **node) {
-	printTree(*node);
-    if ((*node)->left != NULL && (*node)->right != NULL) {
+void removeNode(struct Node **indirect) {
+    struct Node *node = *indirect;
+    printTree(node);
+    if (node->left != NULL && node->right != NULL) {
 		writeLog(10, "Two children: performing replace");
-		struct Node *target = min((*node)->right);
-		writeLog(10, "Found target %d", target->id);
-        replaceNode(*node, target);
+		struct Node **target = min(&node->right);
+		writeLog(10, "Found target %d", (*target)->id);
+        replaceNode(node, *target);
 		writeLog(10, "replace successful");
-		if (target->parent != *node) {
-			writeLog(10, "Adopting target's children");
-			target->parent->left = target->right;
-		}
-		writeLog(10, "Attempting free");
-		free(target);
-    } else {
-		writeLog(10, "One or less child");
-        removeNodeOneChild(node);
+        printTree(node);
+		// if (target->parent != *node) {
+		// 	writeLog(10, "Adopting target's children");
+		// 	target->parent->left = target->right;
+        //     if (target->right != NULL) {
+		// 	    target->right->parent = target->parent;
+        //     }
+		// }
+		// writeLog(10, "Attempting free");
+		// free(target);
+        indirect = target;
     }
+	writeLog(10, "%d has One or less child", (*indirect)->id);
+    removeNodeOneChild(indirect);
 	writeLog(10, "RemoveNode done?");
 }
 
@@ -216,17 +224,19 @@ int removeFromTree(struct Node **node, unsigned int id) {
 }
 
 int removeId(struct Tree *tree, unsigned int id) {
-	writeLog(10, "Removing %d", id);
+	writeLog(10, "DOING REMOVE OPERATION Removing %d", id);
     if (tree->root == NULL) {
 		writeLog(10, "Tree empty", id);
+        validateTree(tree);
         return 1;
     }
     if (!removeFromTree(&tree->root, id)) {
         tree->count--;
 		writeLog(10, "Remove successful");
-		printTree(tree->root);
+        validateTree(tree);
         return 0;
     }
+    validateTree(tree);
     return -1;
 }
 
