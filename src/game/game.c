@@ -1,20 +1,26 @@
+
 #include "game.h"
+
+#include "../constants.h"
 #include "../input/input.h"
+#include "../log/log.h"
+#include "../actors/objectManager.h"
+#include "../term/screen.h"
+#include "../term/term.h"
 #include "../utility/clock.h"
 #include "../utility/utility.h"
-#include "../term/term.h"
-#include "../term/screen.h"
-#include "../log/log.h"
-#include "../constants.h"
 
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 int initGame() {
+    frame_count = 0;
+
     initLog();
     initScreen();
     initInput();
+    initObjects();
 
     signal(SIGINT, closeGame);
 }
@@ -22,6 +28,7 @@ int initGame() {
 void closeGame(int a) {
     closeInput();
     closeScreen();
+    closeObjects();
     closeLog();
 
     exit(0);
@@ -33,7 +40,6 @@ int loop() {
     initClock(&game_clock);
 
     unsigned long adjust_time = 0;
-    unsigned int frame_count = 0;
     int loop_time = 0;
     int loop_time_saved = 0;
 
@@ -57,6 +63,7 @@ int loop() {
         // df::WorldManager &world_manager = df::WorldManager::getInstance();
         // Call worldManager update
         // world_manager.update();
+        updateObjects();
 
         // Send EVENT_BEFOREDRAW to all objects
         // df::EventBeforeDraw p_bd_event = df::EventBeforeDraw();
@@ -64,7 +71,8 @@ int loop() {
 
         // Call worldManager draw
         // world_manager.draw();
-        //
+        int objectsRendered = renderObjects();
+        /*
         int i, j;
 
 
@@ -78,6 +86,7 @@ int loop() {
                 // putPixel(j, i, i * 16 + j);
             }
         }
+        */
 
 
         swapScreen();
@@ -86,11 +95,12 @@ int loop() {
             loop_time_saved = loop_time;
         }
         printf("\e[1G\e[%dC", screen.margin_x);
-        printf(" Loop time: %5d ", loop_time_saved);
-        printf("Frame_count: %3d ", frame_count);
-        printf("Times_init: %3d ", screen.times_init);
+        printf(" Loop: %5d ", loop_time_saved);
+        printf("Frame: %3d ", frame_count);
+        printf("Inits: %3d ", screen.times_init);
         printf("Lines: %3d ", screen.ts.lines);
-        printf("Columns: %3d ", screen.ts.cols);
+        printf("Cols: %3d ", screen.ts.cols);
+        printf("Obj rendered: %3d ", objectsRendered);
         fflush(stdout);
 
         // Swap graphics buffers

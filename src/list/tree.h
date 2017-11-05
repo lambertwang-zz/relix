@@ -49,6 +49,9 @@ struct Node **min(struct Node **node);
 struct Node *newNode(void *data, unsigned int id);
 
 int initTree(struct Tree *tree);
+int closeTree(struct Tree *tree);
+int clearTree(struct Tree *tree);
+
 void *getData(struct Tree *tree, unsigned int id);
 int insert(struct Tree *tree, void *data, unsigned int id);
 int removeId(struct Tree *tree, unsigned int id);

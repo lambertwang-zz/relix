@@ -1,4 +1,6 @@
 #include "log.h"
+#include "../utility/clock.h"
+#include "../game/game.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -7,25 +9,26 @@ void initLog() {
     flushLog = 1;
     logLevel = LOG_LEVEL_DEFAULT;
     relixLogFile = fopen(LOG_FILE, "w");
+
+    writeLog(LOG_INIT, "log::initLog(): Initialized logging");
 }
 
 void closeLog() {
+    writeLog(LOG_INIT, "log::closeLog(): Closing logging");
     fclose(relixLogFile);
 }
 
 void setFlush(unsigned int on) {
+    writeLog(LOG_LOG, "log::setFlush(): Set flush %d", on);
     flushLog = on;
 }
 
 void setLevel(int level) {
+    writeLog(LOG_LOG, "log::setLevel(): Set log level 0x%x", level);
     logLevel = level;
 }
 
 int writeLog(int level, const char *format, ...) {
-    if (relixLogFile == NULL) {
-        return -1;
-    }
-
     char char_format[1024];
     
     va_list args;
@@ -39,7 +42,7 @@ int writeLog(int level, const char *format, ...) {
 }
 
 int nwriteLog(int level, unsigned int n, const char *format, ...) {
-    if (logLevel > level) {
+    if (!(logLevel & level)) {
         return -1;
     }
     if (relixLogFile == NULL) {
@@ -48,7 +51,7 @@ int nwriteLog(int level, unsigned int n, const char *format, ...) {
                 //if (this->p_f && this->isStarted()) {
     // Print timestring and frame number to log file
     // df::GameManager &game_manager = df::GameManager::getInstance();
-    // fprintf(logFile, "%8s  %6d  ", df::getTimeString(), game_manager.getStepCount());
+    fprintf(relixLogFile, "%8s  %6d : ", timeString(), frame_count);
     // Format arguments
     va_list args;
     va_start(args, format);

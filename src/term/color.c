@@ -7,6 +7,32 @@ unsigned char rgbToTerm(Color c) {
     return 16 + b_t + g_t * 6 + r_t * 36;
 }
 
+Color alphaComposite(Color a, Color b) {
+    if (a.a >= 1.0) {
+        return a;
+    }
+    if (a.a <= 0.0) {
+        return b;
+    }
+    if (b.a <= 0.0) {
+        return a;
+    }
+
+    Color result;
+    if (b.a >= 1.0) {
+        result.r = a.r * a.a + b.r * (1.0 - a.a);
+        result.g = a.g * a.a + b.g * (1.0 - a.a);
+        result.b = a.b * a.a + b.b * (1.0 - a.a);
+        result.a = a.a + b.a * (1.0 - a.a);
+        return result;
+    }
+    result.r = (a.r * a.a + b.r * b.a * (1.0 - a.a)) / (a.a + b.a * (1.0 - a.a));
+    result.g = (a.g * a.a + b.g * b.a * (1.0 - a.a)) / (a.a + b.a * (1.0 - a.a));
+    result.b = (a.b * a.a + b.b * b.a * (1.0 - a.a)) / (a.a + b.a * (1.0 - a.a));
+    result.a = a.a + b.a * (1.0 - a.a);
+    return result;
+}
+
 Color rgbToHsl(Color c) {
     return c;
 }

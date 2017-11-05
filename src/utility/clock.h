@@ -5,6 +5,7 @@ struct Clock {
     unsigned long previous_time;
 };
 
+char *timeString();
 int initClock(struct Clock *c);
 
 unsigned long split(struct Clock *c);

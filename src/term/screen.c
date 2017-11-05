@@ -15,18 +15,37 @@ void handle_winch(int sig) {
     pthread_mutex_lock(&screen_lock);
     initScreen();
     // signal(SIGWINCH, SIG_IGN);
-    // refresh();
     pthread_mutex_unlock(&screen_lock);
+}
+
+// Clears the active screen buffer
+void clearScreen(struct Screen *scr) {
+    int i;
+    for (i = 0; i < screen.ts.lines * screen.ts.cols; i++) {
+        screen.pixelBuffer[i].fg = 0;
+        screen.pixelBuffer[i].bg = 0;
+        screen.pixelBuffer[i].c_bg = COLOR_BLANK;
+        screen.pixelBuffer[i].c_bg = COLOR_BLANK;
+        screen.pixelBuffer[i].chr = ' ';
+    }
+
+}
+
+void setCamera(Point loc) {
+    screen.camera = loc;
+    screen.camera_bounds.top = loc.y - screen.ts.lines >> 1;
+    screen.camera_bounds.bottom = screen.camera_bounds.top + screen.ts.lines;
+    screen.camera_bounds.left = loc.x - screen.ts.cols >> 1;
+    screen.camera_bounds.right = screen.camera_bounds.left + screen.ts.cols;
 }
 
 struct Screen *initScreen() {
     static int first_init = 1;
 
+    // If re-init, free buffers
     if (!first_init) {
-        free(screen.charBuffer);
-        free(screen.backCharBuffer);
         free(screen.pixelBuffer);
-        free(screen.backPixelBuffer);
+        free(screen.prevPixelBuffer);
     }
 
     if (first_init) {
@@ -60,29 +79,20 @@ struct Screen *initScreen() {
         screen.margin_x = (screen.ts.cols- MAX_WIDTH) / 2;
         screen.ts.cols= MAX_WIDTH;
     }
+
+    setCamera((Point){0, 0});
     
     screen.pixelBuffer = malloc(sizeof(struct Pixel) * screen.ts.cols * screen.ts.lines);
-    screen.backPixelBuffer = malloc(sizeof(struct Pixel) * screen.ts.cols * screen.ts.lines);
+    screen.prevPixelBuffer = malloc(sizeof(struct Pixel) * screen.ts.cols * screen.ts.lines);
 
-    screen.charBuffer = malloc(sizeof(char) * screen.ts.cols * screen.ts.lines);
-    screen.backCharBuffer = malloc(sizeof(char) * screen.ts.cols * screen.ts.lines);
-
-    int i, j;
-    for (i = 0; i < screen.ts.lines; i++) {
-        for (j = 0; j < screen.ts.cols; j++) {
-            screen.charBuffer[j + i * screen.ts.cols] = (i % 26) + 65;
-        }
-    }
-
+    clearScreen(&screen);
 
     return 0;
 }
 
 int closeScreen() {
-    free(screen.charBuffer);
-    free(screen.backCharBuffer);
     free(screen.pixelBuffer);
-    free(screen.backPixelBuffer);
+    free(screen.prevPixelBuffer);
 
     // Reset colors
     printf("\e[39m\e[49m");
@@ -99,33 +109,43 @@ int closeScreen() {
 int swapScreen() {
     int i, j;
     unsigned int index;
-    unsigned char prevFg = -1;
-    unsigned char prevBg = -1;
+    // Refers to preceding pixel in the row
+    int prevFg = -1;
+    int prevBg = -1;
+
     unsigned char fg;
     unsigned char bg;
     char chr;
 
     pthread_mutex_lock(&screen_lock);
+
+    // Line-buffer
     char *buffer = malloc(sizeof(char) * 24 * screen.ts.cols);
     unsigned int charsPrinted;
 
-    int unchangedPixels = 0;
+    int unchangedPixels;
 
     for (j = 0; j < screen.ts.lines; j++) {
+        prevFg = -1;
+        prevBg = -1;
+        unchangedPixels = 0;
         charsPrinted = sprintf(buffer, "\e[%d;%dH", screen.margin_y + j + 1, screen.margin_x);
         for (i = 0; i < screen.ts.cols; i++) {
             index = i + j * screen.ts.cols;
 
             fg = screen.pixelBuffer[index].fg;
             bg = screen.pixelBuffer[index].bg;
-            chr = screen.charBuffer[index];
+            chr = screen.pixelBuffer[index].chr;
             
-            if (fg == screen.backPixelBuffer[index].fg &&
-                bg == screen.backPixelBuffer[index].bg &&
-                chr == screen.backCharBuffer[index]) {
+            // Check if pixel was unchanged from last frame
+            if (fg == screen.prevPixelBuffer[index].fg &&
+                bg == screen.prevPixelBuffer[index].bg &&
+                chr == screen.prevPixelBuffer[index].chr) {
                 unchangedPixels++;
                 continue;
             }
+
+            // If preceding pixels are unchanged, skip characters
             if (unchangedPixels) {
                 charsPrinted += sprintf(buffer + charsPrinted, "\e[%dC", unchangedPixels);
                 unchangedPixels = 0;
@@ -141,15 +161,13 @@ int swapScreen() {
             }
             charsPrinted += sprintf(buffer + charsPrinted, "%c", chr); 
         }
-        if (unchangedPixels) {
-            charsPrinted += sprintf(buffer + charsPrinted, "\e[%dC", unchangedPixels);
-            unchangedPixels = 0;
-        }
+
         fwrite(buffer, sizeof(char), charsPrinted, stdout);
     }
 
-    memcpy(screen.backCharBuffer, screen.charBuffer, sizeof(char) * screen.ts.cols * screen.ts.lines);
-    memcpy(screen.backPixelBuffer, screen.pixelBuffer, sizeof(Pixel) * screen.ts.cols * screen.ts.lines);
+    memcpy(screen.prevPixelBuffer, screen.pixelBuffer, sizeof(Pixel) * screen.ts.cols * screen.ts.lines);
+
+    clearScreen(&screen);
 
     pthread_mutex_unlock(&screen_lock);
 
@@ -161,11 +179,25 @@ int swapScreen() {
     return 0;
 }
 
-int putPixel(int x, int y, unsigned char c) {
+// Assumes p color values are precomputed
+int putPixel(int x, int y, Pixel p) {
     unsigned int index = x + y * screen.ts.cols;
-    // screen.pixelBuffer[index].bg = c;
+    screen.pixelBuffer[index] = p;
     return 0;
 }
+
+// Perform alpha compositing
+// Ignores p.bg
+int putPixelA(int x, int y, Pixel p) {
+    unsigned int index = x + y * screen.ts.cols;
+
+    // BG pixel is always opaque
+    p.c_bg = alphaComposite(p.c_bg, screen.pixelBuffer[index].c_bg);
+    p.bg = rgbToTerm(p.c_bg);
+    screen.pixelBuffer[index] = p;
+    return 0;
+}
+
 int putPixelRgb(int x, int y, Color c) {
     unsigned int index = x + y * screen.ts.cols;
     screen.pixelBuffer[index].bg = rgbToTerm(c);

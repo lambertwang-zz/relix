@@ -1,9 +1,22 @@
-/*
- * Clock class
- */
-
 #include "clock.h"
 #include "utility.h"
+
+#include "time.h"
+#include "stdio.h"
+
+char *timeString() {
+    static char time_str[30];
+
+    time_t now;
+    time(&now);
+
+    struct tm *p_time = localtime(&now);
+
+    // Format into human readable string
+    sprintf(time_str, "%02d:%02d:%02d", p_time->tm_hour, p_time->tm_min, p_time->tm_sec);
+
+    return time_str;
+}
 
 int initClock(struct Clock *c) {
     // Initialize time to current time

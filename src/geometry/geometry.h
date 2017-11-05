@@ -7,5 +7,12 @@ typedef struct Point {
     int z;
 } Point;
 
+typedef struct Rect {
+    int top;
+    int bottom;
+    int left;
+    int right;
+} Rect;
+
 #endif
 

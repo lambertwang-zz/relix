@@ -1,7 +1,5 @@
 #include "tree.h"
 
-#include "../log/log.h"
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -112,7 +110,6 @@ void generate(struct Iterator *it) {
         } else {
             if (it->stack_count) {
                 it->current = popStack(it);
-                printf("%d\n", it->current->id);
                 it->index++;
                 it->current = it->current->right;
             } else {
@@ -123,7 +120,6 @@ void generate(struct Iterator *it) {
 }
 
 int done(const struct Iterator *it) {
-    writeLog(10, "Index: %d count: %d", it->index, it->tree->count);
     return it->index >= it->tree->count ? 1 : 0;
 }
 

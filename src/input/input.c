@@ -10,6 +10,8 @@
 static struct termios prev_settings;
 
 int initInput() {
+    writeLog(LOG_INPUT, "input::initInput(): Initialzing input");
+
     struct termios new_settings;
     // Save old termios settings
     tcgetattr(0, &prev_settings);
@@ -23,9 +25,13 @@ int initInput() {
     printf("\e[?1003h");
     printf("\e[?1006h");
     fflush(stdout);
+
+    // Register events with the worldmanager
 }
 
 int closeInput() {
+    writeLog(LOG_INPUT, "input::closeInput(): Closing input");
+
     // End reporting mouse movements
     printf("\e[?1003l");
     printf("\e[?1006l");
@@ -68,6 +74,8 @@ void csiMouse() {
     readSgrValue(x_str);
     buff = readSgrValue(y_str);
     button_type = buff;
+
+    writeLog(LOG_INPUT_V, "input::csoMouse(): Mouse: Button: %s X: %s Y: %s", button_str, x_str, y_str);
 #ifdef DEBUG_INPUT
     printf("Button: %s X: %s Y: %s\n", button_str, x_str, y_str);
 #endif
@@ -100,6 +108,7 @@ int readInput() {
         if (buff == '\e') {
             escape();
         } else {
+            writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %d", buff);
             createKeyboardEvent(buff);
 #ifdef DEBUG_INPUT
             printf("%d\n", buff);

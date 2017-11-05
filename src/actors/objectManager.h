@@ -11,13 +11,24 @@ struct ObjectManager {
     struct Tree insert_queue;
     struct Tree object_list;
     struct Tree remove_queue; 
+
+    struct Tree **event_listeners;
+    int event_count;
 };
 
 int sendEvent(const Event *ev);
 int registerListener(const struct Object *obj, int ev_id);
+int unregisterListener(const struct Object *obj, int ev_id);
 int registerEvent(int ev_id);
 
 int initObjects();
+int closeObjects();
+
+int addObject(struct Object *obj);
+int removeObject(struct Object *obj);
+
+int updateObjects();
+int renderObjects();
 
 #endif
 

@@ -238,6 +238,26 @@ int initTree(struct Tree *tree) {
     return 0;
 }
 
+void freeNodes(struct Node *node) {
+    if (node != NULL) {
+        freeNodes(node->left);
+        freeNodes(node->right);
+        free(node);
+    }
+}
+
+int closeTree(struct Tree *tree) {
+    freeNodes(tree->root);
+    return 0;
+}
+
+int clearTree(struct Tree *tree) {
+    freeNodes(tree->root);
+    tree->root = NULL;
+    tree->count = 0;
+    return 0;
+}
+
 void *searchTree(struct Node *node, unsigned int id) {
     if (node == NULL) {
         return NULL;
