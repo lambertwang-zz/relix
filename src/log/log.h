@@ -9,6 +9,7 @@
 // 0x0000ff00 bits reserved for verbose events
 //      Every frame or every few frames
 // 0x000000ff bits reserved for single-time events and errors
+// 0x00ff0000 bits reserved for testing and debugging
 #define LOG_LEVEL_DEFAULT 0x000000ff
 #define LOG_INIT 0x00000001
 #define LOG_OBJECTMANAGER 0x00000002
@@ -25,7 +26,8 @@ void initLog();
 void closeLog();
 
 void setFlush(unsigned int on);
-void setLevel(int level);
+void setLogLevel(int level);
+void addLogLevel(int level);
 
 int writeLog(int level, const char *format, ...);
 int nwriteLog(int level, unsigned int n, const char *format, ...);

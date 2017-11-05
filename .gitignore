@@ -1,6 +1,9 @@
-relix
 *.o
 .vscode*
 *.log
-test/tree
 *.swp
+
+relix
+test/tree
+test/input
+test/event

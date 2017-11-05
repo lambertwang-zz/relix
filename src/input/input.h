@@ -3,6 +3,18 @@
 
 #define SGR_BUFF_LEN 6
 
+// Arrow keys
+#define ARROW_UP 'A'
+#define ARROW_DOWN 'B'
+#define ARROW_RIGHT 'C'
+#define ARROW_LEFT 'D'
+
+// Keyboard event types
+// A-Z, a-z, 0-9, etc
+#define KEYBOARD_NORMAL 1
+// Arrow keys, etc
+#define KEYBOARD_ESCAPE 2
+
 // Mouse action values
 #define MOUSE_LEFT 0
 #define MOUSE_RIGHT 2
@@ -26,6 +38,7 @@ typedef struct MouseEvent {
 } MouseEvent;
 
 typedef struct KeyboardEvent {
+    int type;
     char value;
 } KeyboardEvent;
 

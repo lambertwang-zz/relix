@@ -23,9 +23,14 @@ void setFlush(unsigned int on) {
     flushLog = on;
 }
 
-void setLevel(int level) {
-    writeLog(LOG_LOG, "log::setLevel(): Set log level 0x%x", level);
+void setLogLevel(int level) {
+    writeLog(LOG_LOG, "log::setLogLevel(): Set log level 0x%x", level);
     logLevel = level;
+}
+
+void addLogLevel(int level) {
+    writeLog(LOG_LOG, "log::addLogLevel(): Adding log level 0x%x", level);
+    logLevel |= level;
 }
 
 int writeLog(int level, const char *format, ...) {

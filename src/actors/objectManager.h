@@ -16,7 +16,7 @@ struct ObjectManager {
     int event_count;
 };
 
-int sendEvent(const Event *ev);
+int sendEvent(Event ev);
 int registerListener(const struct Object *obj, int ev_id);
 int unregisterListener(const struct Object *obj, int ev_id);
 int registerEvent(int ev_id);

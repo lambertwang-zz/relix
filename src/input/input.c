@@ -3,11 +3,14 @@
 #include "../log/log.h"
 #include "../constants.h"
 
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
 static struct termios prev_settings;
+static int old_fl;
 
 int initInput() {
     writeLog(LOG_INPUT, "input::initInput(): Initialzing input");
@@ -20,6 +23,10 @@ int initInput() {
     new_settings.c_lflag &= ~ECHO;
     tcsetattr(0, TCSANOW, &new_settings);
 
+    // Set stdin to non-blocking
+    old_fl = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, old_fl | O_NONBLOCK);
+
     // Begin reporting mouse movements
     // printf("\e[1;0'z");
     printf("\e[?1003h");
@@ -27,6 +34,8 @@ int initInput() {
     fflush(stdout);
 
     // Register events with the worldmanager
+    registerEvent(EVENT_KEYBOARD);
+    // registerEvent(EVENT_MOUSE);
 }
 
 int closeInput() {
@@ -39,9 +48,17 @@ int closeInput() {
     
     // Restore old settings
     tcsetattr(0, TCSANOW, &prev_settings);
+    fcntl(STDIN_FILENO, F_SETFL, old_fl);
 }
 
-void createKeyboardEvent() {
+int createKeyboardEvent(char chr, int type) {
+    Event ev;
+    ev.id = EVENT_KEYBOARD;
+    ev.data = malloc(sizeof(KeyboardEvent));
+    ((KeyboardEvent *) ev.data)->value = chr;
+    ((KeyboardEvent *) ev.data)->type = type;
+    sendEvent(ev);
+    return 0;
 }
 
 void createMouseEvent() {
@@ -62,7 +79,7 @@ char readSgrValue(char *buff) {
     return '\0';
 }
 
-void csiMouse() {
+int csiMouse() {
     char buff;
 
     char button_str[SGR_BUFF_LEN];
@@ -79,41 +96,70 @@ void csiMouse() {
 #ifdef DEBUG_INPUT
     printf("Button: %s X: %s Y: %s\n", button_str, x_str, y_str);
 #endif
+    return 0;
 }
 
-void csi() {
+int csiArrow(char code) {
+    createKeyboardEvent(code, KEYBOARD_ESCAPE);
+    return 0;
+}
+
+int csi() {
     char buff;
     if (read(0, &buff, 1)) {
-        if (buff == '<') {
-            csiMouse();
-            // printf("Begin CSI\n");
+        switch (buff) {
+            case '<':
+                return csiMouse();
+            case ARROW_UP:
+            case ARROW_DOWN:
+            case ARROW_RIGHT:
+            case ARROW_LEFT:
+                return csiArrow(buff);
+            default:
+                writeLog(LOG_INPUT_V, "input::csi(): Unsupported csi character: '%d'", buff);
         }
     }
+    return 1;
 }
 
-void escape() {
+int escape() {
     char buff;
     if(read(0, &buff, 1)) {
         if (buff == '[') {
-            csi();
+            return csi();
         }
     }
+    return 1;
 }
 
-int readInput() {
-    int chars_read = 0;
+
+int captureInput() {
     char buff;
+    int read_result;
+
     do {
-        chars_read = read(0, &buff, 1);
+        read_result = read(0, &buff, 1);
+        if (read_result == -1) {
+            return read_result;
+        }
         if (buff == '\e') {
-            escape();
+            return escape();
         } else {
             writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %d", buff);
-            createKeyboardEvent(buff);
 #ifdef DEBUG_INPUT
             printf("%d\n", buff);
 #endif
+            return createKeyboardEvent(buff, KEYBOARD_NORMAL);
         }
-    } while (!chars_read);
+    } while (!read_result);
+    return 1;
+}
+
+int readInput() {
+    int end_input;
+    do {
+        end_input = captureInput();
+    } while (!end_input);
+    return end_input;
 }
 

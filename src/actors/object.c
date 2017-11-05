@@ -30,10 +30,10 @@ int render_default(const struct Object *o) {
     return 0;
 }
 
-int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *o)) {
+int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Event)) {
     if (ev_id == o->events_size) {
-        int (**tmp_l)(struct Object *) = malloc(sizeof(int (*)(struct Object *)) * o->events_size * 2);
-        memcpy(tmp_l, o->event_listeners, sizeof(int (*)(struct Object *)) * o->events_size);
+        int (**tmp_l)(struct Object *, Event) = malloc(sizeof(int (*)(struct Object *, Event)) * o->events_size * 2);
+        memcpy(tmp_l, o->event_listeners, sizeof(int (*)(struct Object *, Event)) * o->events_size);
         free(o->event_listeners);
         o->event_listeners = tmp_l;
         int i;
@@ -69,6 +69,8 @@ void initObject(struct Object *o) {
     for (i = 0; i < o->events_size; i++) {
         o->event_listeners[i] == NULL;
     }
+
+    o->data = NULL;
 }
 
 void closeObject(struct Object *o) {
@@ -79,5 +81,8 @@ void closeObject(struct Object *o) {
         }
     }
     free(o->event_listeners);
+    if (o->data != NULL) {
+        free(o->data);
+    }
 }
 

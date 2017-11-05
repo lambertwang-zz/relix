@@ -18,9 +18,10 @@ int initGame() {
     frame_count = 0;
 
     initLog();
+    // Init objects and event registration
+    initObjects();
     initScreen();
     initInput();
-    initObjects();
 
     signal(SIGINT, closeGame);
 }
@@ -59,6 +60,7 @@ int loop() {
         // Retrieve input
         // df::InputManager &input_manager = df::InputManager::getInstance();
         // input_manager.getInput();
+        readInput();
 
         // df::WorldManager &world_manager = df::WorldManager::getInstance();
         // Call worldManager update
