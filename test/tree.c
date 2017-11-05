@@ -7,7 +7,6 @@
 #include "../src/list/tree.h"
 
 void terminate(int a) {
-    closeScreen();
     closeLog();
     exit(0);
 }
@@ -18,7 +17,14 @@ int main(int argc, char **argv) {
 
     int i;
     struct Tree tree;
+    struct Iterator *it;
     initTree(&tree);
+
+    it = initIterator(&tree);
+    while (!done(it)) {
+        printf("id: %d\n", getNext(it)->id);
+    }
+    closeIterator(it);
 
     for (i = 1; i <= 100; i++) {
         insert(&tree, NULL, i);
@@ -43,6 +49,13 @@ int main(int argc, char **argv) {
     }
     printf("Tree: %d\n", tree.count);
     printf("Expect 300\n");
+    
+    it = initIterator(&tree);
+    while (!done(it)) {
+        printf("id: %d\n", getNext(it)->id);
+    }
+    closeIterator(it);
+
 
     for (i = 25; i < 75; i += 2) {
         removeId(&tree, i);
@@ -56,11 +69,13 @@ int main(int argc, char **argv) {
     printf("Tree: %d\n", tree.count);
     printf("Expect 250\n");
 
-    for (i = 300; i >= 0; i--) {
+    for (i = 400; i >= 0; i--) {
         removeId(&tree, i);
     }
     printf("Tree: %d\n", tree.count);
     printf("Expect 0\n");
+
+    terminate(0);
 
     return 0;
 }

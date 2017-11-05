@@ -25,7 +25,6 @@ test: clear clean $(SRC_OBJ) $(TEST_EXE)
 
 $(TEST_EXE):
 	$(CC) $@.c -o $@ $(SRC_OBJ)
-	./$@
 
 clear:
 	clear

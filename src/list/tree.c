@@ -1,6 +1,6 @@
-
 #include "tree.h"
 #include "../log/log.h"
+#include "../constants.h"
 
 #include <stdlib.h>
 #include <stdio.h>

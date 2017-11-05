@@ -1,5 +1,6 @@
 
 #include "screen.h"
+#include "../constants.h"
 
 #include <pthread.h>
 #include <signal.h>

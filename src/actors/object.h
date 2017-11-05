@@ -3,16 +3,15 @@
 
 #include "../geometry/geometry.h"
 
-unsigned int id_iterator = 1;
-
 struct Object {
     unsigned int id;
 
     char chr;
 
     Point loc;
-
 };
+
+void initObject(struct Object *o);
 
 #endif
 

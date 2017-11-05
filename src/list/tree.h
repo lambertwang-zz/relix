@@ -1,11 +1,22 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
-#define DEBUG_TREES
+#define INIT_STACK_SIZE 16
+
+struct Iterator {
+    const struct Tree *tree;
+
+    struct Node **stack;
+    int stack_size;
+    int stack_count;
+
+    int index;
+    struct Node *current;
+};
 
 struct Tree {
     struct Node *root;
-    unsigned int count;
+    int count;
 };
 
 struct Node {
@@ -41,6 +52,15 @@ int initTree(struct Tree *tree);
 void *getData(struct Tree *tree, unsigned int id);
 int insert(struct Tree *tree, void *data, unsigned int id);
 int removeId(struct Tree *tree, unsigned int id);
+
+struct Iterator *initIterator(struct Tree *tree);
+struct Node *getNode(const struct Iterator *it);
+void *getItem(const struct Iterator *it);
+struct Node *getNext(struct Iterator *it);
+int done(const struct Iterator *it);
+int closeIterator(struct Iterator *it);
+
+void generate(struct Iterator *it);
 
 #endif
 

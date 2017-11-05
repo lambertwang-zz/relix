@@ -1,11 +1,31 @@
+#include "game.h"
+#include "../input/input.h"
 #include "../utility/clock.h"
 #include "../utility/utility.h"
 #include "../term/term.h"
-
 #include "../term/screen.h"
-#include "stdio.h"
+#include "../log/log.h"
+#include "../constants.h"
 
-#define frame_time 16666
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+int initGame() {
+    initLog();
+    initScreen();
+    initInput();
+
+    signal(SIGINT, closeGame);
+}
+
+void closeGame(int a) {
+    closeInput();
+    closeScreen();
+    closeLog();
+
+    exit(0);
+}
 
 int loop() {
     // Create variables required for timing outside of loop scope
@@ -80,7 +100,7 @@ int loop() {
 
         // Adjust sleep time for additional framerate accuracy
         loop_time = split(&game_clock);
-        unsigned long sleep_time = (frame_time - loop_time - adjust_time);
+        unsigned long sleep_time = (FRAME_TIME - loop_time - adjust_time);
         // Reset clock before sleeping to calculate actual sleep time
         delta(&game_clock);
         // Multiply microseconds to obtain sleep time in nanoseconds
