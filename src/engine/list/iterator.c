@@ -3,35 +3,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-void pushStack(struct Iterator *it, struct Node *node) {
-    if (it->stack_count >= it->stack_size) {
-        struct Node **temp = malloc(sizeof(struct Node *) * it->stack_size * 2);
-        memcpy(temp, it->stack, sizeof(struct Node *) * it->stack_size);
-        free(it->stack);
-        it->stack = temp;
-        it->stack_size *= 2;
-    }
-
-    it->stack[it->stack_count++] = node;
-}
-
-struct Node *popStack(struct Iterator *it) {
-    return it->stack[--it->stack_count];
-}
-
 struct Iterator *initIterator(struct Tree *tree) {
     struct Iterator *new = malloc(sizeof(struct Iterator));
 
     new->tree = tree;
 
-    new->stack = malloc(sizeof(struct Node *) * INIT_STACK_SIZE);
-    new->stack_size = INIT_STACK_SIZE;
-    new->stack_count = 0;
+    initArray(&new->stack);
     new->current = tree->root;
 
     new->index = 0;
 
     return new;
+}
+
+int closeIterator(struct Iterator *it) {
+    closeArray(&it->stack);
+    free(it);
+    return 0;
 }
 
 struct Node *getNode(const struct Iterator *it) {
@@ -47,13 +35,13 @@ struct Node *getNext(struct Iterator *it) {
         return NULL;
     }
     while (it->current != NULL) {
-        pushStack(it, it->current);
+        push(&it->stack, it->current);
         it->current = it->current->left;
     }
     
-    if (it->stack_count) {
+    if (it->stack.count) {
         struct Node *temp;
-        it->current = popStack(it);
+        it->current = pop(&it->stack);
         temp = it->current;
         it->current = it->current->right;
         it->index++;
@@ -105,11 +93,11 @@ void generate(struct Iterator *it) {
     it->current = it->tree->root;
     while (!done(it)) {
         if (it->current != NULL) {
-            pushStack(it, it->current);
+            push(&it->stack, it->current);
             it->current = it->current->left;
         } else {
-            if (it->stack_count) {
-                it->current = popStack(it);
+            if (it->stack.count) {
+                it->current = pop(&it->stack);
                 it->index++;
                 it->current = it->current->right;
             } else {
@@ -122,10 +110,3 @@ void generate(struct Iterator *it) {
 int done(const struct Iterator *it) {
     return it->index >= it->tree->count ? 1 : 0;
 }
-
-int closeIterator(struct Iterator *it) {
-    free(it->stack);
-    free(it);
-    return 0;
-}
-

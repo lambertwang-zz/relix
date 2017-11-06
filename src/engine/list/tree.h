@@ -1,14 +1,14 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
+#include "array.h"
+
 #define INIT_STACK_SIZE 16
 
 struct Iterator {
     const struct Tree *tree;
 
-    struct Node **stack;
-    int stack_size;
-    int stack_count;
+    struct Array stack;
 
     int index;
     struct Node *current;
@@ -31,6 +31,7 @@ struct Node {
     struct Tree *tree;
 };
 
+// Internal tree functions
 void validateTree(const struct Tree *tree);
 
 void printTree(const struct Node *node);
@@ -48,6 +49,7 @@ struct Node **min(struct Node **node);
 
 struct Node *newNode(void *data, unsigned int id);
 
+// External tree functions
 int initTree(struct Tree *tree);
 int closeTree(struct Tree *tree);
 int clearTree(struct Tree *tree);
@@ -56,6 +58,7 @@ void *getData(struct Tree *tree, unsigned int id);
 int insert(struct Tree *tree, void *data, unsigned int id);
 int removeId(struct Tree *tree, unsigned int id);
 
+// Iterator functions
 struct Iterator *initIterator(struct Tree *tree);
 struct Node *getNode(const struct Iterator *it);
 void *getItem(const struct Iterator *it);
@@ -63,6 +66,7 @@ struct Node *getNext(struct Iterator *it);
 int done(const struct Iterator *it);
 int closeIterator(struct Iterator *it);
 
+// Unused
 void generate(struct Iterator *it);
 
 #endif

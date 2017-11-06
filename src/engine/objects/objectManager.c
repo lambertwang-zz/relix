@@ -219,12 +219,38 @@ int renderObjects() {
     struct Iterator *it;
     int objects_rendered = 0;
 
+    struct Tree depth_tree;
+    initTree(&depth_tree);
+
+    // Insert objects into the depth tree
     it = initIterator(&object_manager.object_list);
     while (!done(it)) {
         struct Object *obj = getNext(it)->data;
-        objects_rendered += obj->render(obj);
+        struct Array *depth_node = getData(&depth_tree, obj->pos.z);
+        if (depth_node == NULL) {
+            depth_node = malloc(sizeof(struct Array));
+            initArray(depth_node);
+            insert(&depth_tree, depth_node, obj->pos.x);
+        }
+        push(depth_node, obj);
     }
     closeIterator(it);
+
+    // Render objects by sorted by depth
+    it = initIterator(&depth_tree);
+    while (!done(it)) {
+        struct Array *depth_node = getNext(it)->data;
+        int i;
+        for (i = 0; i < depth_node->count; i++) {
+            struct Object *obj = depth_node->data[i];
+            objects_rendered += obj->render(obj);
+        }
+        closeArray(depth_node);
+        free(depth_node);
+    }
+    closeIterator(it);
+
+    closeTree(&depth_tree);
 
     return objects_rendered;
 }

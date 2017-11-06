@@ -20,13 +20,9 @@ void handle_winch(int sig) {
 // Clears the active screen buffer
 void clearScreen(struct Screen *scr) {
     int i;
+
     for (i = 0; i < screen.ts.lines * screen.ts.cols; i++) {
-        screen.pixelBuffer[i].fg = 16;
-        screen.pixelBuffer[i].bg = 16;
-        screen.pixelBuffer[i].c_bg = COLOR_BLANK;
-        screen.pixelBuffer[i].c_bg = COLOR_BLANK;
-        screen.pixelBuffer[i].chr = ' ';
-        screen.pixelBuffer[i].id = -1;
+        screen.pixelBuffer[i] = PIXEL_NULL;
     }
 
 }
