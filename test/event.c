@@ -1,9 +1,15 @@
-#include "../src/engine/game/game.h"
-#include "../src/engine/objects/object.h"
-#include "../src/engine/objects/objectManager.h"
-#include "../src/engine/constants.h"
-#include "../src/engine/log/log.h"
-#include "../src/engine/input/input.h"
+#include "game/game.h"
+#include "objects/object.h"
+#include "objects/objectManager.h"
+#include "constants.h"
+#include "log/log.h"
+#include "input/input.h"
+
+#include "stdlib.h"
+
+void nothing() {
+    // pass
+}
 
 int keyboardListener(struct Object *o, Event ev) {
     writeLog(10, "Received keyboard event");
@@ -13,7 +19,7 @@ int keyboardListener(struct Object *o, Event ev) {
             switch (k_ev.value) {
                 case 'q':
                 case 'Q':
-                    clearObjects();
+                    queueClear(&nothing);
                     break;
             }
             return 0;
@@ -44,16 +50,16 @@ int main(int argc, char **argv) {
 
     addLogLevel(LOG_INPUT_V);
 
-    struct Object o_1;
+    struct Object *o_1 = malloc(sizeof(struct Object));
 
-    initObject(&o_1);
+    initObject(o_1);
 
-    o_1.pix.chr = '@';
-    o_1.pix.fg = 128;
+    o_1->pix.chr = '@';
+    o_1->pix.fg = 128;
 
-    listenEvent(&o_1, EVENT_KEYBOARD, &keyboardListener);
+    listenEvent(o_1, EVENT_KEYBOARD, &keyboardListener);
 
-    addObject(&o_1);
+    addObject(o_1);
 
     loop();
 

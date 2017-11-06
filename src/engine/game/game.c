@@ -22,6 +22,7 @@ int initGame() {
     initObjects();
     initScreen();
     initInput();
+    writeLog(LOG_INIT, "game::initGame(): Initialized game");
 
     signal(SIGINT, closeGame);
     return 0;
@@ -53,6 +54,7 @@ int loop() {
         // Increment step count
         // this->step_count++;
         frame_count++;
+        writeLog(LOG_GAME_V, "game::loop(): Beginning frame %d", frame_count);
 
         // Send EVENT_STEP to all objects
         // df::EventStep p_step_event = df::EventStep(this->step_count);
@@ -62,11 +64,13 @@ int loop() {
         // df::InputManager &input_manager = df::InputManager::getInstance();
         // input_manager.getInput();
         readInput();
+        writeLog(LOG_GAME_V, "game::loop(): Reading input");
 
         // df::WorldManager &world_manager = df::WorldManager::getInstance();
         // Call worldManager update
         // world_manager.update();
         updateObjects();
+        writeLog(LOG_GAME_V, "game::loop(): Updated objects");
 
         // Send EVENT_BEFOREDRAW to all objects
         // df::EventBeforeDraw p_bd_event = df::EventBeforeDraw();
@@ -75,6 +79,7 @@ int loop() {
         // Call worldManager draw
         // world_manager.draw();
         int objectsRendered = renderObjects();
+        writeLog(LOG_GAME_V, "game::loop(): Rendered %d objects", objectsRendered);
         /*
         int i, j;
 

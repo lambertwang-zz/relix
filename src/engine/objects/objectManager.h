@@ -23,7 +23,7 @@ int registerEvent(int ev_id);
 
 int initObjects();
 int closeObjects();
-int clearObjects();
+void queueClear(void (*next)());
 
 int addObject(struct Object *obj);
 int removeObject(struct Object *obj);

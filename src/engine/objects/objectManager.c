@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void (*clearGame)();
+
 int ensureEventExists(char *function, int ev_id) {
     if (ev_id >= object_manager.event_count) {
         writeLog(LOG_OBJECTMANAGER, "objectManager::%s(): ERROR: Event id %d not in range", function, ev_id);
@@ -92,6 +94,8 @@ int registerEvent(int ev_id) {
 
 int initObjects() {
     writeLog(LOG_OBJECTMANAGER, "objectManager::initObjects(): Initializing object manager");
+    clearGame = NULL;
+
     initTree(&object_manager.insert_queue);
     initTree(&object_manager.object_list);
     initTree(&object_manager.remove_queue);
@@ -103,6 +107,44 @@ int initObjects() {
         object_manager.event_listeners[i] = NULL;
     }
 
+    return 0;
+}
+
+int clearObjects() {
+    writeLog(LOG_OBJECTMANAGER, "objectManager::clearObjects(): Clearing game state");
+    struct Iterator *it;
+
+    it = initIterator(&object_manager.insert_queue);
+    while (!done(it)) {
+        struct Object *obj = getNext(it)->data;
+        obj->close(obj);
+    }
+    closeIterator(it);
+
+    it = initIterator(&object_manager.remove_queue);
+    while (!done(it)) {
+        struct Object *obj = getNext(it)->data;
+        obj->close(obj);
+    }
+    closeIterator(it);
+
+    it = initIterator(&object_manager.object_list);
+    while (!done(it)) {
+        struct Object *obj = getNext(it)->data;
+        obj->close(obj);
+    }
+    closeIterator(it);
+
+    clearTree(&object_manager.insert_queue);
+    clearTree(&object_manager.object_list);
+    clearTree(&object_manager.remove_queue);
+
+    int i;
+    for (i = 0; i < object_manager.event_count; i++) {
+        if (object_manager.event_listeners[i] != NULL) {
+            clearTree(object_manager.event_listeners[i]);
+        }
+    }
     return 0;
 }
 
@@ -125,45 +167,9 @@ int closeObjects() {
     return 0;
 }
 
-int clearObjects() {
-    writeLog(LOG_OBJECTMANAGER, "objectManager::clearObjects(): Clearing game state");
-    struct Iterator *it;
-
-    it = initIterator(&object_manager.insert_queue);
-    while (!done(it)) {
-        struct Node *node = getNext(it);
-        closeObject(node->data);
-    }
-    closeIterator(it);
-
-    it = initIterator(&object_manager.remove_queue);
-    while (!done(it)) {
-        struct Node *node = getNext(it);
-        closeObject(node->data);
-    }
-    closeIterator(it);
-
-    it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        struct Node *node = getNext(it);
-        closeObject(node->data);
-    }
-    closeIterator(it);
-
-    clearTree(&object_manager.insert_queue);
-    clearTree(&object_manager.object_list);
-    clearTree(&object_manager.remove_queue);
-
-    int i;
-    for (i = 0; i < object_manager.event_count; i++) {
-        if (object_manager.event_listeners[i] != NULL) {
-            clearTree(object_manager.event_listeners[i]);
-        }
-    }
-    
-    return 0;
+void queueClear(void (*next)()) {
+    clearGame = next;
 }
-
 
 int addObject(struct Object *obj) {
     return insert(&object_manager.insert_queue, obj, obj->id);
@@ -176,6 +182,12 @@ int removeObject(struct Object *obj) {
 int updateObjects() {
     struct Iterator *it;
 
+    if (clearGame != NULL) {
+        clearObjects();
+        clearGame();
+        clearGame = NULL;
+    }
+
     it = initIterator(&object_manager.insert_queue);
     while (!done(it)) {
         struct Node *node = getNext(it);
@@ -186,9 +198,9 @@ int updateObjects() {
 
     it = initIterator(&object_manager.remove_queue);
     while (!done(it)) {
-        struct Node *node = getNext(it);
-        closeObject(node->data);
-        removeId(&object_manager.object_list, node->id);
+        struct Object *obj = getNext(it)->data;
+        obj->close(obj);
+        removeId(&object_manager.object_list, obj->id);
     }
     closeIterator(it);
     clearTree(&object_manager.remove_queue);

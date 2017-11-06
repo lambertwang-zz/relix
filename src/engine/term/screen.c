@@ -1,4 +1,3 @@
-
 #include "screen.h"
 #include "../constants.h"
 
@@ -22,11 +21,12 @@ void handle_winch(int sig) {
 void clearScreen(struct Screen *scr) {
     int i;
     for (i = 0; i < screen.ts.lines * screen.ts.cols; i++) {
-        screen.pixelBuffer[i].fg = 0;
-        screen.pixelBuffer[i].bg = 0;
+        screen.pixelBuffer[i].fg = 16;
+        screen.pixelBuffer[i].bg = 16;
         screen.pixelBuffer[i].c_bg = COLOR_BLANK;
         screen.pixelBuffer[i].c_bg = COLOR_BLANK;
         screen.pixelBuffer[i].chr = ' ';
+        screen.pixelBuffer[i].id = -1;
     }
 
 }
@@ -59,6 +59,8 @@ struct Screen *initScreen() {
 
         // Hide the cursor
         printf("\e[?25l");
+        // Bold text
+        printf("\e[1m");
     }
 
     screen.times_init++;
@@ -102,6 +104,8 @@ int closeScreen() {
     printf("\e[2J");
     // Move cursor to top
     printf("\e[1;1H");
+    // Reset text attributes
+    printf("\e[0m");
     fflush(stdout);
     return 0;
 }
@@ -176,32 +180,6 @@ int swapScreen() {
 
     free(buffer);
     
-    return 0;
-}
-
-// Assumes p color values are precomputed
-int putPixel(int x, int y, Pixel p) {
-    unsigned int index = x + y * screen.ts.cols;
-    screen.pixelBuffer[index] = p;
-    return 0;
-}
-
-// Perform alpha compositing
-// Ignores p.bg
-int putPixelA(int x, int y, Pixel p) {
-    unsigned int index = x + y * screen.ts.cols;
-
-    // BG pixel is always opaque
-    p.c_bg = alphaComposite(p.c_bg, screen.pixelBuffer[index].c_bg);
-    p.bg = rgbToTerm(p.c_bg);
-    screen.pixelBuffer[index] = p;
-    return 0;
-}
-
-int putPixelRgb(int x, int y, Color c) {
-    unsigned int index = x + y * screen.ts.cols;
-    screen.pixelBuffer[index].bg = rgbToTerm(c);
-    screen.pixelBuffer[index].fg = rgbToTerm(c);
     return 0;
 }
 

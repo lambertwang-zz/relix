@@ -1,5 +1,5 @@
-#include "../src/engine/log/log.h"
-#include "../src/engine/list/tree.h"
+#include "log/log.h"
+#include "list/tree.h"
 
 #include <signal.h>
 #include <stdlib.h>

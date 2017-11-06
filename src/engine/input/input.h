@@ -31,10 +31,10 @@ int closeInput();
 int readInput();
 
 typedef struct MouseEvent {
-    unsigned char value;
     unsigned char status;
     int x;
     int y;
+    int value;
 } MouseEvent;
 
 typedef struct KeyboardEvent {

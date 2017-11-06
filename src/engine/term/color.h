@@ -3,6 +3,10 @@
 
 #define COLOR_BLANK (Color){0, 0, 0, 1.0}
 #define COLOR_EMPTY (Color){0, 0, 0, 0.0}
+#define COLOR_WHITE (Color){255, 255, 255, 1.0}
+#define COLOR_RED (Color){255, 0, 0, 1.0}
+#define COLOR_GREEN (Color){0, 255, 0, 1.0}
+#define COLOR_BLUE (Color){0, 0, 255, 1.0}
 
 typedef struct Color {
     unsigned char r;
@@ -21,6 +25,7 @@ typedef struct Pixel {
     Color c_bg;
 
     char chr;
+    int id;
 } Pixel;
 
 // Alpha is ignored when converting hsl/rgv to term color code

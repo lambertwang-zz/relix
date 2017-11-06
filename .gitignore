@@ -2,6 +2,7 @@
 .vscode*
 *.log
 *.swp
+.syntastic_c_config
 
 relix
 test/tree

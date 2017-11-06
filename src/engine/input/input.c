@@ -65,7 +65,16 @@ int createKeyboardEvent(char chr, int type) {
     return 0;
 }
 
-void createMouseEvent() {
+int createMouseEvent(int x, int y, int button, char status) {
+    Event ev;
+    ev.id = EVENT_MOUSE;
+    ev.data = malloc(sizeof(MouseEvent));
+    ((MouseEvent *) ev.data)->x = x - 1;
+    ((MouseEvent *) ev.data)->y = y - 1;
+    ((MouseEvent *) ev.data)->value = button;
+    ((MouseEvent *) ev.data)->status = status;
+    sendEvent(ev);
+    return 0;
 }
 
 char readSgrValue(char *buff) {
@@ -87,16 +96,17 @@ int csiMouse() {
     char button_str[SGR_BUFF_LEN];
     char x_str[SGR_BUFF_LEN];
     char y_str[SGR_BUFF_LEN];
+    char buff;
 
     readSgrValue(button_str);
     readSgrValue(x_str);
-    readSgrValue(y_str);
+    buff = readSgrValue(y_str);
 
     writeLog(LOG_INPUT_V, "input::csoMouse(): Mouse: Button: %s X: %s Y: %s", button_str, x_str, y_str);
 #ifdef DEBUG_INPUT
     printf("Button: %s X: %s Y: %s\n", button_str, x_str, y_str);
 #endif
-    return 0;
+    return createMouseEvent(atoi(x_str), atoi(y_str), atoi(button_str), buff);
 }
 
 int csiArrow(char code) {
@@ -116,7 +126,7 @@ int csi() {
             case ARROW_LEFT:
                 return csiArrow(buff);
             default:
-                writeLog(LOG_INPUT_V, "input::csi(): Unsupported csi character: '%d'", buff);
+                writeLog(LOG_INPUT, "input::csi(): Unsupported csi character: '%d'", buff);
         }
     }
     return 1;
@@ -125,8 +135,11 @@ int csi() {
 int escape() {
     char buff;
     if(read(0, &buff, 1)) {
-        if (buff == '[') {
-            return csi();
+        switch (buff) {
+            case '[':
+                return csi();
+            default:
+                writeLog(LOG_INPUT, "input::escape(): Unsupported escape character: '%d'", buff);
         }
     }
     return 1;
@@ -142,15 +155,14 @@ int captureInput() {
         if (read_result == -1) {
             return read_result;
         }
+#ifdef DEBUG_INPUT
+        printf("%d\n", buff);
+#endif
         if (buff == '\e') {
             return escape();
-        } else {
-            writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %d", buff);
-#ifdef DEBUG_INPUT
-            printf("%d\n", buff);
-#endif
-            return createKeyboardEvent(buff, KEYBOARD_NORMAL);
         }
+        writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %d", buff);
+        return createKeyboardEvent(buff, KEYBOARD_NORMAL);
     } while (!read_result);
     return 1;
 }

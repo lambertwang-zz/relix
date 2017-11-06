@@ -1,9 +1,12 @@
-CC = gcc
-
 FLAGS = -Wall
 
 SRC_LOC = src/
+ENGINE_LOC = $(SRC_LOC)engine/
 TEST_LOC = test/
+
+INCLUDE = -I$(ENGINE_LOC)
+
+CC = gcc $(FLAGS) $(INCLUDE)
 
 EXECUTABLE = relix
 
@@ -18,15 +21,15 @@ TEST_EXE = $(TEST:.c=)
 all: clear clean_exe relix 
 
 relix: $(SRC_OBJ)
-	$(CC) $(FLAGS) $(SRC_LOC)$(EXECUTABLE).c -o $(EXECUTABLE) $(SRC_OBJ)
+	$(CC) $(SRC_LOC)$(EXECUTABLE).c -o $(EXECUTABLE) $(SRC_OBJ)
 
 .c.o:
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) -c $< -o $@
 
 test: clear clean relix $(TEST_EXE)
 
 $(TEST_EXE):
-	$(CC) $(FLAGS) $@.c -o $@ $(SRC_OBJ)
+	$(CC) $@.c -o $@ $(SRC_OBJ)
 
 clear:
 	clear

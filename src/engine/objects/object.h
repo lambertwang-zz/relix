@@ -13,6 +13,7 @@ struct Object {
 
     int (*render)(const struct Object *);
     int (*update)(const struct Object *);
+    void (*close)(struct Object *);
 
     int (**event_listeners)(struct Object *m, const Event ev);
     int events_size;
@@ -21,10 +22,11 @@ struct Object {
 };
 
 int render_default(const struct Object *o);
+int update_default(const struct Object *o);
+void close_default(struct Object *o);
 
 int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, const Event ev));
 void initObject(struct Object *o);
-void closeObject(struct Object *o);
 
 #endif
 

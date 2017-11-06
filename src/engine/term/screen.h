@@ -29,8 +29,5 @@ int closeScreen();
 
 int swapScreen();
 
-int putPixel(int x, int y, Pixel p);
-int putPixelRgb(int x, int y, Color c);
-
 #endif
 

@@ -1,9 +1,9 @@
 #include "object.h"
 #include "objectManager.h"
-#include "../constants.h"
-#include "../term/screen.h"
-
-#include "../log/log.h"
+#include "constants.h"
+#include "render/render.h"
+#include "term/screen.h"
+#include "log/log.h"
 
 #include "stdlib.h"
 #include "string.h"
@@ -48,33 +48,7 @@ int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Ev
     return 0;
 }
 
-void initObject(struct Object *o) {
-    static int id_iterator = 1;
-    o->id = id_iterator++;
-
-    o->pos.x = 0;
-    o->pos.y = 0;
-
-    o->pix.fg = 0;
-    o->pix.bg = 0;
-    o->pix.c_fg = COLOR_EMPTY;
-    o->pix.c_bg = COLOR_EMPTY;
-    o->pix.chr = ' ';
-
-    o->render = &render_default;
-    o->update = &update_default;
-
-    o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
-    o->events_size = INIT_EVENT_COUNT;
-    int i;
-    for (i = 0; i < o->events_size; i++) {
-        o->event_listeners[i] = NULL;
-    }
-
-    o->data = NULL;
-}
-
-void closeObject(struct Object *o) {
+void close_default(struct Object *o) {
     int i;
     for (i = 0; i < o->events_size; i++) {
         if (o->event_listeners[i] != NULL) {
@@ -85,5 +59,29 @@ void closeObject(struct Object *o) {
     if (o->data != NULL) {
         free(o->data);
     }
+    free(o);
+}
+
+void initObject(struct Object *o) {
+    static int id_iterator = 1;
+    o->id = id_iterator++;
+
+    o->pos.x = 0;
+    o->pos.y = 0;
+
+    o->pix = (Pixel){0, 0, COLOR_EMPTY, COLOR_EMPTY, ' ', o->id};
+
+    o->render = &render_default;
+    o->update = &update_default;
+    o->close = &close_default;
+
+    o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
+    o->events_size = INIT_EVENT_COUNT;
+    int i;
+    for (i = 0; i < o->events_size; i++) {
+        o->event_listeners[i] = NULL;
+    }
+
+    o->data = NULL;
 }
 

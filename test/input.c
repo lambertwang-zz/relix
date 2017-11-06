@@ -1,5 +1,5 @@
-#include "../src/engine/log/log.h"
-#include "../src/engine/input/input.h"
+#include "log/log.h"
+#include "input/input.h"
 
 #include <signal.h>
 #include <stdlib.h>

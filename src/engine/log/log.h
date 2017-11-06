@@ -17,6 +17,7 @@
 #define LOG_INPUT 0x00000004
 #define LOG_INPUT_V 0x00000400
 #define LOG_LOG 0x00000008
+#define LOG_GAME_V 0x00001000
 
 FILE *relixLogFile;
 int flushLog;
