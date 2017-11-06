@@ -31,7 +31,7 @@ struct Node {
     struct Tree *tree;
 };
 
-int validateTree(const struct Tree *tree);
+void validateTree(const struct Tree *tree);
 
 void printTree(const struct Node *node);
 void printNode(const struct Node *node);

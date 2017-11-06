@@ -33,9 +33,9 @@ void clearScreen(struct Screen *scr) {
 
 void setCamera(Point loc) {
     screen.camera = loc;
-    screen.camera_bounds.top = loc.y - screen.ts.lines >> 1;
+    screen.camera_bounds.top = loc.y - (screen.ts.lines >> 1);
     screen.camera_bounds.bottom = screen.camera_bounds.top + screen.ts.lines;
-    screen.camera_bounds.left = loc.x - screen.ts.cols >> 1;
+    screen.camera_bounds.left = loc.x - (screen.ts.cols >> 1);
     screen.camera_bounds.right = screen.camera_bounds.left + screen.ts.cols;
 }
 

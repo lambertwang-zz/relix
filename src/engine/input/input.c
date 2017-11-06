@@ -1,5 +1,5 @@
 #include "input.h"
-#include "../actors/objectManager.h"
+#include "../objects/objectManager.h"
 #include "../log/log.h"
 #include "../constants.h"
 
@@ -35,7 +35,9 @@ int initInput() {
 
     // Register events with the worldmanager
     registerEvent(EVENT_KEYBOARD);
-    // registerEvent(EVENT_MOUSE);
+    registerEvent(EVENT_MOUSE);
+
+    return 0;
 }
 
 int closeInput() {
@@ -49,6 +51,8 @@ int closeInput() {
     // Restore old settings
     tcsetattr(0, TCSANOW, &prev_settings);
     fcntl(STDIN_FILENO, F_SETFL, old_fl);
+
+    return 0;
 }
 
 int createKeyboardEvent(char chr, int type) {
@@ -80,17 +84,13 @@ char readSgrValue(char *buff) {
 }
 
 int csiMouse() {
-    char buff;
-
     char button_str[SGR_BUFF_LEN];
     char x_str[SGR_BUFF_LEN];
     char y_str[SGR_BUFF_LEN];
-    unsigned char button_type;
 
     readSgrValue(button_str);
     readSgrValue(x_str);
-    buff = readSgrValue(y_str);
-    button_type = buff;
+    readSgrValue(y_str);
 
     writeLog(LOG_INPUT_V, "input::csoMouse(): Mouse: Button: %s X: %s Y: %s", button_str, x_str, y_str);
 #ifdef DEBUG_INPUT

@@ -21,6 +21,7 @@ char *timeString() {
 int initClock(struct Clock *c) {
     // Initialize time to current time
     c->previous_time = getCurrentTime();
+    return 0;
 }
 
 unsigned long split(struct Clock *c) {

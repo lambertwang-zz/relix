@@ -4,7 +4,7 @@
 #include "../constants.h"
 #include "../input/input.h"
 #include "../log/log.h"
-#include "../actors/objectManager.h"
+#include "../objects/objectManager.h"
 #include "../term/screen.h"
 #include "../term/term.h"
 #include "../utility/clock.h"
@@ -24,6 +24,7 @@ int initGame() {
     initInput();
 
     signal(SIGINT, closeGame);
+    return 0;
 }
 
 void closeGame(int a) {

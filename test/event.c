@@ -1,19 +1,25 @@
-#include "../src/game/game.h"
-#include "../src/actors/object.h"
-#include "../src/actors/objectManager.h"
-#include "../src/constants.h"
-#include "../src/log/log.h"
-#include "../src/input/input.h"
+#include "../src/engine/game/game.h"
+#include "../src/engine/objects/object.h"
+#include "../src/engine/objects/objectManager.h"
+#include "../src/engine/constants.h"
+#include "../src/engine/log/log.h"
+#include "../src/engine/input/input.h"
 
 int keyboardListener(struct Object *o, Event ev) {
     writeLog(10, "Received keyboard event");
     KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
     switch (k_ev.type) {
         case KEYBOARD_NORMAL:
+            switch (k_ev.value) {
+                case 'q':
+                case 'Q':
+                    clearObjects();
+                    break;
+            }
             return 0;
         case KEYBOARD_ESCAPE:
             writeLog(10, "Received keyboard escape %d", k_ev.value);
-            switch(k_ev.value) {
+            switch (k_ev.value) {
                 case ARROW_UP:
                     o->pos.y--;
                     break;

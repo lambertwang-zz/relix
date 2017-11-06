@@ -1,5 +1,7 @@
 CC = gcc
 
+FLAGS = -Wall
+
 SRC_LOC = src/
 TEST_LOC = test/
 
@@ -16,15 +18,15 @@ TEST_EXE = $(TEST:.c=)
 all: clear clean_exe relix 
 
 relix: $(SRC_OBJ)
-	$(CC) $(SRC_LOC)$(EXECUTABLE).c -o $(EXECUTABLE) $(SRC_OBJ)
+	$(CC) $(FLAGS) $(SRC_LOC)$(EXECUTABLE).c -o $(EXECUTABLE) $(SRC_OBJ)
 
 .c.o:
-	$(CC) -c $< -o $@
+	$(CC) $(FLAGS) -c $< -o $@
 
-test: clear clean $(SRC_OBJ) $(TEST_EXE)
+test: clear clean relix $(TEST_EXE)
 
 $(TEST_EXE):
-	$(CC) $@.c -o $@ $(SRC_OBJ)
+	$(CC) $(FLAGS) $@.c -o $@ $(SRC_OBJ)
 
 clear:
 	clear

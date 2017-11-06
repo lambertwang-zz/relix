@@ -1,10 +1,10 @@
-#include "../src/log/log.h"
+#include "../src/engine/log/log.h"
+#include "../src/engine/list/tree.h"
 
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../src/list/tree.h"
 
 void terminate(int a) {
     closeLog();

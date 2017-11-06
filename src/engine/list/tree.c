@@ -19,7 +19,7 @@ int checkRedChildren(const struct Node *node) {
     if (node->isRed) {
         if ((node->left != NULL && node->left->isRed) ||
             (node->right != NULL && node->right->isRed)) {
-            writeLog(10, "ERROR: RED CHILDREN MUST BE BLACK");
+            writeLog(0xffff, "ERROR: RED CHILDREN MUST BE BLACK");
             printTree(node);
             return 1;
         }
@@ -52,59 +52,58 @@ int checkNilDist(const struct Node *node) {
         return 0;
     }
     if (minDistToNil(node) != maxDistToNil(node)) {
-        writeLog(10, "ERROR: DISTANCE TO NIL INCONSISTENT %d!!", node->id);
+        writeLog(0xffff, "ERROR: DISTANCE TO NIL INCONSISTENT %d!!", node->id);
         printTree(node);
         return 1;
     }
     return 0;
 }
 
-int checkRefs(const struct Node *node) {
-    if (node == NULL) {
-        return 1;
-    }
-    checkRefs(node->right);
-	char buffer[512];
-	int i, c = 0;
-	for (i = 0; i < depth(node); i++) {
-		c += sprintf(buffer + c, "\t");
-	}
-	sprintf(buffer + c, 
-		"%d %s, P: %d, L: %d, R: %d", node->id, 
-        node->isRed ? "red" : "black",
-		node->parent != NULL ? node->parent->id : -1,
-		node->left!= NULL ? node->left->id : -1,
-		node->right!= NULL ? node->right->id : -1);
+void checkRefs(const struct Node *node) {
+    if (node != NULL) {
+        checkRefs(node->right);
+	    char buffer[512];
+	    int i, c = 0;
+	    for (i = 0; i < depth(node); i++) {
+	    	c += sprintf(buffer + c, "\t");
+	    }
+	    sprintf(buffer + c, 
+	    	"%d %s, P: %d, L: %d, R: %d", node->id, 
+            node->isRed ? "red" : "black",
+	    	node->parent != NULL ? node->parent->id : -1,
+	    	node->left!= NULL ? node->left->id : -1,
+	    	node->right!= NULL ? node->right->id : -1);
 
-    if (node->left != NULL && node->right != NULL && node->left->id == node->right->id) {
-	    writeLog(10, "DANGER!");
-    }
-    if (node->left != NULL && node->parent != NULL && node->left->id == node->parent->id) {
-	    writeLog(10, "DANGER!");
-    }
-    if (node->parent != NULL && node->right != NULL && node->parent->id == node->right->id) {
-	    writeLog(10, "DANGER!");
-    }
-    if (!(node->parent == NULL || (node->parent != NULL && node->parent->left != NULL && node->id == node->parent->left->id) ||
-          (node->parent != NULL && node->parent->right!= NULL && node->id == node->parent->right->id))) {
-	    writeLog(10, "DANGER!");
-    }
-    if (node->left != NULL && node->left->parent->id != node->id) {
-	    writeLog(10, "DANGER!");
-    }
-    if (node->right != NULL && node->right->parent->id != node->id) {
-	    writeLog(10, "DANGER!");
-    }
+        if (node->left != NULL && node->right != NULL && node->left->id == node->right->id) {
+	        writeLog(0xffff, "DANGER!");
+        }
+        if (node->left != NULL && node->parent != NULL && node->left->id == node->parent->id) {
+	        writeLog(0xffff, "DANGER!");
+        }
+        if (node->parent != NULL && node->right != NULL && node->parent->id == node->right->id) {
+	        writeLog(0xffff, "DANGER!");
+        }
+        if (!(node->parent == NULL || (node->parent != NULL && node->parent->left != NULL && node->id == node->parent->left->id) ||
+              (node->parent != NULL && node->parent->right!= NULL && node->id == node->parent->right->id))) {
+	        writeLog(0xffff, "DANGER!");
+        }
+        if (node->left != NULL && node->left->parent->id != node->id) {
+	        writeLog(0xffff, "DANGER!");
+        }
+        if (node->right != NULL && node->right->parent->id != node->id) {
+	        writeLog(0xffff, "DANGER!");
+        }
 
-    fflush(stdout);
-	writeLog(10, buffer);
-    checkRefs(node->left);
+        fflush(stdout);
+	    writeLog(10, buffer);
+        checkRefs(node->left);
+    }
 }
 
-int validateTree(const struct Tree *tree) {
+void validateTree(const struct Tree *tree) {
     // Root must be black
     if (tree->root != NULL && tree->root->isRed) {
-        writeLog(10, "ERROR: ROOT NOT BLACK");
+        writeLog(0xffff, "ERROR: ROOT NOT BLACK");
         printTree(tree->root);
     }
     checkRedChildren(tree->root);

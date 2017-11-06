@@ -1,11 +1,11 @@
-#include "../src/log/log.h"
+#include "../src/engine/log/log.h"
+#include "../src/engine/input/input.h"
 
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
-#include "../src/input/input.h"
 
 void terminate(int a) {
     closeInput();

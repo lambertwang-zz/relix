@@ -32,13 +32,14 @@ int render_default(const struct Object *o) {
 
 int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Event)) {
     if (ev_id == o->events_size) {
+        writeLog(LOG_OBJECTMANAGER, "object::listenEvent(): Expanding object event list size %d for event id %d", o->events_size, ev_id);
         int (**tmp_l)(struct Object *, Event) = malloc(sizeof(int (*)(struct Object *, Event)) * o->events_size * 2);
         memcpy(tmp_l, o->event_listeners, sizeof(int (*)(struct Object *, Event)) * o->events_size);
         free(o->event_listeners);
         o->event_listeners = tmp_l;
         int i;
         for (i = o->events_size; i < o->events_size * 2; i++) {
-            o->event_listeners[i] == NULL;
+            o->event_listeners[i] = NULL;
         }
         o->events_size *= 2;
     }
@@ -67,7 +68,7 @@ void initObject(struct Object *o) {
     o->events_size = INIT_EVENT_COUNT;
     int i;
     for (i = 0; i < o->events_size; i++) {
-        o->event_listeners[i] == NULL;
+        o->event_listeners[i] = NULL;
     }
 
     o->data = NULL;
@@ -75,7 +76,7 @@ void initObject(struct Object *o) {
 
 void closeObject(struct Object *o) {
     int i;
-    for (i = 0; i < o->events_size; o++) {
+    for (i = 0; i < o->events_size; i++) {
         if (o->event_listeners[i] != NULL) {
             unregisterListener(o, i);
         }

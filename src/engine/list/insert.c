@@ -49,7 +49,6 @@ void insert3_next(struct Node *node) {
 }
 
 void insert3(struct Node *node) {
-    struct Node *p = node->parent;
     struct Node *g = grandParent(node);
 
     if (g->left != NULL && node == g->left->right) {
