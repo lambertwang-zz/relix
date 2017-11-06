@@ -28,6 +28,9 @@ int oputRect(int id, int x, int y, Rect rect, Color bg) {
 // Assumes p color values are precomputed
 int putPixel(int x, int y, Pixel p) {
     unsigned int index = x + y * screen.ts.cols;
+    if (screen.pixelBuffer[index].depth > p.depth) {
+        return 1;
+    }
     screen.pixelBuffer[index] = p;
     return 0;
 }
@@ -36,6 +39,10 @@ int putPixel(int x, int y, Pixel p) {
 // Ignores p.bg
 int putPixelA(int x, int y, Pixel p) {
     unsigned int index = x + y * screen.ts.cols;
+
+    if (screen.pixelBuffer[index].depth > p.depth) {
+        return 1;
+    }
 
     // BG pixel is always opaque
     p.c_bg = alphaComposite(p.c_bg, screen.pixelBuffer[index].c_bg);
