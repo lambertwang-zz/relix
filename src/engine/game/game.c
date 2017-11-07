@@ -1,14 +1,15 @@
 
 #include "game.h"
 
-#include "../constants.h"
-#include "../input/input.h"
-#include "../log/log.h"
-#include "../objects/objectManager.h"
-#include "../term/screen.h"
-#include "../term/term.h"
-#include "../utility/clock.h"
-#include "../utility/utility.h"
+#include "constants.h"
+#include "input/input.h"
+#include "log/log.h"
+#include "objects/objectManager.h"
+#include "term/screen.h"
+#include "term/term.h"
+#include "utility/clock.h"
+#include "utility/random.h"
+#include "utility/utility.h"
 
 #include <signal.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@ int initGame() {
     frame_count = 0;
 
     initLog();
+    initRandom_s(9876);
     // Init objects and event registration
     initObjects();
     initScreen();

@@ -71,6 +71,9 @@ void initObject(struct Object *o) {
     o->pos.z = 0;
 
     o->pix = (Pixel){0, 0, COLOR_EMPTY, COLOR_EMPTY, ' ', o->id, o->pos.z};
+    o->pix = PIXEL_NULL;
+    o->pix.id = o->id;
+    o->pix.depth = o->pos.z;
 
     o->render = &render_default;
     o->update = &update_default;

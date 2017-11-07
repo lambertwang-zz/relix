@@ -1,14 +1,96 @@
 #include "map.h"
 
+#include "utility/random.h"
+
 #include <stdlib.h>
 
-void map_tunneling(struct Map *p_map,
-                unsigned int width,
-                unsigned int height) {
-    p_map = malloc(sizeof(struct Map));
-    p_map->tiles = malloc(sizeof(struct Tile) * width * height);
-    p_map->width = width;
-    p_map->height = height;
+#define MAX_ROOM_SIZE 15
+#define MIN_ROOM_SIZE 8
+#define MAX_ROOMS 2048
+#define MAX_ROOM_DENSITY 0.06
+
+void fill_room(struct Map *map, Rect room) {
+    int i, j;
+
+    for (j = room.top; j < room.bottom; j++) {
+        for (i = room.left; i < room.right; i++) {
+            struct Tile *tile = &map->tiles[i + j * map->width];
+            tile->solid = SOLID;
+        }
+    }
+}
+
+void fill_line(struct Map *map, Line line) {
+    int i, j;
+
+    // Assume only vertical and horizontal lines
+    for (j = line.y1 < line.y2 ? line.y1 : line.y2; j <= (line.y1 < line.y2 ? line.y2 : line.y1); j++) {
+        for (i = line.x1 < line.x2 ? line.x1 : line.x2; i <= (line.x1 < line.x2 ? line.x2 : line.x1); i++) {
+            struct Tile *tile = &map->tiles[i + j * map->width];
+            tile->solid = SOLID;
+        }
+    }
+}
+
+void map_tunneling(struct Map *map) {
+    int i, j;
+
+    int open_space = 0;
+    int room_count = 0;
+    Rect rooms[MAX_ROOMS];
+    for (i = 0; i < MAX_ROOMS; i++) {
+        // Generate random dimensions and random location
+        int w = drandom_i(MIN_ROOM_SIZE, MAX_ROOM_SIZE),
+            h = drandom_i(MIN_ROOM_SIZE, MAX_ROOM_SIZE) >> 1;
+        int x = drandom_i(0, map->width - w - 1),
+            y = drandom_i(0, map->height - h - 1);
+        Rect new_room = (Rect){y, y + h, x, x + w};
+
+        // Check room for collisions
+        int room_valid = 1;
+        for (j = 0; j < room_count; j++) {
+            if (rectInRect(new_room, rooms[j])) {
+                room_valid = 0;
+            }
+        }
+        if (room_valid) {
+            fill_room(map, new_room);
+            rooms[room_count] = new_room;
+            open_space += h * w;
+            if (room_count > 0) {
+                int x1 = (rooms[room_count - 1].left + rooms[room_count - 1].right) / 2,
+                    y1 = (rooms[room_count - 1].top + rooms[room_count - 1].bottom) / 2,
+                    x2 = (rooms[room_count].left + rooms[room_count].right) / 2,
+                    y2 = (rooms[room_count].top + rooms[room_count].bottom) / 2;
+                if (drandom_i(0, 1)) {
+                    fill_line(map, (Line){x1, y1, x1, y2});
+                    fill_line(map, (Line){x2, y2, x1, y2});
+                } else {
+                    fill_line(map, (Line){x1, y1, x2, y1});
+                    fill_line(map, (Line){x2, y2, x2, y1});
+                }
+            }
+
+            room_count++;
+
+
+            if (open_space > MAX_ROOM_DENSITY * map->width * map->height) {
+                break;
+            }
+        }
+    }
+    for (i = 0; i < map->height; i++) {
+        for (j = 0; j < map->width; j++) {
+            struct Tile *tile = &map->tiles[j + i * map->width];
+            if (tile->solid) {
+                Pixel *pix = &map->tiles[j + i * map->width].p;
+                pix->c_bg = (Color){128, 128, 128, 1.0};
+                pix->bg = rgbToTerm(pix->c_bg);
+                pix->depth = 0;
+                pix->chr = ' ';
+            }
+        }
+    }
 }
 /*
 '''
@@ -19,24 +101,14 @@ http://www.roguebasin.com/index.php?title=Complete_Roguelike_Tutorial,_using_pyt
 
 Requires random.randint() and the Rect class defined below.
 '''
-def __init__(self):
-self.level = []
-self.ROOM_MAX_SIZE = 15
-self.ROOM_MIN_SIZE = 6
-self.MAX_ROOMS = 30
 # TODO: raise an error if any necessary classes are missing
 def generateLevel(self, mapWidth, mapHeight):
-# Creates an empty 2D array or clears existing array
-self.level = [[1
-for y in range(mapHeight)]
-for x in range(mapWidth)]
-rooms = []
 num_rooms = 0
 for r in range(self.MAX_ROOMS):
 # random width and height
 w = random.randint(self.ROOM_MIN_SIZE,self.ROOM_MAX_SIZE)
 h = random.randint(self.ROOM_MIN_SIZE,self.ROOM_MAX_SIZE)
-# random position within map boundries
+# random position within map boundr
 x = random.randint(0, MAP_WIDTH - w -1)
 y = random.randint(0, MAP_HEIGHT - h -1)
 

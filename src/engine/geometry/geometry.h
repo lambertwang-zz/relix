@@ -7,6 +7,13 @@ typedef struct Point {
     int z;
 } Point;
 
+typedef struct Line {
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+} Line;
+
 // Note: top < bottom, left < right
 typedef struct Rect {
     int top;
@@ -16,6 +23,7 @@ typedef struct Rect {
 } Rect;
 
 int pointInRect(Point p, Rect r);
+int rectInRect(Rect a, Rect b);
 
 #endif
 

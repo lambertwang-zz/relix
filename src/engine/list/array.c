@@ -16,6 +16,7 @@ int closeArray(struct Array *array) {
 }
 
 void *getDataArray(struct Array *array, unsigned int index) {
+    return array->data[index];
 }
 
 int push(struct Array *array, void *data) {

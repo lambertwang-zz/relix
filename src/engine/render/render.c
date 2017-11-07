@@ -27,6 +27,9 @@ int oputRect(int id, int x, int y, Rect rect, Color bg) {
 
 // Assumes p color values are precomputed
 int putPixel(int x, int y, Pixel p) {
+    if (x < 0 || y < 0 || y >= screen.ts.lines || x >= screen.ts.cols) {
+        return 1;
+    }
     unsigned int index = x + y * screen.ts.cols;
     if (screen.pixelBuffer[index].depth > p.depth) {
         return 1;
@@ -38,6 +41,9 @@ int putPixel(int x, int y, Pixel p) {
 // Perform alpha compositing
 // Ignores p.bg
 int putPixelA(int x, int y, Pixel p) {
+    if (x < 0 || y < 0 || y >= screen.ts.lines || x >= screen.ts.cols) {
+        return 1;
+    }
     unsigned int index = x + y * screen.ts.cols;
 
     if (screen.pixelBuffer[index].depth > p.depth) {
@@ -53,6 +59,9 @@ int putPixelA(int x, int y, Pixel p) {
 
 // Only draw background
 int putPixelABg(int x, int y, Pixel p) {
+    if (x < 0 || y < 0 || y >= screen.ts.lines || x >= screen.ts.cols) {
+        return 1;
+    }
     unsigned int index = x + y * screen.ts.cols;
 
     // BG pixel is always opaque
@@ -63,6 +72,9 @@ int putPixelABg(int x, int y, Pixel p) {
 }
 
 int putPixelRgb(int x, int y, Color c) {
+    if (x < 0 || y < 0 || y >= screen.ts.lines || x >= screen.ts.cols) {
+        return 1;
+    }
     unsigned int index = x + y * screen.ts.cols;
     screen.pixelBuffer[index].bg = rgbToTerm(c);
     screen.pixelBuffer[index].fg = rgbToTerm(c);
