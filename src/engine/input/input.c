@@ -6,15 +6,31 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>
 #include <unistd.h>
 
+#if defined __linux__
+#include <termios.h>
+#elif defined _WIN32 || defined _WIN64
+#include <windows.h>
+#else
+#error "unknown platform"
+#endif
+
+
+#if defined __linux__
 static struct termios prev_settings;
 static int old_fl;
+#elif defined _WIN32 || defined _WIN64
+HANDLE h_stdin;
+DWORD prev_settings;
+#else
+#error "unknown platform"
+#endif
 
 int initInput() {
     writeLog(LOG_INPUT, "input::initInput(): Initialzing input");
 
+#if defined __linux__
     struct termios new_settings;
     // Save old termios settings
     tcgetattr(0, &prev_settings);
@@ -38,6 +54,36 @@ int initInput() {
     registerEvent(EVENT_MOUSE);
 
     return 0;
+#elif defined _WIN32 || defined _WIN64
+    h_stdin = GetStdHandle(STD_INPUT_HANDLE);
+    if (h_stdin == INVALID_HANDLE_VALUE) {
+        writeLog(LOG_INPUT, "input::initInput(): Error: Unable to get stdin handle.");
+        return -2;
+
+    }
+
+    GetConsoleMode(h_stdin, &prev_settings);
+    DWORD new_settings = prev_settings;
+    new_settings &= ~ENABLE_ECHO_INPUT;
+    new_settings &= ~ENABLE_LINE_INPUT;
+    new_settings |= ENABLE_MOUSE_INPUT;
+    SetConsoleMode(h_stdin, new_settings);
+
+    // Begin reporting mouse movements
+    // printf("\e[1;0'z");
+    printf("\e[?1003h");
+    printf("\e[?1006h");
+    fflush(stdout);
+
+    // Register events with the worldmanager
+    registerEvent(EVENT_KEYBOARD);
+    registerEvent(EVENT_MOUSE);
+
+    return 0;
+#else
+    writeLog(LOG_INPUT, "input::initInput(): Error: Unknown platform; cannot initialize input.");
+    return -1;
+#endif
 }
 
 int closeInput() {
@@ -48,10 +94,17 @@ int closeInput() {
     printf("\e[?1006l");
     fflush(stdout);
     
+#if defined __linux__
     // Restore old settings
     tcsetattr(0, TCSANOW, &prev_settings);
     fcntl(STDIN_FILENO, F_SETFL, old_fl);
-
+#elif defined _WIN32 || defined _WIN64
+    // Restore old settings
+    SetConsoleMode(h_stdin, prev_settings);
+#else
+    writeLog(LOG_INPUT, "input::closeInput(): Error: Unknown platform; cannot close input.");
+    return -1;
+#endif
     return 0;
 }
 

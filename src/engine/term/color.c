@@ -1,10 +1,25 @@
 #include "color.h"
 
 unsigned char rgbToTerm(Color c) {
+    if (c.r == c.b && c.b == c.g) {
+        int g_t = (int)(c.r / 9.81);
+        switch (g_t) {
+            case 0:
+                return 16;
+            case 25:
+                return 231;
+            default:
+                return 231 + g_t;
+        }
+    }
     int r_t = c.r / 43;
     int g_t = c.g / 43;
     int b_t = c.b / 43;
     return 16 + b_t + g_t * 6 + r_t * 36;
+}
+
+unsigned char hslToTerm(Color c) {
+    return rgbToTerm(hslToRgb(c));
 }
 
 Color alphaComposite(Color a, Color b) {

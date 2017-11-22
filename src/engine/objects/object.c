@@ -8,12 +8,13 @@
 #include "stdlib.h"
 #include "string.h"
 
-int update_default(const struct Object *o) {
+int update_default(struct Object *o) {
     // pass
     return 0;
 }
 
-int render_default(const struct Object *o) {
+int render_default(struct Object *o) {
+    o->pix.depth = o->pos.z;
     // Position on the screen
     Point rel_pos = (Point){
             o->pos.x - screen.camera_bounds.left,
@@ -23,7 +24,7 @@ int render_default(const struct Object *o) {
     if (rel_pos.x >= 0 && rel_pos.y >= 0 &&
         rel_pos.x < screen.ts.cols &&
         rel_pos.y < screen.ts.lines) {
-        putPixel(rel_pos.x, rel_pos.y, o->pix);
+        putPixelA(rel_pos.x, rel_pos.y, o->pix);
         return 1;
     }
 
@@ -65,12 +66,12 @@ void close_default(struct Object *o) {
 void initObject(struct Object *o) {
     static int id_iterator = 1;
     o->id = id_iterator++;
+    strcpy(o->type, "");
 
     o->pos.x = 0;
     o->pos.y = 0;
     o->pos.z = 0;
 
-    o->pix = (Pixel){0, 0, COLOR_EMPTY, COLOR_EMPTY, ' ', o->id, o->pos.z};
     o->pix = PIXEL_NULL;
     o->pix.id = o->id;
     o->pix.depth = o->pos.z;

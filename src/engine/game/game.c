@@ -19,7 +19,7 @@ int initGame() {
     frame_count = 0;
 
     initLog();
-    initRandom_s(9876);
+    initRandom_s(9877);
     // Init objects and event registration
     initObjects();
     initScreen();

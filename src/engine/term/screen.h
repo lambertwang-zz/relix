@@ -27,6 +27,7 @@ struct Screen screen;
 struct Screen *initScreen();
 int closeScreen();
 
+void setCamera(Point loc);
 int swapScreen();
 
 #endif

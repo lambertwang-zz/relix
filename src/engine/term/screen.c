@@ -1,20 +1,38 @@
 #include "screen.h"
 #include "../constants.h"
 
-#include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+
+#if defined __linux__
+#include <pthread.h>
+#elif defined _WIN32 || defined _WIN64
+#include <windows.h>
+#endif
+
+#if defined __linux__
 pthread_mutex_t screen_lock;
+#elif defined _WIN32 || defined _WIN64
+HANDLE screen_lock;
+#endif
 
 // SIGWINCH is called when the window is resized.
 void handle_winch(int sig) {
+#if defined __linux__
     pthread_mutex_lock(&screen_lock);
+#elif defined _WIN32 || defined _WIN64
+    WaitForSingleObject(screen_lock, INFINITE);
+#endif
     initScreen();
     // signal(SIGWINCH, SIG_IGN);
+#if defined __linux__
     pthread_mutex_unlock(&screen_lock);
+#elif defined _WIN32 || defined _WIN64
+    ReleaseMutex(screen_lock);
+#endif
 }
 
 // Clears the active screen buffer
@@ -45,11 +63,15 @@ struct Screen *initScreen() {
     }
 
     if (first_init) {
+#if defined __linux__
         pthread_mutex_init(&screen_lock, NULL);
+        signal(SIGWINCH, handle_winch);
+#elif defined _WIN32 || defined _WIN64
+        screen_lock = CreateMutex(NULL, FALSE, NULL);
+#endif
 
         screen.times_init = 0;
         first_init= 0;
-        signal(SIGWINCH, handle_winch);
         // Set auto flush
         // setbuf(stdout, NULL);
 
@@ -92,6 +114,12 @@ int closeScreen() {
     free(screen.pixelBuffer);
     free(screen.prevPixelBuffer);
 
+#if defined __linux__
+    pthread_mutex_destroy(&screen_lock);
+#elif defined _WIN32 || defined _WIN64
+    closeHandle(screen_lock);
+#endif
+
     // Reset colors
     printf("\e[39m\e[49m");
     // Show cursor
@@ -117,7 +145,11 @@ int swapScreen() {
     unsigned char bg;
     char chr;
 
+#if defined __linux__
     pthread_mutex_lock(&screen_lock);
+#elif defined _WIN32 || defined _WIN64
+    WaitForSingleObject(screen_lock, INFINITE);
+#endif
 
     // Line-buffer
     char *buffer = malloc(sizeof(char) * 24 * screen.ts.cols);
@@ -169,7 +201,11 @@ int swapScreen() {
 
     clearScreen(&screen);
 
+#if defined __linux__
     pthread_mutex_unlock(&screen_lock);
+#elif defined _WIN32 || defined _WIN64
+    ReleaseMutex(screen_lock);
+#endif
 
     fwrite("\e[0m", sizeof(char), 5, stdout);
     fflush(stdout);

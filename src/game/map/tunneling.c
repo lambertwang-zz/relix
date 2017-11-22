@@ -1,21 +1,31 @@
 #include "map.h"
 
 #include "utility/random.h"
+#include "objects/objectManager.h"
 
 #include <stdlib.h>
+
+#include "../relix.h"
 
 #define MAX_ROOM_SIZE 15
 #define MIN_ROOM_SIZE 8
 #define MAX_ROOMS 2048
-#define MAX_ROOM_DENSITY 0.06
+#define MAX_ROOM_DENSITY 0.07
 
 void fill_room(struct Map *map, Rect room) {
     int i, j;
 
-    for (j = room.top; j < room.bottom; j++) {
-        for (i = room.left; i < room.right; i++) {
+    for (j = room.top + 1; j < room.bottom; j++) {
+        for (i = room.left + 1; i < room.right; i++) {
             struct Tile *tile = &map->tiles[i + j * map->width];
-            tile->solid = SOLID;
+            tile->solid = SOFT;
+            tile->type = TILE_ROOM;
+
+            Pixel *pix = &tile->p;
+            pix->c_bg = ROOM_COLOR;
+            pix->bg = rgbToTerm(pix->c_bg);
+            pix->depth = 0;
+            pix->chr = ' ';
         }
     }
 }
@@ -27,7 +37,140 @@ void fill_line(struct Map *map, Line line) {
     for (j = line.y1 < line.y2 ? line.y1 : line.y2; j <= (line.y1 < line.y2 ? line.y2 : line.y1); j++) {
         for (i = line.x1 < line.x2 ? line.x1 : line.x2; i <= (line.x1 < line.x2 ? line.x2 : line.x1); i++) {
             struct Tile *tile = &map->tiles[i + j * map->width];
-            tile->solid = SOLID;
+            if (tile->type != TILE_ROOM) {
+                tile->solid = SOFT;
+                tile->type = TILE_HALL;
+
+                Pixel *pix = &tile->p;
+                pix->c_bg = HALL_COLOR;
+                pix->bg = hslToTerm(pix->c_bg);
+                pix->depth = 0;
+                pix->chr = ' ';
+            } 
+        }
+    }
+}
+
+void putHall(struct Tile *tile) {
+    if (tile->type != TILE_ROOM) {
+        tile->solid = SOFT;
+        tile->type = TILE_HALL;
+        
+        Pixel *pix = &tile->p;
+        pix->c_bg = HALL_COLOR;
+        pix->bg = rgbToTerm(pix->c_bg);
+        pix->depth = 0;
+    }
+}
+
+struct Tile *vert_line(struct Map *map, int x, int y1, int y2, struct Tile *prev) {
+    int i;
+
+    int incr = (y2 - y1) & 0x80000000 ? -1 : 1;
+    int start = y1 + incr;
+    int end = y2 + incr;
+    for (i = start; i != end; i += incr) {
+        struct Tile *tile = &map->tiles[x + i * map->width];
+        if (prev == tile) {
+            continue;
+        }
+        struct Tile *left = NULL;
+        if (x - 1 >= 0) {
+            left = &map->tiles[x - 1 + i * map->width];
+        }
+        struct Tile *right = NULL;
+        if (x + 1 < map->width) {
+            right = &map->tiles[x + 1 + i * map->width];
+        }
+        
+        if (prev == NULL) {
+            putHall(tile);
+            if (left->type != TILE_WALL || right->type != TILE_WALL) {
+                prev = tile;
+            }
+        } else  {
+            if (left->type == TILE_WALL && right->type == TILE_WALL) {
+                putHall(tile);
+                putHall(prev);
+                prev = NULL;
+            } else {
+                prev = tile;
+            }
+        }
+    }
+    return prev;
+}
+
+struct Tile *horiz_line(struct Map *map, int y, int x1, int x2, struct Tile *prev) {
+    int i;
+
+    int incr = (x2 - x1) & 0x80000000 ? -1 : 1;
+    int start = x1 + incr;
+    int end = x2 + incr;
+    for (i = start; i != end; i += incr) {
+        struct Tile *tile = &map->tiles[i + y * map->width];
+        if (prev == tile) {
+            continue;
+        }
+        struct Tile *left = NULL;
+        if (y - 1 >= 0) {
+            left = &map->tiles[i + (y - 1) * map->width];
+        }
+        struct Tile *right = NULL;
+        if (y + 1 < map->width) {
+            right = &map->tiles[i + (y + 1) * map->width];
+        }
+        
+        if (prev == NULL) {
+            putHall(tile);
+            if (left->type != TILE_WALL || right->type != TILE_WALL) {
+                prev = tile;
+            }
+        } else  {
+            if (left->type == TILE_WALL && right->type == TILE_WALL) {
+                putHall(tile);
+                putHall(prev);
+                prev = NULL;
+            } else {
+                prev = tile;
+            }
+        }
+    }
+    return prev;
+}
+
+void putDoor(struct Tile *tile) {
+    if (tile->type == TILE_HALL) {
+        tile->solid = SOLID;
+        tile->type = TILE_DOOR;
+        
+        Pixel *pix = &tile->p;
+        pix->c_bg = DOOR_COLOR;
+        pix->bg = rgbToTerm(pix->c_bg);
+        pix->depth = 0;
+    }
+}
+
+void placeDoors(struct Map *map, Rect room) {
+    int i;
+    for (i = room.left + 1; i < room.right; i++) {
+        if (room.top >= 0) {
+            struct Tile *top = &map->tiles[i + (room.top) * map->width];
+            putDoor(top);
+        }
+        if (room.bottom < map->height) {
+            struct Tile *bottom = &map->tiles[i + room.bottom * map->width];
+            putDoor(bottom);
+        }
+    }
+    for (i = room.top + 1; i < room.bottom; i++) {
+        if (room.left >= 0) {
+            struct Tile *left= &map->tiles[room.left + i * map->width];
+            putDoor(left);
+        }
+        if (room.right< map->width) {
+            struct Tile *right = &map->tiles[room.right + i * map->width];
+            putDoor(right);
         }
     }
 }
@@ -62,12 +205,13 @@ void map_tunneling(struct Map *map) {
                     y1 = (rooms[room_count - 1].top + rooms[room_count - 1].bottom) / 2,
                     x2 = (rooms[room_count].left + rooms[room_count].right) / 2,
                     y2 = (rooms[room_count].top + rooms[room_count].bottom) / 2;
+                if (room_count == 1) {
+                    map->player_start = (Point){x1, y1};
+                }
                 if (drandom_i(0, 1)) {
-                    fill_line(map, (Line){x1, y1, x1, y2});
-                    fill_line(map, (Line){x2, y2, x1, y2});
+                    horiz_line(map, y2, x1, x2, vert_line(map, x1, y1, y2, NULL));
                 } else {
-                    fill_line(map, (Line){x1, y1, x2, y1});
-                    fill_line(map, (Line){x2, y2, x2, y1});
+                    vert_line(map, x2, y1, y2, horiz_line(map, y1, x1, x2, NULL));
                 }
             }
 
@@ -79,76 +223,14 @@ void map_tunneling(struct Map *map) {
             }
         }
     }
-    for (i = 0; i < map->height; i++) {
-        for (j = 0; j < map->width; j++) {
-            struct Tile *tile = &map->tiles[j + i * map->width];
-            if (tile->solid) {
-                Pixel *pix = &map->tiles[j + i * map->width].p;
-                pix->c_bg = (Color){128, 128, 128, 1.0};
-                pix->bg = rgbToTerm(pix->c_bg);
-                pix->depth = 0;
-                pix->chr = ' ';
-            }
-        }
+    for (i = 0; i < room_count; i++) {
+        placeDoors(map, rooms[i]);
     }
+
+    Event ev;
+    ev.id = EVENT_MAP;
+    ev.data = malloc(sizeof(MapEvent));
+    ((MapEvent *) ev.data)->map= map;
+    sendEvent(ev);
 }
-/*
-'''
-This version of the tunneling algorithm is essentially
-identical to the tunneling algorithm in the Complete Roguelike
-Tutorial using Python, which can be found at
-http://www.roguebasin.com/index.php?title=Complete_Roguelike_Tutorial,_using_python%2Blibtcod,_part_1
 
-Requires random.randint() and the Rect class defined below.
-'''
-# TODO: raise an error if any necessary classes are missing
-def generateLevel(self, mapWidth, mapHeight):
-num_rooms = 0
-for r in range(self.MAX_ROOMS):
-# random width and height
-w = random.randint(self.ROOM_MIN_SIZE,self.ROOM_MAX_SIZE)
-h = random.randint(self.ROOM_MIN_SIZE,self.ROOM_MAX_SIZE)
-# random position within map boundr
-x = random.randint(0, MAP_WIDTH - w -1)
-y = random.randint(0, MAP_HEIGHT - h -1)
-
-new_room = Rect(x, y, w, h)
-# check for overlap with previous rooms
-failed = False
-for other_room in rooms:
-if new_room.intersect(other_room):
-failed = True
-break
-if not failed:
-self.createRoom(new_room)
-(new_x, new_y) = new_room.center()
-
-if num_rooms != 0:
-# all rooms after the first one
-# connect to the previous room
-#center coordinates of the previous room
-(prev_x, prev_y) = rooms[num_rooms-1].center()
-# 50% chance that a tunnel will start horizontally
-if random.randint(0,1) == 1:
-self.createHorTunnel(prev_x, new_x, prev_y)
-self.createVirTunnel(prev_y, new_y, new_x)
-else: # else it starts virtically
-self.createVirTunnel(prev_y, new_y, prev_x)
-self.createHorTunnel(prev_x, new_x, new_y)
-# append the new room to the list
-rooms.append(new_room)
-num_rooms += 1
-
-return self.level
-def createRoom(self, room):
-# set all tiles within a rectangle to 0
-for x in range(room.x1 + 1, room.x2):
-for y in range(room.y1+1, room.y2):
-self.level[x][y] = 0
-def createHorTunnel(self, x1, x2, y):
-for x in range(min(x1,x2),max(x1,x2)+1):
-self.level[x][y] = 0
-def createVirTunnel(self, y1, y2, x):
-for y in range(min(y1,y2),max(y1,y2)+1):
-self.level[x][y] = 0
-*/

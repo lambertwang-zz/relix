@@ -25,7 +25,7 @@ int oputRect(int id, int x, int y, Rect rect, Color bg) {
     return i;
 }
 
-// Assumes p color values are precomputed
+// Ignores precomponted values for bg and fg and computes them based on c_bg and c_fg
 int putPixel(int x, int y, Pixel p) {
     if (x < 0 || y < 0 || y >= screen.ts.lines || x >= screen.ts.cols) {
         return 1;
