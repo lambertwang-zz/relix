@@ -8,6 +8,10 @@
 #define ARROW_DOWN 'B'
 #define ARROW_RIGHT 'C'
 #define ARROW_LEFT 'D'
+#define ARROW_UP_WIN 72
+#define ARROW_DOWN_WIN 80
+#define ARROW_RIGHT_WIN 77
+#define ARROW_LEFT_WIN 75
 
 // Keyboard event types
 // A-Z, a-z, 0-9, etc

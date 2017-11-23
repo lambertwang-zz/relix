@@ -5,7 +5,7 @@
 
 unsigned long getCurrentTime();
 
-void uSleep(unsigned long nanoseconds);
+void uSleep(long nanoseconds);
 
 #endif
 

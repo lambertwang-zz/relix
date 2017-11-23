@@ -64,7 +64,7 @@ unsigned long getCurrentTime() {
     return 0;
 }
 
-void uSleep(unsigned long microseconds) {
+void uSleep(long microseconds) {
     #if defined TARGET_OS_MAC || defined __linux__
         // Construct a timespec with the specified nanoseconds
         struct timespec sleep_time;
@@ -72,8 +72,9 @@ void uSleep(unsigned long microseconds) {
         sleep_time.tv_nsec = microseconds* 1000;
         nanosleep(&sleep_time, NULL);
     #elif defined _WIN32 || defined _WIN64
-        if (nanoseconds > 0) {
-            Sleep(microseconds / 1000);
+        long sleep_time = microseconds / 1000;
+        if (sleep_time > 0) {
+            Sleep(sleep_time);
         }
     #else
     #error "unknown platform"

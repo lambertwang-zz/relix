@@ -5,6 +5,7 @@
 .syntastic_c_config
 
 relix
+relix.exe
 test/tree
 test/input
 test/event

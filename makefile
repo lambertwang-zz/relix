@@ -13,33 +13,36 @@ EXECUTABLE = relix
 
 ifeq ($(OS),Windows_NT)
 CLEAR = cls
-RM = del
+RM = del /s
 # TEST = $(shell find test -name '*.c')
+TEST = test\event.c \
+	   test\input.c \
+	   test\tree.c
 
-SRC = src/engine/game/game.c \
-	src/engine/geometry/geometry.c \
-src/engine/input/input.c \
-src/engine/list/array.c \
-src/engine/list/insert.c \
-src/engine/list/iterator.c \
-src/engine/list/remove.c \
-src/engine/list/tree.c \
-src/engine/log/log.c \
-src/engine/objects/object.c \
-src/engine/objects/objectManager.c \
-src/engine/render/render.c \
-src/engine/term/color.c \
-src/engine/term/screen.c \
-src/engine/term/term.c \
-src/engine/utility/clock.c \
-src/engine/utility/random.c \
-src/engine/utility/utility.c \
-src/game/map/cellular.c \
-src/game/map/map.c \
-src/game/map/randomwalk.c \
-src/game/map/tunneling.c \
-src/game/player/player.c \
-src/game/world/world.c
+SRC = src\engine\game\game.c \
+	src\engine\geometry\geometry.c \
+src\engine\input\input.c \
+src\engine\list\array.c \
+src\engine\list\insert.c \
+src\engine\list\iterator.c \
+src\engine\list\remove.c \
+src\engine\list\tree.c \
+src\engine\log\log.c \
+src\engine\objects\object.c \
+src\engine\objects\objectManager.c \
+src\engine\render\render.c \
+src\engine\term\color.c \
+src\engine\term\screen.c \
+src\engine\term\term.c \
+src\engine\utility\clock.c \
+src\engine\utility\random.c \
+src\engine\utility\utility.c \
+src\game\map\cellular.c \
+src\game\map\map.c \
+src\game\map\randomwalk.c \
+src\game\map\tunneling.c \
+src\game\player\player.c \
+src\game\world\world.c
 else
 CLEAR = clear
 RM = rm -rf
@@ -73,5 +76,4 @@ clean_exe:
 
 clean:
 	$(RM) $(EXECUTABLE) $(SRC_OBJ) $(TEST_EXE)
-
 

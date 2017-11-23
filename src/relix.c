@@ -8,6 +8,8 @@ int main(int argc, char **argv) {
     initGame();
 
     // addLogLevel(LOG_GAME_V);
+    addLogLevel(LOG_INPUT_V);
+    addLogLevel(LOG_SCREEN_V);
 
     // initMainMenu();
     initMap();

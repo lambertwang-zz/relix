@@ -1,11 +1,11 @@
 #include "screen.h"
-#include "../constants.h"
+#include "constants.h"
+#include "log/log.h"
 
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 
 #if defined __linux__
 #include <pthread.h>
@@ -54,6 +54,8 @@ void setCamera(Point loc) {
 }
 
 struct Screen *initScreen() {
+    writeLog(LOG_SCREEN, "screen::initScreen(): Initializing screen.");
+
     static int first_init = 1;
 
     // If re-init, free buffers
@@ -107,6 +109,10 @@ struct Screen *initScreen() {
 
     clearScreen(&screen);
 
+    writeLog(LOG_SCREEN, "screen::initScreen(): Initialized screen: width: %d height: %d", 
+        screen.ts.cols, 
+        screen.ts.lines);
+
     return 0;
 }
 
@@ -117,7 +123,7 @@ int closeScreen() {
 #if defined __linux__
     pthread_mutex_destroy(&screen_lock);
 #elif defined _WIN32 || defined _WIN64
-    closeHandle(screen_lock);
+    CloseHandle(screen_lock);
 #endif
 
     // Reset colors

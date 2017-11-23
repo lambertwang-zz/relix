@@ -11,18 +11,25 @@
 #if defined __linux__
 #include <termios.h>
 #elif defined _WIN32 || defined _WIN64
+#include <wchar.h>
 #include <windows.h>
+#include <conio.h>
 #else
 #error "unknown platform"
 #endif
 
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
 
 #if defined __linux__
 static struct termios prev_settings;
 static int old_fl;
 #elif defined _WIN32 || defined _WIN64
 HANDLE h_stdin;
-DWORD prev_settings;
+HANDLE h_stdout;
+DWORD in_settings;
+DWORD out_settings;
 #else
 #error "unknown platform"
 #endif
@@ -42,33 +49,37 @@ int initInput() {
     // Set stdin to non-blocking
     old_fl = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, old_fl | O_NONBLOCK);
-
-    // Begin reporting mouse movements
-    // printf("\e[1;0'z");
-    printf("\e[?1003h");
-    printf("\e[?1006h");
-    fflush(stdout);
-
-    // Register events with the worldmanager
-    registerEvent(EVENT_KEYBOARD);
-    registerEvent(EVENT_MOUSE);
-
-    return 0;
 #elif defined _WIN32 || defined _WIN64
+    h_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (h_stdout == INVALID_HANDLE_VALUE) {
+        writeLog(LOG_INPUT, "input::initInput(): Error: Unable to get stdout handle.");
+        return -2;
+    }
+
     h_stdin = GetStdHandle(STD_INPUT_HANDLE);
     if (h_stdin == INVALID_HANDLE_VALUE) {
         writeLog(LOG_INPUT, "input::initInput(): Error: Unable to get stdin handle.");
         return -2;
-
     }
 
-    GetConsoleMode(h_stdin, &prev_settings);
-    DWORD new_settings = prev_settings;
-    new_settings &= ~ENABLE_ECHO_INPUT;
-    new_settings &= ~ENABLE_LINE_INPUT;
-    new_settings |= ENABLE_MOUSE_INPUT;
-    SetConsoleMode(h_stdin, new_settings);
+    GetConsoleMode(h_stdin, &in_settings);
+    DWORD new_in_settings = in_settings;
+    new_in_settings &= ~ENABLE_ECHO_INPUT;
+    new_in_settings &= ~ENABLE_LINE_INPUT;
+    new_in_settings |= ENABLE_MOUSE_INPUT;
+    new_in_settings |= ENABLE_EXTENDED_FLAGS;
+    new_in_settings &= ~ENABLE_QUICK_EDIT_MODE;
+    // new_settings |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(h_stdin, new_in_settings);
 
+    GetConsoleMode(h_stdout, &out_settings);
+    DWORD new_out_settings = out_settings;
+    new_out_settings |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(h_stdout, new_out_settings);
+#else
+    writeLog(LOG_INPUT, "input::initInput(): Error: Unknown platform; cannot initialize input.");
+    return -1;
+#endif
     // Begin reporting mouse movements
     // printf("\e[1;0'z");
     printf("\e[?1003h");
@@ -80,10 +91,6 @@ int initInput() {
     registerEvent(EVENT_MOUSE);
 
     return 0;
-#else
-    writeLog(LOG_INPUT, "input::initInput(): Error: Unknown platform; cannot initialize input.");
-    return -1;
-#endif
 }
 
 int closeInput() {
@@ -100,7 +107,8 @@ int closeInput() {
     fcntl(STDIN_FILENO, F_SETFL, old_fl);
 #elif defined _WIN32 || defined _WIN64
     // Restore old settings
-    SetConsoleMode(h_stdin, prev_settings);
+    SetConsoleMode(h_stdin, in_settings);
+    SetConsoleMode(h_stdout, out_settings);
 #else
     writeLog(LOG_INPUT, "input::closeInput(): Error: Unknown platform; cannot close input.");
     return -1;
@@ -128,6 +136,22 @@ int createMouseEvent(int x, int y, int button, char status) {
     ((MouseEvent *) ev.data)->status = status;
     sendEvent(ev);
     return 0;
+}
+
+int readCh(unsigned char *out) {
+#if defined __linux__
+    return read(0, &out, 1);
+#elif defined _WIN32 || defined _WIN64
+    if (_kbhit()) {
+        // if (!ReadConsole(h_stdout, &out, 1, &read_result, NULL)) {
+        *out = getch();
+        return 1;
+    }
+    // writeLog(LOG_INPUT_V, "KB Not hit");
+#else
+#error "unknown platform"
+#endif
+    return -1;
 }
 
 char readSgrValue(char *buff) {
@@ -168,11 +192,19 @@ int csiArrow(char code) {
 }
 
 int csi() {
-    char buff;
-    if (read(0, &buff, 1)) {
+    unsigned char buff;
+    if (readCh(&buff)) {
         switch (buff) {
             case '<':
                 return csiMouse();
+            case ARROW_UP_WIN:
+                return csiArrow(ARROW_UP);
+            case ARROW_DOWN_WIN:
+                return csiArrow(ARROW_DOWN);
+            case ARROW_RIGHT_WIN:
+                return csiArrow(ARROW_RIGHT);
+            case ARROW_LEFT_WIN:
+                return csiArrow(ARROW_LEFT);
             case ARROW_UP:
             case ARROW_DOWN:
             case ARROW_RIGHT:
@@ -200,23 +232,107 @@ int escape() {
 
 
 int captureInput() {
-    char buff;
+    unsigned char buff;
     int read_result;
 
     do {
-        read_result = read(0, &buff, 1);
+        read_result = readCh(&buff);
         if (read_result == -1) {
             return read_result;
         }
 #ifdef DEBUG_INPUT
         printf("%d\n", buff);
 #endif
-        if (buff == '\e') {
-            return escape();
+        writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %u", buff);
+        switch (buff) {
+            case '\e':
+                return escape();
+            case 224:
+                return csi();
+            default:
+                return createKeyboardEvent(buff, KEYBOARD_NORMAL);
         }
-        writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %d", buff);
-        return createKeyboardEvent(buff, KEYBOARD_NORMAL);
     } while (!read_result);
+
+    return 1;
+}
+
+int winMouseEvent(MOUSE_EVENT_RECORD ev) {
+    static int prev_button_state = 0;
+
+    int x_pos = ev.dwMousePosition.X;
+    int y_pos = ev.dwMousePosition.Y;
+    int button = 0;
+    char status = MOUSE_RELEASE;
+    int state_diff = prev_button_state ^ ev.dwButtonState;
+
+    switch (ev.dwEventFlags) {
+        case 0:
+            if (state_diff ^ FROM_LEFT_1ST_BUTTON_PRESSED) {
+                button = MOUSE_LEFT;
+                if (ev.dwButtonState ^ FROM_LEFT_1ST_BUTTON_PRESSED) {
+                    status = MOUSE_PRESS;
+                } 
+            } else if (state_diff ^ RIGHTMOST_BUTTON_PRESSED) {
+                button = MOUSE_RIGHT;
+                if (ev.dwButtonState ^ RIGHTMOST_BUTTON_PRESSED) {
+                    status = MOUSE_PRESS;
+                } 
+            } else if (state_diff ^ FROM_LEFT_2ND_BUTTON_PRESSED) {
+                button = MOUSE_MIDDLE;
+                if (ev.dwButtonState ^ FROM_LEFT_2ND_BUTTON_PRESSED) {
+                    status = MOUSE_PRESS;
+                } 
+            }
+            break;
+        case MOUSE_MOVED:
+            button = MOUSE_MOVE;
+            break;
+        default:
+            writeLog(LOG_INPUT_V, "input::winMouseEvent(): Unsupported Mouse Event %d", ev.dwEventFlags);
+            return 1;
+    }
+    prev_button_state = ev.dwButtonState;
+
+    writeLog(LOG_INPUT_V, "input::winMouseEvent(): Mouse: Button: %d X: %d Y: %d", button, x_pos, y_pos);
+    return createMouseEvent(x_pos, y_pos, button, status);
+}
+
+// Windows only function
+int captureInputEvents() {
+#if defined _WIN32 || defined _WIN64
+    INPUT_RECORD input;
+    DWORD in_result;
+    DWORD num_events;
+    int i;
+    GetNumberOfConsoleInputEvents(h_stdin, &num_events);
+
+    for (i = 0; i < num_events; i++) {
+        if (!ReadConsoleInput(h_stdin, &input, 1, &in_result)) {
+            return -1;
+        } else {
+            switch (input.EventType) {
+                case KEY_EVENT:
+                    writeLog(LOG_INPUT, "input::readInputEvents(): Unsupported input event");
+                    break;
+                case MOUSE_EVENT:
+                    winMouseEvent(input.Event.MouseEvent);
+                    break;
+                case WINDOW_BUFFER_SIZE_EVENT:
+                    writeLog(LOG_INPUT, "input::readInputEvents(): Unsupported input event");
+                    break;
+                case FOCUS_EVENT:
+                case MENU_EVENT:
+                default:
+                    writeLog(LOG_INPUT, "input::readInputEvents(): Unsupported input event");
+                    break;
+            }
+            // Handle the event
+            return 0;
+        }
+    }
+#endif
+
     return 1;
 }
 
@@ -224,6 +340,10 @@ int readInput() {
     int end_input;
     do {
         end_input = captureInput();
+    } while (!end_input);
+    // Keyboard events pass (windows only)
+    do {
+        end_input = captureInputEvents();
     } while (!end_input);
     return end_input;
 }

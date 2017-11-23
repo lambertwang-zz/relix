@@ -10,7 +10,10 @@ int drandom_i(int min, int max) {
 }
 
 float drandom_f() {
-    return (float)rand_r(&drand_seed) / (float)RAND_MAX;
+    srand(drand_seed);
+    drand_seed = rand();
+
+    return (float)drand_seed / (float)RAND_MAX;
 }
 
 void initRandom_s(unsigned int seed) {

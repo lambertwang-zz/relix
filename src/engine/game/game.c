@@ -22,8 +22,8 @@ int initGame() {
     initRandom_s(9877);
     // Init objects and event registration
     initObjects();
-    initScreen();
     initInput();
+    initScreen();
     writeLog(LOG_INIT, "game::initGame(): Initialized game");
 
     signal(SIGINT, closeGame);
@@ -31,8 +31,8 @@ int initGame() {
 }
 
 void closeGame(int a) {
-    closeInput();
     closeScreen();
+    closeInput();
     closeObjects();
     closeLog();
 
@@ -120,7 +120,7 @@ int loop() {
 
         // Adjust sleep time for additional framerate accuracy
         loop_time = split(&game_clock);
-        unsigned long sleep_time = (FRAME_TIME - loop_time - adjust_time);
+        long sleep_time = (FRAME_TIME - loop_time - adjust_time);
         // Reset clock before sleeping to calculate actual sleep time
         delta(&game_clock);
         // Multiply microseconds to obtain sleep time in nanoseconds
@@ -128,6 +128,8 @@ int loop() {
             uSleep(sleep_time);
             // Calculate adjust from difference between expected and actual sleep times
             adjust_time = split(&game_clock) - sleep_time;
+        } else {
+            adjust_time = 0;
         }
     }
 
