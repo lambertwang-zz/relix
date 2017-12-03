@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     // addLogLevel(LOG_GAME_V);
     // addLogLevel(LOG_INPUT_V);
     // addLogLevel(LOG_SCREEN_V);
+    addLogLevel(0xffffffff);
     addLogLevel(LOG_OBJECTMANAGER_V);
     addLogLevel(LOG_USER);
     addLogLevel(LOG_LOAD_V);

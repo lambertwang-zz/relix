@@ -41,6 +41,10 @@ int renderMap(Map *map, Screen *s) {
                 i - s->camera_bounds.top
             };
             if (tile.seen) {
+                if (tile.type == TILE_WALL) {
+                    putPixelL(s, rel_pos.x, rel_pos.y, tile.p);
+                    continue;
+                }
                 if(putPixelA(s, rel_pos.x, rel_pos.y, tile.p) == 3) { // TODO: Define error codes
                     // Pixel not rendered due to no lighting
                     putPixelRgb(s, rel_pos.x, rel_pos.y, SEEN_COLOR);
@@ -107,12 +111,9 @@ void generateMap(struct Map *map,
     map->height = height;
     map->player_start = (Point){0, 0};
 
-    int i, j;
+    int i;
     for (i = 0; i < map->height * map->width; i++) {
-        map->tiles[i].solid = SOLID;
-        map->tiles[i].type = TILE_WALL;
-        map->tiles[i].p = PIXEL_NULL;
-        map->tiles[i].seen = 0;
+        putWall(&map->tiles[i]);
     }
 
     switch (alg) {

@@ -5,6 +5,7 @@ void initTile(Tile *tile) {
 
     Pixel *pix = &tile->p;
     pix->bg = rgbToTerm(pix->c_bg);
+    pix->fg = rgbToTerm(pix->c_fg);
     pix->depth = 0;
     pix->chr = ' ';
 }
