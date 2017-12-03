@@ -5,6 +5,11 @@
 // #define DEBUG_INPUT
 // #define DEBUG_TREES
 
+// String Lengths
+#define LABEL_SHORT 64
+#define LABEL_MED 256
+#define LABEL_LONG 1024
+
 #define FRAME_TIME 16666
 
 #define MAX_WIDTH 1920

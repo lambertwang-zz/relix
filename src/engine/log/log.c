@@ -1,9 +1,12 @@
 #include "log.h"
-#include "../utility/clock.h"
-#include "../game/game.h"
 
+// Library
 #include <stdarg.h>
 #include <stdio.h>
+
+// Engine
+#include "utility/clock.h"
+#include "game/game.h"
 
 void initLog() {
     flushLog = 1;

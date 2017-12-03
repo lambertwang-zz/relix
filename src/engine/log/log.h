@@ -9,17 +9,19 @@
 // 0x0000ff00 bits reserved for verbose events
 //      Every frame or every few frames
 // 0x000000ff bits reserved for single-time events and errors
-// 0x00ff0000 bits reserved for testing and debugging
-#define LOG_LEVEL_DEFAULT 0x000000ff
-#define LOG_INIT 0x00000001
-#define LOG_OBJECTMANAGER 0x00000002
+// 0xffff0000 bits reserved for user log events
+#define LOG_LEVEL_DEFAULT   0x000000ff
+#define LOG_INIT            0x00000001
+#define LOG_INIT_V          0x00000100
+#define LOG_OBJECTMANAGER   0x00000002
 #define LOG_OBJECTMANAGER_V 0x00000200
-#define LOG_INPUT 0x00000004
-#define LOG_INPUT_V 0x00000400
-#define LOG_LOG 0x00000008
-#define LOG_SCREEN 0x00000020
-#define LOG_SCREEN_V 0x00002000
-#define LOG_GAME_V 0x00001000
+#define LOG_INPUT           0x00000004
+#define LOG_INPUT_V         0x00000400
+#define LOG_LOG             0x00000008
+#define LOG_GAME            0x00000010
+#define LOG_GAME_V          0x00001000
+#define LOG_SCREEN          0x00000020
+#define LOG_SCREEN_V        0x00002000
 
 FILE *relixLogFile;
 int flushLog;

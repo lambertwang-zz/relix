@@ -11,6 +11,7 @@
 #define COLOR_BLUE (Color){0, 0, 255, 1.0}
 
 #define PIXEL_NULL (Pixel){16, 16, COLOR_EMPTY, COLOR_EMPTY, ' ', -1, INT_MIN}
+#define PIXEL_BLANK (Pixel){16, 16, COLOR_BLANK, COLOR_BLANK, ' ', -1, 0}
 
 typedef struct Color {
     unsigned char r;
@@ -32,6 +33,8 @@ typedef struct Pixel {
     int id; // Object id at screen location
     int depth; // Depthbuffer
 } Pixel;
+
+Color scaleColor(Color c, float f);
 
 // Alpha is ignored when converting hsl/rgv to term color code
 unsigned char rgbToTerm(Color c);

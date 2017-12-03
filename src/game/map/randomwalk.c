@@ -39,7 +39,8 @@ int walk(struct Map *map, Point *next) {
     return ret;
 }
 
-void map_randomwalk(struct Map *map) {
+void mapRandomwalk(struct Map *map) {
+    map->type = MAP_CAVE;
     int i;
 
     Point next  = (Point){map->width / 2, map->height / 2};
@@ -56,23 +57,15 @@ void map_randomwalk(struct Map *map) {
     for (i = 0; i < map->width * map->height; i++) {
         struct Tile *tile = &map->tiles[i];
 
-        Pixel *pix = &tile->p;
-        pix->c_bg = ROOM_COLOR;
-
-        switch (map->tiles[i].type) {
+        switch (tile->type) {
             case TILE_OPEN:
-                tile->solid = SOFT;
-                pix->c_bg = ROOM_COLOR;
+                putRoom(tile);
                 break;
             case TILE_ROOM:
             case TILE_WALL:
-                tile->solid = SOLID;
-                pix->c_bg = WALL_COLOR;
+                putWall(tile);
                 break;
         }
-        pix->bg = rgbToTerm(pix->c_bg);
-        pix->depth = 0;
-        pix->chr = ' ';
     }
 }
 

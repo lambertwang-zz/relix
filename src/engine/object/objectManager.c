@@ -1,10 +1,12 @@
 #include "objectManager.h"
 
-#include "../constants.h"
-#include "../log/log.h"
-
+// Library
 #include <stdlib.h>
 #include <string.h>
+
+// Engine
+#include "constants.h"
+#include "log/log.h"
 
 static void (*clearGame)();
 
@@ -31,6 +33,10 @@ int sendEvent(Event ev) {
     it = initIterator(object_manager.event_listeners[ev.id]);
     while (!done(it)) {
         struct Object *obj= getNext(it)->data;
+        if (obj->event_listeners[ev.id] == NULL) {
+            writeLog(LOG_OBJECTMANAGER, "objectManager::sendEvent(): WARNING: No listener for Event id %d for object", ev.id, obj->id);
+            continue;
+        }
         obj->event_listeners[ev.id](obj, ev);
     }
     closeIterator(it);
@@ -191,7 +197,9 @@ int updateObjects() {
     it = initIterator(&object_manager.insert_queue);
     while (!done(it)) {
         struct Node *node = getNext(it);
-        insert(&object_manager.object_list, node->data, node->id);
+        if (insert(&object_manager.object_list, node->data, node->id)) {
+            writeLog(LOG_OBJECTMANAGER, "objectManager::updateObjects(): Error attempting to remove object id %d", node->id);
+        }
     }
     closeIterator(it);
     clearTree(&object_manager.insert_queue);
@@ -199,8 +207,10 @@ int updateObjects() {
     it = initIterator(&object_manager.remove_queue);
     while (!done(it)) {
         struct Object *obj = getNext(it)->data;
+        if (removeId(&object_manager.object_list, obj->id)) {
+            writeLog(LOG_OBJECTMANAGER, "objectManager::updateObjects(): Error attempting to remove object id %d", obj->id);
+        }
         obj->close(obj);
-        removeId(&object_manager.object_list, obj->id);
     }
     closeIterator(it);
     clearTree(&object_manager.remove_queue);
@@ -213,6 +223,21 @@ int updateObjects() {
     closeIterator(it);
 
     return 0;
+}
+
+int renderObjectLights() {
+    struct Iterator *it;
+    int lights_rendered = 0;
+
+    // Render lights
+    it = initIterator(&object_manager.object_list);
+    while (!done(it)) {
+        struct Object *obj = getNext(it)->data;
+        lights_rendered += obj->renderLight(obj, &screen_manager.main_screen);
+    }
+    closeIterator(it);
+
+    return lights_rendered;
 }
 
 int renderObjects() {
@@ -236,6 +261,7 @@ int renderObjects() {
     }
     closeIterator(it);
 
+
     // Render objects by sorted by depth
     it = initIterator(&depth_tree);
     while (!done(it)) {
@@ -243,7 +269,7 @@ int renderObjects() {
         int i;
         for (i = 0; i < depth_node->count; i++) {
             struct Object *obj = depth_node->data[i];
-            objects_rendered += obj->render(obj);
+            objects_rendered += obj->render(obj, &screen_manager.main_screen);
         }
         closeArray(depth_node);
         free(depth_node);
@@ -253,5 +279,21 @@ int renderObjects() {
     closeTree(&depth_tree);
 
     return objects_rendered;
+}
+
+int getObjAt(Array *array, Point p, int solid) {
+    struct Iterator *it;
+    it = initIterator(&object_manager.object_list);
+    while (!done(it)) {
+        struct Object *obj = getNext(it)->data;
+        if ((solid && obj->solid) || (!solid && !obj->solid)) {
+            if (p.x == obj->pos.x && p.y == obj->pos.y) {
+                push(array, obj);
+            }
+        }
+    }
+    closeIterator(it);
+
+    return array->count;
 }
 

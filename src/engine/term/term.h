@@ -1,12 +1,12 @@
 #ifndef __TERM_H__
 #define __TERM_H__
 
-struct TermSize {
+typedef struct TermSize {
     int lines;
     int cols;
-};
+} TermSize;
 
-int getTermSize(struct TermSize *ts);
+int getTermSize(TermSize *ts);
 
 #endif
 

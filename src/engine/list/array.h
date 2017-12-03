@@ -1,22 +1,22 @@
 #ifndef __ARRAY_H__
 #define __ARRAY_H__
 
-
 #define INIT_ARRAY_SIZE 64
 
 // Unsorted dynamic array
-struct Array {
+typedef struct Array {
     void **data;
     unsigned int size;
     unsigned int count;
-};
+} Array;
 
-int initArray(struct Array *array);
-int closeArray(struct Array *array);
+int initArray(Array *array);
+int clearArray(Array *array);
+int closeArray(Array *array);
 
-void *getDataArray(struct Array *array, unsigned int index);
-int push(struct Array *array, void *data);
-void *pop(struct Array *array);
+void *getDataArray(Array *array, unsigned int index);
+int push(Array *array, void *data);
+void *pop(Array *array);
 
 #endif
 

@@ -1,5 +1,9 @@
 #include "color.h"
 
+Color scaleColor(Color c, float f) {
+    return (Color){c.r * f, c.g * f, c.b * f, c.a};
+}
+
 unsigned char rgbToTerm(Color c) {
     if (c.r == c.b && c.b == c.g) {
         int g_t = (int)(c.r / 9.81);

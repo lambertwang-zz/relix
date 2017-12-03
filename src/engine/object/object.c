@@ -1,32 +1,33 @@
 #include "object.h"
-#include "objectManager.h"
+
+// Library
+#include <stdlib.h>
+#include <string.h>
+
+// Engine
 #include "constants.h"
+#include "objectManager.h"
 #include "render/render.h"
-#include "term/screen.h"
 #include "log/log.h"
 
-#include "stdlib.h"
-#include "string.h"
-
-int update_default(struct Object *o) {
+int updateDefault(Object *o) {
     // pass
     return 0;
 }
 
-int render_default(struct Object *o) {
+int renderLightDefault(Object *o, Screen *s) {
+    return 0;
+}
+
+int renderDefault(Object *o, Screen *s) {
     o->pix.depth = o->pos.z;
     // Position on the screen
     Point rel_pos = (Point){
-            o->pos.x - screen.camera_bounds.left,
-            o->pos.y - screen.camera_bounds.top
+            o->pos.x - s->camera_bounds.left,
+            o->pos.y - s->camera_bounds.top
     };
 
-    if (rel_pos.x >= 0 && rel_pos.y >= 0 &&
-        rel_pos.x < screen.ts.cols &&
-        rel_pos.y < screen.ts.lines) {
-        putPixelA(rel_pos.x, rel_pos.y, o->pix);
-        return 1;
-    }
+    putPixelA(s, rel_pos.x, rel_pos.y, o->pix);
 
     return 0;
 }
@@ -49,7 +50,7 @@ int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Ev
     return 0;
 }
 
-void close_default(struct Object *o) {
+void closeDefault(struct Object *o) {
     int i;
     for (i = 0; i < o->events_size; i++) {
         if (o->event_listeners[i] != NULL) {
@@ -75,10 +76,12 @@ void initObject(struct Object *o) {
     o->pix = PIXEL_NULL;
     o->pix.id = o->id;
     o->pix.depth = o->pos.z;
+    o->solid = OBJ_ETHER;
 
-    o->render = &render_default;
-    o->update = &update_default;
-    o->close = &close_default;
+    o->renderLight = &renderLightDefault;
+    o->render = &renderDefault;
+    o->update = &updateDefault;
+    o->close = &closeDefault;
 
     o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
     o->events_size = INIT_EVENT_COUNT;

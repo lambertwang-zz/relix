@@ -2,12 +2,10 @@
  * Utilty functions
  */
 
-// c++ standard libraries
-// #include <sstream>
+// Libraries
 #include <stdio.h>
 #include <time.h>
-// Platform conditionals taken from a stackOverflow question
-// http://stackoverflow.com/questions/3627127/writing-cross-platform-c-code-windows-linux-and-mac-osx
+
 #ifdef TARGET_OS_MAC
 #include <sys/time.h>
 #elif defined __linux__

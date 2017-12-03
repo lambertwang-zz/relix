@@ -1,18 +1,21 @@
 #include "tree.h"
-#include "../log/log.h"
-#include "../constants.h"
 
+// Library
 #include <stdlib.h>
 #include <stdio.h>
 
-int depth(const struct Node *node) {
+// Engine
+#include "log/log.h"
+#include "constants.h"
+
+int depth(const Node *node) {
 	if (node->parent == NULL) {
 		return 0;
 	}
 	return 1 + depth(node->parent);
 }
 
-int checkRedChildren(const struct Node *node) {
+int checkRedChildren(const Node *node) {
     if (node == NULL) {
         return 0;
     }
@@ -27,7 +30,7 @@ int checkRedChildren(const struct Node *node) {
     return checkRedChildren(node->left) + checkRedChildren(node->right);
 }
 
-int minDistToNil(const struct Node *node) {
+int minDistToNil(const Node *node) {
     if (node == NULL) {
         return 0;
     }
@@ -59,7 +62,7 @@ int checkNilDist(const struct Node *node) {
     return 0;
 }
 
-void checkRefs(const struct Node *node) {
+void checkRefs(const Node *node) {
     if (node != NULL) {
         checkRefs(node->right);
 	    char buffer[512];

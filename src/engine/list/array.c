@@ -1,12 +1,22 @@
-#include "array.h"
-
+// Library
 #include <stdlib.h>
 #include <string.h>
+
+#include "array.h"
 
 int initArray(struct Array *array) {
     array->size = INIT_ARRAY_SIZE;
     array->count = 0;
     array->data = malloc(sizeof(void *) * INIT_ARRAY_SIZE);
+    return 0;
+}
+
+int clearArray(Array *array) {
+    int i;
+    for (i = 0; i < array->count; i++) {
+        array->data[i] = NULL;
+    }
+    array->count = 0;
     return 0;
 }
 

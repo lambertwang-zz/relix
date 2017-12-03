@@ -1,7 +1,8 @@
-#include "random.h"
-
+// Library
 #include <stdlib.h>
 #include <time.h>
+
+#include "random.h"
 
 unsigned int drand_seed;
 

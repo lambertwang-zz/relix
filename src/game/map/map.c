@@ -1,23 +1,24 @@
-#include "map.h"
+// Library
+#include <stdlib.h>
 
-#include "objects/objectManager.h"
+// Engine
+#include "object/objectManager.h"
 #include "log/log.h"
-#include "render/render.h"
 #include "input/input.h"
 #include "constants.h"
 #include "term/screen.h"
 
-#include <stdlib.h>
-
-#include "../player/player.h"
+// Game
+#include "map.h"
 #include "../relix.h"
+
 
 int keyboardListener(struct Object *o, Event ev) {
     KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
     switch (k_ev.type) {
         case KEYBOARD_NORMAL:
             if (k_ev.value >= '1' && k_ev.value <= '9') {
-                generate_map(o->data, k_ev.value - '1', 200, 70);
+                generateMap(o->data, k_ev.value - '1', 200, 70);
             }
             return 0;
         default:
@@ -27,8 +28,7 @@ int keyboardListener(struct Object *o, Event ev) {
     return 0;
 }
 
-int render_map(struct Object *o) {
-    struct Map *map = o->data;
+int renderMap(Map *map, Screen *s) {
     if (map == NULL || map->tiles == NULL) {
         return 0;
     }
@@ -36,51 +36,66 @@ int render_map(struct Object *o) {
     for (i = 0; i < map->height; i++) {
         for (j = 0; j < map->width; j++) {
             struct Tile tile = map->tiles[j + i * map->width];
-            putPixelA(j - screen.camera_bounds.left, i - screen.camera_bounds.top, tile.p);
+            Point rel_pos =  {
+                j - s->camera_bounds.left,
+                i - s->camera_bounds.top
+            };
+            if (tile.seen) {
+                if(putPixelA(s, rel_pos.x, rel_pos.y, tile.p) == 3) { // TODO: Define error codes
+                    // Pixel not rendered due to no lighting
+                    putPixelRgb(s, rel_pos.x, rel_pos.y, SEEN_COLOR);
+                }
+            }
+
         }
     }
     return 1;
 }
 
-void close_map(struct Object *o) {
-    struct Map *map = o->data;
+void clearMap(Map *map) {
     if (map != NULL && map->tiles != NULL) {
         free(map->tiles);
     }
     if (map != NULL && map->data != NULL) {
         free(map->data);
     }
-    close_default(o);
 }
 
-void initMap() {
-    // Register events with the worldmanager
-    registerEvent(EVENT_MAP);
+void closeMap(struct Object *o) {
+    struct Map *map = o->data;
+    clearMap(map);
+    closeDefault(o);
+}
 
+void initMapObj() {
     struct Object *o_map = malloc(sizeof(struct Object));
 
     initObject(o_map);
 
     listenEvent(o_map, EVENT_KEYBOARD, &keyboardListener);
-    o_map->render = &render_map;
-    o_map->close = &close_map;
+    o_map->close = &closeMap;
 
     addObject(o_map);
 
     struct Map *map = malloc(sizeof(struct Map));
-    
     o_map->data = map;
+    initMap(map);
+}
+    
+void initMap(Map *map) {
+    static int map_id_iterator = 0;
+    map->id = map_id_iterator++;
+    map->type = 0;
     map->tiles = NULL;
     map->width = -1;
     map->height = -1;
 
     map->data = NULL;
 
-    addPlayer();
-    generate_map(map, TUNNELING_ALG, 200, 70);
+    generateMap(map, TUNNELING_ALG, 200, 70);
 }
 
-void generate_map(struct Map *map, 
+void generateMap(struct Map *map, 
                 int alg, 
                 unsigned int width, 
                 unsigned int height) {
@@ -103,18 +118,23 @@ void generate_map(struct Map *map,
 
     switch (alg) {
         case TUNNELING_ALG:
-            map_tunneling(map);
+            mapTunneling(map);
             break;
         case CELLULAR_ALG:
-            map_cellular(map);
+            mapCellular(map);
             break;
         case RANDOMWALK_ALG:
-            map_randomwalk(map);
+            mapRandomwalk(map);
         default:
             break;
     }
-    writeLog(10, "starting player at %d %d", map->player_start.x, map->player_start.y);
-    // player->pos.x = map->player_start.x;
-    // player->pos.y = map->player_start.y;
+
+    writeLog(LOG_MAP, "map::generateMap(): Starting player at X = %d, Y = %d", map->player_start.x, map->player_start.y);
+
+    Event ev;
+    ev.id = EVENT_MAP;
+    ev.data = malloc(sizeof(MapEvent));
+    ((MapEvent *) ev.data)->map= map;
+    sendEvent(ev);
 }
 

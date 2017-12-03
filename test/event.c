@@ -1,6 +1,6 @@
 #include "game/game.h"
-#include "objects/object.h"
-#include "objects/objectManager.h"
+#include "object/object.h"
+#include "object/objectManager.h"
 #include "constants.h"
 #include "log/log.h"
 #include "input/input.h"
@@ -11,7 +11,7 @@ void nothing() {
     // pass
 }
 
-int keyboardListener(struct Object *o, Event ev) {
+int testkeyboardListener(struct Object *o, Event ev) {
     writeLog(10, "Received keyboard event");
     KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
     switch (k_ev.type) {
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     o_1->pix.chr = '@';
     o_1->pix.fg = 128;
 
-    listenEvent(o_1, EVENT_KEYBOARD, &keyboardListener);
+    listenEvent(o_1, EVENT_KEYBOARD, &testkeyboardListener);
 
     addObject(o_1);
 

@@ -4,9 +4,12 @@
 #define ACTION_IMPASSIBLE 0
 #define ACTION_MOVE 1
 #define ACTION_INTERACT 2
+#define ACTION_DOOR 3
 
 typedef struct Action {
     int code;
+    struct Point target;
+    struct Object other;
 } Action;
 
 #endif

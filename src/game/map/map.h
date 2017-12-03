@@ -1,13 +1,18 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include "term/color.h"
-#include "objects/object.h"
+// Engine
+#include "render/render.h"
+#include "object/object.h"
 
 // Map generation algorithm types
 #define TUNNELING_ALG 0
 #define CELLULAR_ALG 1
 #define RANDOMWALK_ALG 2
+
+// Map environment types
+#define MAP_DUNGEON 1
+#define MAP_CAVE 4
 
 // Tile attributes
 #define SOFT 0
@@ -22,12 +27,26 @@
 
 // Tile colors
 #define WALL_COLOR (Color){0, 0, 0, 1.0};
+#define OPEN_COLOR (Color){128, 128, 128, 1.0};
 #define ROOM_COLOR (Color){128, 128, 128, 1.0};
 // #define HALL_COLOR (Color){192, 192, 192, 1.0};
 #define HALL_COLOR (Color){64, 64, 64, 1.0};
 #define DOOR_COLOR (Color){128, 128, 64, 1.0};
 
-struct Map {
+#define SEEN_COLOR (Color){24, 24, 24, 1.0}
+
+typedef struct Tile {
+    struct Pixel p;
+    int solid;
+    int type;
+    int seen;
+} Tile;
+
+typedef struct Map {
+    int id;
+
+    int type;
+
     struct Tile *tiles;
     int width;
     int height;
@@ -35,31 +54,39 @@ struct Map {
     // Algorithm specific data for the map
     void *data;
 
-    Point player_start;
-};
-
-struct Tile {
-    Pixel p;
-    int solid;
-    int type;
-};
+    struct Point player_start;
+} Map;
 
 typedef struct MapEvent {
     struct Map *map;
 } MapEvent;
 
-void close_map(struct Object *o);
+int renderMap(struct Map *map, struct Screen *s);
+void clearMap(Map *o);
+void closeMap(Object *o);
 
-void initMap();
-void generate_map(struct Map *map, 
+void initMapObj();
+void initMap(Map *map);
+void generateMap(Map *map, 
                 int alg, 
                 unsigned int width, 
                 unsigned int height);
 
+// Tile generation functions
+void putWall(struct Tile *tile);
+void putOpen(struct Tile *tile);
+void putRoom(struct Tile *tile);
+void putHall(struct Tile *tile);
+void putDoor(struct Tile *tile);
 
-void map_tunneling(struct Map *map);
-void map_cellular(struct Map *map);
-void map_randomwalk(struct Map *map);
+// Map generation algorithms
+void mapTunneling(Map *map);
+void mapCellular(Map *map);
+void mapRandomwalk(Map *map);
+
+// Map Utility Functions
+int isSolid(Map *map, Point p);
+int isSolidOct(Map *map, Point p, int octant, Point origin);
 
 #endif
 

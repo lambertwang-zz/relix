@@ -1,8 +1,6 @@
 #include "input.h"
-#include "../objects/objectManager.h"
-#include "../log/log.h"
-#include "../constants.h"
 
+// Library
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +15,11 @@
 #else
 #error "unknown platform"
 #endif
+
+// Engine
+#include "object/objectManager.h"
+#include "log/log.h"
+#include "constants.h"
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
@@ -35,9 +38,8 @@ DWORD out_settings;
 #endif
 
 int initInput() {
-    writeLog(LOG_INPUT, "input::initInput(): Initialzing input");
-
 #if defined __linux__
+    writeLog(LOG_INPUT, "input::initInput(): Initialzing input for linux");
     struct termios new_settings;
     // Save old termios settings
     tcgetattr(0, &prev_settings);
@@ -50,6 +52,7 @@ int initInput() {
     old_fl = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, old_fl | O_NONBLOCK);
 #elif defined _WIN32 || defined _WIN64
+    writeLog(LOG_INPUT, "input::initInput(): Initialzing input for windows");
     h_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
     if (h_stdout == INVALID_HANDLE_VALUE) {
         writeLog(LOG_INPUT, "input::initInput(): Error: Unable to get stdout handle.");
@@ -140,7 +143,7 @@ int createMouseEvent(int x, int y, int button, char status) {
 
 int readCh(unsigned char *out) {
 #if defined __linux__
-    return read(0, &out, 1);
+    return read(0, out, 1);
 #elif defined _WIN32 || defined _WIN64
     if (_kbhit()) {
         // if (!ReadConsole(h_stdout, &out, 1, &read_result, NULL)) {
@@ -169,7 +172,7 @@ char readSgrValue(char *buff) {
     return '\0';
 }
 
-int csiMouse() {
+int sgrMouse() {
     char button_str[SGR_BUFF_LEN];
     char x_str[SGR_BUFF_LEN];
     char y_str[SGR_BUFF_LEN];
@@ -179,14 +182,29 @@ int csiMouse() {
     readSgrValue(x_str);
     buff = readSgrValue(y_str);
 
-    writeLog(LOG_INPUT_V, "input::csoMouse(): Mouse: Button: %s X: %s Y: %s", button_str, x_str, y_str);
-#ifdef DEBUG_INPUT
-    printf("Button: %s X: %s Y: %s\n", button_str, x_str, y_str);
-#endif
+    writeLog(LOG_INPUT_V, "input::csiMouse(): Mouse: Button: %s X: %s Y: %s", button_str, x_str, y_str);
     return createMouseEvent(atoi(x_str), atoi(y_str), atoi(button_str), buff);
 }
 
+int x10Mouse() {
+    unsigned char button_chr;
+    unsigned char x_chr;
+    unsigned char y_chr;
+
+    readCh(&button_chr);
+    readCh(&x_chr);
+    readCh(&y_chr);
+    char action = MOUSE_PRESS;
+    if (button_chr % 32 == 3) {
+        action = MOUSE_RELEASE;
+    }
+
+    writeLog(LOG_INPUT_V, "input::x10Mouse(): Mouse: Button: %u X: %u Y: %u", button_chr, x_chr, y_chr);
+    return createMouseEvent(x_chr - 32, y_chr - 32, button_chr - 32, action);
+}
+
 int csiArrow(char code) {
+    writeLog(LOG_INPUT_V, "input::csiArrow(): CSI arrow code: %d", code);
     createKeyboardEvent(code, KEYBOARD_ESCAPE);
     return 0;
 }
@@ -194,14 +212,17 @@ int csiArrow(char code) {
 int csi() {
     unsigned char buff;
     if (readCh(&buff)) {
+        writeLog(LOG_INPUT_V, "input::csi(): CSI code: %d", buff);
         switch (buff) {
-            case '<':
-                return csiMouse();
+            case '<': // SGR
+                return sgrMouse();
+            case 'M': // x10 compat
+                return x10Mouse();
             case ARROW_UP_WIN:
                 return csiArrow(ARROW_UP);
             case ARROW_DOWN_WIN:
                 return csiArrow(ARROW_DOWN);
-            case ARROW_RIGHT_WIN:
+            // case ARROW_RIGHT_WIN:
                 return csiArrow(ARROW_RIGHT);
             case ARROW_LEFT_WIN:
                 return csiArrow(ARROW_LEFT);
@@ -243,7 +264,10 @@ int captureInput() {
 #ifdef DEBUG_INPUT
         printf("%d\n", buff);
 #endif
-        writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %u", buff);
+        writeLog(LOG_INPUT_V, "input::readInput(): ASCII Input %u  %c", buff, buff);
+        if (buff == '\e') {
+            writeLog(LOG_INPUT_V, "input::readInput(): Escape code %u", buff);
+        }
         switch (buff) {
             case '\e':
                 return escape();
@@ -257,6 +281,7 @@ int captureInput() {
     return 1;
 }
 
+#if defined _WIN32 || defined _WIN64
 int winMouseEvent(MOUSE_EVENT_RECORD ev) {
     static int prev_button_state = 0;
 
@@ -297,6 +322,7 @@ int winMouseEvent(MOUSE_EVENT_RECORD ev) {
     writeLog(LOG_INPUT_V, "input::winMouseEvent(): Mouse: Button: %d X: %d Y: %d", button, x_pos, y_pos);
     return createMouseEvent(x_pos, y_pos, button, status);
 }
+#endif
 
 // Windows only function
 int captureInputEvents() {

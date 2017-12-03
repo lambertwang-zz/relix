@@ -1,8 +1,11 @@
-#include "clock.h"
+// Library
+#include <time.h>
+#include <stdio.h>
+
+// Engine
 #include "utility.h"
 
-#include "time.h"
-#include "stdio.h"
+#include "clock.h"
 
 char *timeString() {
     static char time_str[30];

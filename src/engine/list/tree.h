@@ -1,25 +1,26 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
+// Engine
 #include "array.h"
 
 #define INIT_STACK_SIZE 16
 
-struct Iterator {
+typedef struct Iterator {
     const struct Tree *tree;
 
     struct Array stack;
 
     int index;
     struct Node *current;
-};
+} Iterator;
 
-struct Tree {
+typedef struct Tree {
     struct Node *root;
     int count;
-};
+} Tree;
 
-struct Node {
+typedef struct Node {
     void *data;
     unsigned int id;
     unsigned char isRed;
@@ -29,45 +30,45 @@ struct Node {
     struct Node *parent;
 
     struct Tree *tree;
-};
+} Node;
 
 // Internal tree functions
-void validateTree(const struct Tree *tree);
+void validateTree(const Tree *tree);
 
-void printTree(const struct Node *node);
-void printNode(const struct Node *node);
+void printTree(const Node *node);
+void printNode(const Node *node);
 
-struct Node *grandParent(const struct Node *node);
-struct Node *sibling(const struct Node *node);
-struct Node *uncle(const struct Node *node);
+Node *grandParent(const Node *node);
+Node *sibling(const Node *node);
+Node *uncle(const Node *node);
 
-void rotateLeft(struct Node *node);
-void rotateRight(struct Node *node);
+void rotateLeft(Node *node);
+void rotateRight(Node *node);
 
-struct Node **max(struct Node **node);
-struct Node **min(struct Node **node);
+Node **max(Node **node);
+Node **min(Node **node);
 
-struct Node *newNode(void *data, unsigned int id);
+Node *newNode(void *data, unsigned int id);
 
 // External tree functions
-int initTree(struct Tree *tree);
-int closeTree(struct Tree *tree);
-int clearTree(struct Tree *tree);
+int initTree(Tree *tree);
+int closeTree(Tree *tree);
+int clearTree(Tree *tree);
 
-void *getData(struct Tree *tree, unsigned int id);
-int insert(struct Tree *tree, void *data, unsigned int id);
-int removeId(struct Tree *tree, unsigned int id);
+void *getData(Tree *tree, unsigned int id);
+int insert(Tree *tree, void *data, unsigned int id);
+int removeId(Tree *tree, unsigned int id);
 
 // Iterator functions
-struct Iterator *initIterator(struct Tree *tree);
-struct Node *getNode(const struct Iterator *it);
-void *getItem(const struct Iterator *it);
-struct Node *getNext(struct Iterator *it);
-int done(const struct Iterator *it);
-int closeIterator(struct Iterator *it);
+Iterator *initIterator(Tree *tree);
+Node *getNode(const Iterator *it);
+void *getItem(const Iterator *it);
+Node *getNext(Iterator *it);
+int done(const Iterator *it);
+int closeIterator(Iterator *it);
 
 // Unused
-void generate(struct Iterator *it);
+void generate(Iterator *it);
 
 #endif
 

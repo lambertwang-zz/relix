@@ -1,19 +1,20 @@
-
 #include "game.h"
 
+// Library
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+// Engine
 #include "constants.h"
 #include "input/input.h"
 #include "log/log.h"
-#include "objects/objectManager.h"
+#include "object/objectManager.h"
 #include "term/screen.h"
-#include "term/term.h"
 #include "utility/clock.h"
 #include "utility/random.h"
 #include "utility/utility.h"
 
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 int initGame() {
     frame_count = 0;
@@ -23,7 +24,7 @@ int initGame() {
     // Init objects and event registration
     initObjects();
     initInput();
-    initScreen();
+    initScreenManager();
     writeLog(LOG_INIT, "game::initGame(): Initialized game");
 
     signal(SIGINT, closeGame);
@@ -31,12 +32,12 @@ int initGame() {
 }
 
 void closeGame(int a) {
-    closeScreen();
+    closeScreenManager();
     closeInput();
     closeObjects();
     closeLog();
 
-    exit(0);
+    exit(a);
 }
 
 int loop() {
@@ -78,38 +79,26 @@ int loop() {
         // df::EventBeforeDraw p_bd_event = df::EventBeforeDraw();
         // onEvent(&p_bd_event);
 
-        // Call worldManager draw
-        // world_manager.draw();
+        // Render lighting before rendering objects
+        int lightsRendered = renderObjectLights();
+        writeLog(LOG_GAME_V, "game::loop(): Rendered %d lights", lightsRendered);
+
         int objectsRendered = renderObjects();
         writeLog(LOG_GAME_V, "game::loop(): Rendered %d objects", objectsRendered);
-        /*
-        int i, j;
 
+        renderScreens();
 
-        for (i = 0; i < screen.ts.lines; i++) {
-            int sat = (int)(((float)i / (float)screen.ts.lines) * 192.0) + 63;
-            for (j = 0; j < screen.ts.cols; j++) {
-                putPixelRgb(j, i, hslToRgb((Color){(i * 3 + j + frame_count / 5) % 256, sat, 255}));
-                // putPixelRgb(j, i, (Color){i * 40, j * 40, 255});
-                // putPixelHSL(i, j, (Color){255, 255, 255});
-                // putPixelRgb(j, i, (Color){0, 0, 0});
-                // putPixel(j, i, i * 16 + j);
-            }
-        }
-        */
-
-
-        swapScreen();
+        // swapScreen();
 
         if (frame_count % 30 == 0) {
             loop_time_saved = loop_time;
         }
-        printf("\e[1G\e[%dC", screen.margin_x);
+        printf("\e[1G\e[%dC", 0);
         printf(" Loop: %5d ", loop_time_saved);
         printf("Frame: %3d ", frame_count);
-        printf("Inits: %3d ", screen.times_init);
-        printf("Lines: %3d ", screen.ts.lines);
-        printf("Cols: %3d ", screen.ts.cols);
+        // printf("Inits: %3d ", screen.times_init);
+        // printf("Lines: %3d ", screen.ts.lines);
+        // printf("Cols: %3d ", screen.ts.cols);
         printf("Obj rendered: %3d ", objectsRendered);
         fflush(stdout);
 
