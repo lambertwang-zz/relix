@@ -47,6 +47,15 @@ Color minColor(Color a, Color b) {
     return (Color){min(a.r, b.r), min(a.g, b.g), min(a.b, b.b), 1.0};
 }
 
+Color colorMultL(Color a, Color b) {
+    return (Color){
+        min(255, a.r * (((float) b.r) / 128.0)),
+        min(255, a.g * (((float) b.g) / 128.0)),
+        min(255, a.b * (((float) b.b) / 128.0)),
+        1.0
+    };
+}
+
 int absColor(Color a) {
     return a.r + a.g + a.b;
 }
@@ -68,8 +77,10 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
     // BG pixel is always opaque
     p.c_bg = alphaComposite(p.c_bg, s->pixel_buffer[index].c_bg);
     if (!no_light) {
-        p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
-        p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
+        // p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
+        // p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
+        p.c_bg = colorMultL(p.c_bg, s->light_buffer[index]);
+        p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);
     }
     
     p.bg = rgbToTerm(p.c_bg);
@@ -116,9 +127,9 @@ int putLight(Screen *s, int x, int y, Color l) {
 
     Color *current_l = &s->light_buffer[index];
 
-    current_l->r = max(current_l->r, l.r);
-    current_l->g = max(current_l->g, l.g);
-    current_l->b = max(current_l->b, l.b);
+    current_l->r = min(255, (int) current_l->r + l.r);
+    current_l->g = min(255, (int) current_l->g + l.g);
+    current_l->b = min(255, (int) current_l->b + l.b);
 
     return 0;
 }

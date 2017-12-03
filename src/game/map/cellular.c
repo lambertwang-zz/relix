@@ -150,6 +150,7 @@ void mapCellular(struct Map *map) {
         do {
             center = (Point){drandom_i(0, map->width - 1), drandom_i(0, map->height - 1)};
         } while (map->tiles[center.x + center.y * map->width].type != TILE_ROOM);
+        map->player_start = center;
         open_space = fill_all_others(map, center);
     } while ((float)open_space / (float)(map->width * map->height) < init_space_req - .2 * t && t < max_iter);
 

@@ -17,6 +17,20 @@
 #include "../world/world.h"
 #include "../character/character.h"
 
+void dropLight(Point target) {
+    struct Object *o = malloc(sizeof(struct Object));
+    initObject(o);
+    o->pos = target;
+    o->pos.z = 8;
+    o->pix.chr = '1';
+
+    o->pix.c_fg = (Color){255, 255, 135},
+
+    o->renderLight = &renderPlayerLight;
+
+    addObject(o);
+}
+
 int playerMapListener(struct Object *o, Event ev) {
     MapEvent m_ev = *(MapEvent*)ev.data;
     
@@ -35,6 +49,9 @@ int playerListener(Object *o, Event ev) {
                 break;
             case ACTION_DOOR:
                 openDoor(tick->act.target);
+                break;
+            case ACTION_LIGHT:
+                dropLight(tick->act.target);
                 break;
             default:
                 break;

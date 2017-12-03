@@ -6,6 +6,8 @@
 #define ACTION_INTERACT 2
 #define ACTION_DOOR 3
 
+#define ACTION_LIGHT 10
+
 typedef struct Action {
     int code;
     struct Point target;

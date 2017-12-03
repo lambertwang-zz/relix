@@ -28,10 +28,13 @@
 // Tile colors
 #define WALL_COLOR (Color){0, 0, 0, 1.0};
 #define OPEN_COLOR (Color){128, 128, 128, 1.0};
-#define ROOM_COLOR (Color){128, 128, 128, 1.0};
+// #define ROOM_COLOR (Color){128, 128, 128, 1.0};
+#define ROOM_COLOR (Color){135, 135, 175, 1.0};
 // #define HALL_COLOR (Color){192, 192, 192, 1.0};
-#define HALL_COLOR (Color){64, 64, 64, 1.0};
-#define DOOR_COLOR (Color){128, 128, 64, 1.0};
+// #define HALL_COLOR (Color){64, 64, 64, 1.0};
+// #define HALL_COLOR (Color){135, 135, 175, 1.0};
+#define HALL_COLOR (Color){128, 128, 128, 1.0};
+#define DOOR_COLOR (Color){95, 95, 0, 1.0};
 
 #define SEEN_COLOR (Color){24, 24, 24, 1.0}
 

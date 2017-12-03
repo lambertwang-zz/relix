@@ -43,7 +43,7 @@ void mapRandomwalk(struct Map *map) {
     map->type = MAP_CAVE;
     int i;
 
-    Point next  = (Point){map->width / 2, map->height / 2};
+    Point next = (Point){map->width / 2, map->height / 2};
     int open_space = 0;
     int iter = 0;
     int max_iter = map->width * map->height * 4;
@@ -52,6 +52,7 @@ void mapRandomwalk(struct Map *map) {
         iter++;
         open_space += walk(map, &next);
     }
+    map->player_start = next;
 
     // Color map appropriately
     for (i = 0; i < map->width * map->height; i++) {

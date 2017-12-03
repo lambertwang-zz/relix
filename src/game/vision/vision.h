@@ -13,6 +13,6 @@ int computeDiamondWalls(
     int x, 
     Point top, 
     Point bottom, 
-    int (* illuminate)(Map *, Point, int, float));
+    int (* illuminate)(Map *, Point, Point, int, float));
 #endif
 

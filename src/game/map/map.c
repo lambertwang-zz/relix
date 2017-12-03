@@ -108,12 +108,11 @@ void generateMap(struct Map *map,
     map->player_start = (Point){0, 0};
 
     int i, j;
-    for (i = 0; i < map->height; i++) {
-        for (j = 0; j < map->width; j++) {
-            map->tiles[j + i * map->width].solid = SOLID;
-            map->tiles[j + i * map->width].type = TILE_WALL;
-            map->tiles[j + i * map->width].p = PIXEL_NULL;
-        }
+    for (i = 0; i < map->height * map->width; i++) {
+        map->tiles[i].solid = SOLID;
+        map->tiles[i].type = TILE_WALL;
+        map->tiles[i].p = PIXEL_NULL;
+        map->tiles[i].seen = 0;
     }
 
     switch (alg) {

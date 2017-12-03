@@ -175,7 +175,6 @@ void mapTunneling(struct Map *map) {
 
             room_count++;
 
-
             if (open_space > MAX_ROOM_DENSITY * map->width * map->height) {
                 break;
             }

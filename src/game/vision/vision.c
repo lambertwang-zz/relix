@@ -24,7 +24,7 @@ int computeDiamondWalls(
     int x, 
     Point top, 
     Point bottom, 
-    int (* illuminate)(Map *, Point, int, float)) {
+    int (* illuminate)(Map *, Point, Point, int, float)) {
     for(x = x; x <= range; x++) {
         int top_y;
         if(top.x == 1) {
@@ -73,7 +73,7 @@ int computeDiamondWalls(
             // NOTE: use the following line instead to make the algorithm symmetrical
             // if (inRange && (y != top.y || vecGrEq(top, (Point){x, y})) && (y != bottom_y || vecLtEq(bottom, (Point){x, y}))) {
             if (inRange) {
-                int result = illuminate(map, (Point){tx, ty}, range, distance); 
+                int result = illuminate(map, origin, (Point){tx, ty}, range, distance); 
                 if (result) {
                     return result;
                 }

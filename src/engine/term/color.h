@@ -37,7 +37,7 @@ typedef struct Pixel {
 Color scaleColor(Color c, float f);
 
 // Alpha is ignored when converting hsl/rgv to term color code
-unsigned char rgbToTerm(Color c);
+unsigned char rgbToTerm(const Color c);
 unsigned char hslToTerm(Color c);
 
 // Composite a over b

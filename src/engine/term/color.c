@@ -4,9 +4,12 @@ Color scaleColor(Color c, float f) {
     return (Color){c.r * f, c.g * f, c.b * f, c.a};
 }
 
-unsigned char rgbToTerm(Color c) {
-    if (c.r == c.b && c.b == c.g) {
-        int g_t = (int)(c.r / 9.81);
+unsigned char rgbToTerm(const Color c) {
+    int r_t = c.r <= 75 ? 0 : (c.r - 36) / 40;
+    int g_t = c.g <= 75 ? 0 : (c.g - 36) / 40;
+    int b_t = c.b <= 75 ? 0 : (c.b - 36) / 40;
+    if (r_t == g_t && g_t == b_t) {
+        int g_t = (int)((c.r + c.g + c.b) / 29.43);
         switch (g_t) {
             case 0:
                 return 16;
@@ -16,9 +19,6 @@ unsigned char rgbToTerm(Color c) {
                 return 231 + g_t;
         }
     }
-    int r_t = c.r / 43;
-    int g_t = c.g / 43;
-    int b_t = c.b / 43;
     return 16 + b_t + g_t * 6 + r_t * 36;
 }
 
