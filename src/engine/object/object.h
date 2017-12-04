@@ -26,8 +26,9 @@ typedef struct Object {
     int (*update)(struct Object *);
     void (*close)(struct Object *);
 
-    int (**event_listeners)(struct Object *m, Event ev);
-    int events_size;
+    Tree event_listeners;
+    // int (**event_listeners)(struct Object *m, Event ev);
+    // int events_size;
 
     void *data;
 } Object;

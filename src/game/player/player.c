@@ -20,19 +20,23 @@
 #include "../character/character.h"
 #include "../light/light.h"
 
+/*
 struct TorchData {
     int range;
     Color c;
     float factor;
 };
+*/
 
 int renderTorchLight(Object *o, Screen *s) {
-    struct TorchData *data = o->data;
+    // struct TorchData *data = o->data;
 
     pointLight(s, world.current_map, o->pos, 
-        scaleColor(data->c, data->factor),
-        data->range);
-
+        // scaleColor(data->c, data->factor),
+        (Color){192, 192, 90},
+        10);
+        // data->range);
+/*
     if (nrandom_f() < 0.05) {
         data->factor = nrandom_f() * 0.2 + 0.8;
     }
@@ -40,6 +44,7 @@ int renderTorchLight(Object *o, Screen *s) {
     if (nrandom_f() < 0.05) {
         data->range = nrandom_i(7, 10);
     }
+    */
     return 1;
 }
 
@@ -54,12 +59,14 @@ void dropLight(Point target) {
     o->pos = target;
     o->pos.z = 8;
     o->pix.chr = '1';
+    /*
 
     struct TorchData *data = malloc(sizeof(struct TorchData));
     o->data = data;
     data->range = 8;
     data->c = (Color){192, 192, 90};
     data->factor = 1.0;
+    */
     
 
     o->pix.c_fg = (Color){255, 255, 135},

@@ -80,11 +80,15 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
         // p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
         // p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
         p.c_bg = colorMultL(p.c_bg, s->light_buffer[index]);
-        p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);
+        if (p.chr != ' ') {
+            p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);
+        }
     }
     
     p.bg = rgbToTerm(p.c_bg);
-    p.fg = rgbToTerm(p.c_fg);
+    if (p.chr != ' ') {
+        p.fg = rgbToTerm(p.c_fg);
+    }
 
     s->pixel_buffer[index] = p;
 

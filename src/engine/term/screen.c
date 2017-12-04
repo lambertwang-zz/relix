@@ -18,6 +18,7 @@ void setCamera(Screen *screen, Point loc) {
 
 void initScreen(Screen *screen) {
     static int screen_id_iterator = 0;
+    int i;
 
     // If re-init, free buffers
     if (screen->times_init > 0) {
@@ -51,6 +52,10 @@ void initScreen(Screen *screen) {
     screen->prev_pixel_buffer = malloc(sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     clearScreen(screen);
+
+    for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
+        screen->prev_pixel_buffer[i] = PIXEL_NULL;
+    }
 }
 
 // Clears a screen buffer

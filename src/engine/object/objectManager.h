@@ -11,8 +11,7 @@ struct ObjectManager {
     Tree object_list;
     Tree remove_queue; 
 
-    Tree **event_listeners;
-    int event_count;
+    Tree event_listeners;
 };
 
 int sendEvent(Event ev);

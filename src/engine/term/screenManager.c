@@ -121,6 +121,7 @@ int renderScreens() {
 #endif
 
     // Line-buffer
+    // TODO: Clear still-reachable memory block (not a leak)
     char *buffer = malloc(sizeof(char) * 24 * screen->ts.cols);
     unsigned int charsPrinted;
 
@@ -166,6 +167,8 @@ int renderScreens() {
         fwrite(buffer, sizeof(char), charsPrinted, stdout);
     }
 
+    free(buffer);
+
     memcpy(screen->prev_pixel_buffer, screen->pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     clearScreen(screen);
@@ -179,7 +182,6 @@ int renderScreens() {
     fwrite("\e[0m", sizeof(char), 5, stdout);
     fflush(stdout);
 
-    free(buffer);
     
     return 0;
 }

@@ -260,7 +260,7 @@ int clearTree(struct Tree *tree) {
     return 0;
 }
 
-void *searchTree(struct Node *node, unsigned int id) {
+Node *searchTree(struct Node *node, unsigned int id) {
     if (node == NULL) {
         return NULL;
     }
@@ -269,11 +269,19 @@ void *searchTree(struct Node *node, unsigned int id) {
     } else if (id < node->id) {
         return searchTree(node->left, id);
     }
-    return node->data;
+    return node;
+}
+
+Node *getTreeNode(struct Tree *tree, unsigned int id) {
+    return searchTree(tree->root, id);
 }
 
 void *getData(struct Tree *tree, unsigned int id) {
-    return searchTree(tree->root, id);
+    Node *n = searchTree(tree->root, id);
+    if (n == NULL) {
+        return n;
+    }
+    return searchTree(tree->root, id)->data;
 }
 
 struct Node *newNode(void *data, unsigned int id) {

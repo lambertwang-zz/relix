@@ -9,14 +9,14 @@ unsigned char rgbToTerm(const Color c) {
     int g_t = c.g <= 75 ? 0 : (c.g - 36) / 40;
     int b_t = c.b <= 75 ? 0 : (c.b - 36) / 40;
     if (r_t == g_t && g_t == b_t) {
-        int g_t = (int)((c.r + c.g + c.b) / 29.43);
-        switch (g_t) {
+        int gray_t = (int)((c.r + c.g + c.b) / 29.43);
+        switch (gray_t) {
             case 0:
                 return 16;
             case 25:
                 return 231;
             default:
-                return 231 + g_t;
+                return 231 + gray_t;
         }
     }
     return 16 + b_t + g_t * 6 + r_t * 36;

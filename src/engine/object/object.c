@@ -33,6 +33,7 @@ int renderDefault(Object *o, Screen *s) {
 }
 
 int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Event)) {
+    /*
     if (ev_id == o->events_size) {
         writeLog(LOG_OBJECTMANAGER, "object::listenEvent(): Expanding object event list size %d for event id %d", o->events_size, ev_id);
         int (**tmp_l)(struct Object *, Event) = malloc(sizeof(int (*)(struct Object *, Event)) * o->events_size * 2);
@@ -46,11 +47,27 @@ int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Ev
         o->events_size *= 2;
     }
     o->event_listeners[ev_id] = listener;
+    */
+    Node *n = getTreeNode(&o->event_listeners, ev_id);
+    if (n == NULL) {
+        insert(&o->event_listeners, listener, ev_id);
+    } else {
+        n->data = listener;
+    }
     registerListener(o, ev_id);
     return 0;
 }
 
-void closeDefault(struct Object *o) {
+void closeDefault(Object *o) {
+    Iterator *it = initIterator(&o->event_listeners);
+    while (!done(it)) {
+        Node *n = getNext(it);
+        unregisterListener(o, n->id);
+    }
+    closeIterator(it);
+    closeTree(&o->event_listeners);
+
+    /*
     int i;
     for (i = 0; i < o->events_size; i++) {
         if (o->event_listeners[i] != NULL) {
@@ -58,6 +75,7 @@ void closeDefault(struct Object *o) {
         }
     }
     free(o->event_listeners);
+    */
     if (o->data != NULL) {
         free(o->data);
     }
@@ -83,12 +101,13 @@ void initObject(struct Object *o) {
     o->update = &updateDefault;
     o->close = &closeDefault;
 
-    o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
-    o->events_size = INIT_EVENT_COUNT;
-    int i;
-    for (i = 0; i < o->events_size; i++) {
-        o->event_listeners[i] = NULL;
-    }
+    initTree(&o->event_listeners);
+    // o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
+    // o->events_size = INIT_EVENT_COUNT;
+    // int i;
+    // for (i = 0; i < o->events_size; i++) {
+    //     o->event_listeners[i] = NULL;
+    // }
 
     o->data = NULL;
 }

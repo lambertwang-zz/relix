@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #define COLOR_BLANK (Color){0, 0, 0, 1.0}
+#define COLOR_BLACK (Color){0, 0, 0, 1.0}
 #define COLOR_EMPTY (Color){0, 0, 0, 0.0}
 #define COLOR_WHITE (Color){255, 255, 255, 1.0}
 #define COLOR_RED (Color){255, 0, 0, 1.0}

@@ -56,6 +56,7 @@ int closeTree(Tree *tree);
 int clearTree(Tree *tree);
 
 void *getData(Tree *tree, unsigned int id);
+Node *getTreeNode(Tree *tree, unsigned int id);
 int insert(Tree *tree, void *data, unsigned int id);
 int removeId(Tree *tree, unsigned int id);
 
