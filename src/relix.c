@@ -28,10 +28,10 @@ int main(int argc, char **argv) {
     addLogLevel(LOG_USER);
     addLogLevel(LOG_LOAD_V);
 
-    // if (initResources()) {
-    //     closeGame(1);
-    //     return 0;
-    // }
+    if (initResources()) {
+        closeGame(1);
+        return 0;
+    }
 
     // initMainMenu();
     initWorld();

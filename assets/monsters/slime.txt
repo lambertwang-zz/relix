@@ -1,20 +1,12 @@
 {
-  family: "Slime"
-  entries: [
+  "family": "Slime",
+  "entries1":
     {
-      name: "Blue Slime"
-      min_level: 1
-      max_lavel: 5
-      challenge: 1
-      hit_dice: "d6"
-    }
-    {
-      name: "Green Slime"
-      min_level: 1
-      max_lavel: 8
-      challenge: 1
-      hit_dice: "d6+1"
-    }
-  ]
+      "name": "Blue Slime",
+      "min_level": 1,
+      "max_lavel": 5,
+      "challenge": -1,
+      "hit_dice": "d6",
+    },
 }
 

@@ -10,251 +10,222 @@
 // Game
 #include "../relix.h"
 
-RNode *parseObject(FILE *file);
-int readData(void **data, FILE *file);
+JsonNode *parseValue(FILE *file, char *c_buf);
 
-RNode *createRNode() {
-    RNode *new = malloc(sizeof(RNode));
+JsonNode *createJsonNode() {
+    JsonNode *new_node = malloc(sizeof(JsonNode));
+    new_node->type = -1;
+    new_node->data = NULL;
 
-    initArray(&new->values);
-
-    return new;
+    return new_node;
 }
 
-int closeNodeVal(NodeVal *val) {
+void closeJsonNode(JsonNode *node) {
+    writeLog(LOG_LOAD_V, "parser::closeJsonNode(): Closing Node.");
     int i;
-    if (val->data == NULL) {
-        writeLog(LOG_LOAD, "parser::closeNodeVal(): ERROR: Attempting to close node value NULL.");
-        free(val);
-        return -1;
-    }
-    switch (val->type) {
-        case NODE_NULL:
-            writeLog(LOG_LOAD, "parser::closeNodeVal(): ERROR: Attempting to close node type NULL.");
-            break;
-        case NODE_OBJ:
-            writeLog(LOG_LOAD_V, "parser::closeNodeVal(): Closing Obj.");
-            closeRNode(val->data);
-            break;
-        case NODE_ARRAY:
-            writeLog(LOG_LOAD_V, "parser::closeNodeVal(): Closing Array with %d elements.", ((Array *)val->data)->count);
-            for (i = 0; i < ((Array *)val->data)->count; i++) {
-                closeNodeVal(getDataArray((Array *)val->data, i));
+    if (node->data != NULL) {
+        if (node->type == JSON_OBJ) {
+            JsonObjData *obj_data = node->data;
+            for (i = 0; i < obj_data->props.count; i++) {
+                JsonObjProp *obj_prop = getDataArray(&obj_data->props, i);
+                closeJsonNode(obj_prop->value);
+                free(obj_prop);
             }
-            closeArray((Array *)val->data);
-            free(val->data);
-            break;
-        default:
-            writeLog(LOG_LOAD_V, "parser::closeNodeVal(): Closing primitive.");
-            free(val->data);
-            break;
+            closeArray(&obj_data->props);
+        }
+        free(node->data);
     }
-    free(val);
-    return 0;
-}
-
-void closeRNode(RNode *node) {
-    writeLog(LOG_LOAD_V, "parser::closeRNode(): Closing Node.");
-    int i;
-    for (i = 0; i < node->values.count; i++) {
-        NodeVal *node_val = getDataArray(&node->values, i);
-        closeNodeVal(node_val);
-    }
-    closeArray(&node->values);
     free(node);
 }
 
-int pushNodeValue(char label[LABEL_MED], int type, void *data, RNode *node) {
-    if (data == NULL) {
-        writeLog(LOG_LOAD, "parser::pushNodeValue(): ERROR: Attempting to push NULL data to node.");
-        return -1;
-    }
-
-    NodeVal *new_val = malloc(sizeof(NodeVal));
-
-    new_val->type = type;
-    strcpy(new_val->label, label);
-
-    new_val->data = data;
-    push(&node->values, new_val);
-    return 0;
-}
-
-int readLabel(char *label, FILE *file, char *c_buf) {
-    char *head = label;
-    *head++ = *c_buf;
-    while ((*c_buf = fgetc(file)) != EOF) {
+int parseWhitespace(FILE *file, char *c_buf) {
+    while (*c_buf != EOF) {
         switch (*c_buf) {
-            case ':':
-                *head = '\0';
-                return 0;
+            case ' ':
+            case '\t':
+            case '\n':
+                *c_buf = fgetc(file);
+                continue;
             default:
-                *head++ = *c_buf;
-                break;
+                return 0;
         }
     }
-    *head = '\0';
-    return -1;
+    return 1;
 }
 
-
-char *readString(FILE *file) {
+JsonNode *parseString(FILE *file, char *c_buf) {
+    writeLog(LOG_LOAD_V, "parser::parseString(): Beginning to parse string.");
+    JsonNode *new_node = createJsonNode(); 
     char *result = malloc(sizeof(char) * LABEL_LONG);
     char *head = result;
-    char c;
 
-    while ((c = fgetc(file)) != EOF) {
-        switch (c) {
-            case '"':
-                writeLog(LOG_LOAD_V, "parser::readString(): Read string string '%s'.", result);
-                return result;
-            default:
-                *head++ = c;
-                if (head - LABEL_LONG >= result) {
-                    writeLog(LOG_LOAD, "parser::readString(): ERROR: String too long '%s'.", result);
-                    return result;
-                }
-                break;
-        }
+    new_node->data = result;
+    new_node->type = JSON_STRING;
+
+    if (*c_buf != '"') {
+        writeLog(LOG_LOAD, "parser::parseString(): ERROR: Expected '\"' at start of string.");
+        free(result);
+        return NULL;
     }
-    writeLog(LOG_LOAD, "parser::readString(): ERROR: Reached end of file reading string '%s'.", result);
-    return result;
-}
-
-void *readArray(FILE *file) {
-    writeLog(LOG_LOAD_V, "parser::readArray(): Reading array.");
-    Array *new_array = malloc(sizeof(Array));
-    initArray(new_array);
-    void *data_tmp = NULL;
-
-    int data_type = readData(&data_tmp, file);
-
-    while (data_type != NODE_NULL) {
-        NodeVal *new_val = malloc(sizeof(NodeVal));
-        new_val->type = data_type;
-        new_val->data = data_tmp;
-        strcpy(new_val->label, "\0");
-
-        writeLog(LOG_LOAD_V, "parser::readArray(): Found array element of type %d.", data_type);
-
-        push(new_array, new_val);
-        data_type = readData(&data_tmp, file);
-    }
-    writeLog(LOG_LOAD_V, "parser::readArray(): Parsed array with %d elements.", new_array->count);
-
-    return new_array;
-}
-
-void *readInt(FILE *file, char *c_buf) {
-    char *result = malloc(sizeof(char) * LABEL_SHORT);
-    *result = *c_buf;
-    char *head = result;
-    int *value = malloc(sizeof(int));
 
     while ((*c_buf = fgetc(file)) != EOF) {
         switch (*c_buf) {
-            case ' ':
-            case '\t':
-            case '\n':
-                *value = atoi(result);
-                writeLog(LOG_LOAD_V, "parser::readInt(): Parsed int string '%s' to value '%d'.", result, *value);
-                free(result);
-                return value;
+            case '"':
+                *head = '\0';
+                *c_buf = fgetc(file);
+                writeLog(LOG_LOAD_V, "parser::parseString(): Parsed string '%s'.", result);
+                return new_node;
             default:
                 *head++ = *c_buf;
-                if (head - LABEL_SHORT>= result) {
-                    writeLog(LOG_LOAD, "parser::readInt(): ERROR: Int too long '%s'.", result);
-                    return result;
+                if (head - LABEL_LONG >= result) {
+                    writeLog(LOG_LOAD, "parser::parseString(): ERROR: String too long '%s'.", result);
+                    closeJsonNode(new_node);
+                    return NULL;
                 }
                 break;
         }
     }
-    writeLog(LOG_LOAD, "parser::readString(): ERROR: Reached end of file reading string '%s'.", result);
-    return result;
+    writeLog(LOG_LOAD, "parser::parseString(): ERROR: Reached end of file reading string '%s'.", result);
+    closeJsonNode(new_node);
+    return NULL;
 }
 
-int readData(void **data, FILE *file) {
-    char c;
-    while ((c = fgetc(file)) != EOF) {
-        switch (c) {
-            case ' ':
-            case '\t':
-            case '\n':
-                continue;
-            case '"':
-                *data = readString(file);
-                return NODE_STRING;
-            case '[':
-                *data = readArray(file);
-                return NODE_ARRAY;
-            case '{':
-                *data = parseObject(file);
-                return NODE_OBJ;
-            case ']':
-                writeLog(LOG_LOAD_V, "parser::readData(): Reached end of array.");
-                return NODE_NULL;
-            default:
-                if ((c >= '0' && c <= '9') || c == '-' || c == '+') {
-                    *data = readInt(file, &c);
-                    return NODE_INT;
-                }
-                break;
+JsonNode *parseInt(FILE *file, char *c_buf) {
+    writeLog(LOG_LOAD_V, "parser::parseInt(): Beginning to parse int.");
+    JsonNode *new_node = createJsonNode(); 
+    int *value = malloc(sizeof(int));
+
+    char result[LABEL_SHORT];
+    *result = *c_buf;
+    char *head = result;
+
+    new_node->data = value;
+    new_node->type = JSON_INT;
+
+    // Just reading ints right now
+    while (*c_buf != EOF) {
+        if ((*c_buf >= '0' && *c_buf <= '9') || *c_buf == '-') {
+            *head++ = *c_buf;
+            if (head - LABEL_SHORT >= result - 1) {
+                writeLog(LOG_LOAD, "parser::parseInt(): ERROR: Int too long '%s'.", result);
+                closeJsonNode(new_node);
+                return NULL;
+            }
+        } else {
+            *head = '\0';
+            *value = atoi(result);
+            writeLog(LOG_LOAD_V, "parser::parseInt(): Parsed int string '%s' to value %d.", result, *value);
+            return new_node;
         }
+        *c_buf = fgetc(file);
     }
-    writeLog(LOG_LOAD, "parser::readData(): ERROR: Reached end of file reading data.");
-    return NODE_NULL;
+    writeLog(LOG_LOAD, "parser::parseInt(): ERROR: Reached end of file reading int '%s'.", result);
+    closeJsonNode(new_node);
+    return NULL;
 }
 
-RNode *parseValues(FILE *file, RNode *node) {
-    char c;
-    char label_tmp[LABEL_MED];
-    int data_type = NODE_NULL;
-    void *data_tmp = NULL;
+JsonNode *parseObject(FILE *file, char *c_buf) {
+    writeLog(LOG_LOAD_V, "parser::parseObject(): Beginning to parse object.");
+    JsonNode *new_node = createJsonNode(); 
+    JsonObjData *result = malloc(sizeof(JsonObjData));
+    initArray(&result->props);
 
-    while ((c = fgetc(file)) != EOF) {
-        switch (c) {
-            case ' ':
-            case '\t':
-            case '\n':
-                continue;
+    new_node->data = result;
+    new_node->type = JSON_OBJ;
+
+    while ((*c_buf = fgetc(file)) != EOF) {
+        parseWhitespace(file, c_buf);
+
+        if (*c_buf == '}') {
+            writeLog(LOG_LOAD_V, "parser::parseObject(): Parsed empty object.");
+            return new_node;
+        }
+
+        JsonObjProp *prop = malloc(sizeof(JsonObjProp));
+
+        JsonNode *keyNode = parseString(file, c_buf);
+        if (keyNode == NULL) {
+            writeLog(LOG_LOAD, "parser::parseObject(): ERROR: Unable to parse string for object key.");
+            closeJsonNode(new_node);
+            free(prop);
+            return NULL;
+        }
+        strcpy(prop->key, keyNode->data);
+        closeJsonNode(keyNode);
+        writeLog(LOG_LOAD_V, "parser::parseObject(): Parsed key '%s'.", prop->key);
+
+        parseWhitespace(file, c_buf);
+
+        if (*c_buf != ':') {
+            writeLog(LOG_LOAD, "parser::parseObject(): ERROR:  Expected ':' after object key. Found '%c'.", *c_buf);
+            closeJsonNode(new_node);
+            free(prop);
+            return NULL;
+        }
+        writeLog(LOG_LOAD_V, "parser::parseObject(): Found ':' after object key.");
+        *c_buf = fgetc(file);
+
+        JsonNode *valueNode = parseValue(file, c_buf);
+        if (valueNode == NULL) {
+            writeLog(LOG_LOAD, "parser::parseObject(): ERROR: Unable to parse value for object value.");
+            closeJsonNode(new_node);
+            free(prop);
+            return NULL;
+        }
+
+        prop->value = valueNode;
+
+        push(&result->props, prop);
+
+        parseWhitespace(file, c_buf);
+
+        switch (*c_buf) {
             case '}':
-                writeLog(LOG_LOAD_V, "parser::parseValues(): Reached end of object.");
-                return node;
-            default:
-                readLabel(label_tmp, file, &c);
-                writeLog(LOG_LOAD_V, "parser::parseValues(): Found value with label '%s'.", label_tmp);
-                data_type = readData(&data_tmp, file);
-                pushNodeValue(label_tmp, data_type, data_tmp, node);
-        }
-    }
-    writeLog(LOG_LOAD, "parser::parseValues(): ERROR: Reached end of file while parsing object.");
-    return node;
-}
-
-RNode *parseObject(FILE *file) {
-    writeLog(LOG_LOAD_V, "parser::parseObject(): Parsing Object.");
-    RNode *result = createRNode();
-    writeLog(LOG_LOAD_V, "parser::parseObject(): Created new RNode.");
-    return parseValues(file, result);
-}
-
-RNode *parseFile(FILE *file) {
-    writeLog(LOG_LOAD_V, "parser::parseFile(): Beginning to parse file.");
-    char c;
-
-    while ((c = fgetc(file)) != EOF) {
-        switch (c) {
-            case ' ':
-            case '\t':
-            case '\n':
+                writeLog(LOG_LOAD_V, "parser::parseObject(): Parsed object.");
+                return new_node;
+            case ',':
                 continue;
-            case '{':
-                return parseObject(file);
             default:
-                writeLog(LOG_LOAD, "parser::parseFile(): ERROR: Found value before beginning of object.");
+                writeLog(LOG_LOAD_V, "parser::parseObject(): ERROR: Expected comma or end of object. Found '%c'.", *c_buf);
+                closeJsonNode(new_node);
+                free(prop);
                 return NULL;
         }
     }
-    writeLog(LOG_LOAD, "parser::parseFile(): ERROR: Unable to find object in file.");
+
+    writeLog(LOG_LOAD, "parser::readString(): ERROR: Reached end of file reading string '%s'.", result);
+    free(result);
     return NULL;
+}
+
+JsonNode *parseValue(FILE *file, char *c_buf) {
+    parseWhitespace(file, c_buf);
+    while (*c_buf != EOF) {
+        switch (*c_buf) {
+            case '"':
+                return parseString(file, c_buf);
+            case '[':
+                // return parseArray(file, c_buf);
+            case '{':
+                return parseObject(file, c_buf);
+            case ']':
+                writeLog(LOG_LOAD_V, "parser::readData(): Reached end of array.");
+            default:
+                if ((*c_buf >= '0' && *c_buf <= '9') || *c_buf == '-') {
+                    // *data = readInt(file, c_buf);
+                    return parseInt(file, c_buf);
+                }
+                writeLog(LOG_LOAD, "parser::parseValue(): ERROR Unexpected character at start of value '%c'.", *c_buf);
+                return NULL;
+        }
+        *c_buf = fgetc(file);
+    }
+    writeLog(LOG_LOAD, "parser::readData(): ERROR: Reached end of file reading data.");
+    return NULL;
+}
+
+JsonNode *parseFile(FILE *file) {
+    writeLog(LOG_LOAD_V, "parser::parseFile(): Beginning to parse file.");
+    char c = fgetc(file);
+    return parseValue(file, &c);
 }

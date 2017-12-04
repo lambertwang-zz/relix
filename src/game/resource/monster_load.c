@@ -18,12 +18,12 @@ int loadMonster(FILE *file) {
 }
 
 int loadMonsterFile(FILE *file) {
-    RNode *node = parseFile(file);
+    JsonNode *node = parseFile(file);
     int i = 0;
-    for (i = 0; i < node->values.count; i++) {
-        writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): Label: '%s'", ((NodeVal *)getDataArray(&node->values, i))->label);
-    }
-    closeRNode(node);
+    //for (i = 0; i < node->values.count; i++) {
+    //    writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): Label: '%s'", ((NodeVal *)getDataArray(&node->values, i))->label);
+    //}
+    closeJsonNode(node);
     return 0;
 }
 
