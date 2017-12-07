@@ -14,48 +14,10 @@ static int resize_flag;
 // SIGWINCH is called when the window is resized.
 void handle_winch(int sig) {
     resize_flag = 1;
-    /*
-#if defined __linux__
-    pthread_mutex_lock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    WaitForSingleObject(screen_lock, INFINITE);
-#else
-#error "No defined OS"
-#endif
-
-    Iterator *it;
-    it = initIterator(&screen_manager.screen_tree);
-    while (!done(it)) {
-        Screen *screen= getNext(it)->data;
-        initScreen(screen);
-    }
-    closeIterator(it);
-
-    initScreen(&screen_manager.main_screen);
-
-    // Clear terminal
-    printf("\033[2J");
-
-    // signal(SIGWINCH, SIG_IGN);
-#if defined __linux__
-    pthread_mutex_unlock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    ReleaseMutex(screen_lock);
-#else
-#error "No defined OS"
-#endif
-    */
 }
 
 void initScreenManager() {
     resize_flag = 0;
-        /*
-#if defined __linux__
-    pthread_mutex_init(&screen_lock, NULL);
-#elif defined _WIN32 || defined _WIN64
-    screen_lock = CreateMutex(NULL, FALSE, NULL);
-#endif
-*/
 
     signal(SIGWINCH, handle_winch);
 
@@ -75,14 +37,6 @@ void initScreenManager() {
 }
 
 void closeScreenManager() {
-        /*
-#if defined __linux__
-    pthread_mutex_lock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    WaitForSingleObject(screen_lock, INFINITE);
-#endif
-*/
-
     Iterator *it;
     it = initIterator(&screen_manager.screen_tree);
     while (!done(it)) {
@@ -92,19 +46,6 @@ void closeScreenManager() {
     closeIterator(it);
 
     closeScreen(&screen_manager.main_screen);
-    /*
-#if defined __linux__
-    pthread_mutex_unlock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    ReleaseMutex(screen_lock);
-#endif
-
-#if defined __linux__
-    pthread_mutex_destroy(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    closeHandle(screen_lock);
-#endif
-*/
 
     // Reset colors
     printf("\e[39m\e[49m");
@@ -138,24 +79,12 @@ int renderScreens() {
     int i, j;
     unsigned int index;
     // Refers to preceding pixel in the row
-    int prevFg = -1;
-    int prevBg = -1;
+    int prevFg, prevBg;
 
-    unsigned char fg;
-    unsigned char bg;
+    unsigned char fg, bg;
     char chr;
 
     Screen *screen = &screen_manager.main_screen;
-
-    /*
-#if defined __linux__
-    pthread_mutex_lock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    WaitForSingleObject(screen_lock, INFINITE);
-#else
-#error "No defined OS"
-#endif
-*/
 
     // Line-buffer
     // TODO: Clear still-reachable memory block (not a leak)
@@ -168,6 +97,8 @@ int renderScreens() {
         prevFg = -1;
         prevBg = -1;
         unchangedPixels = 0;
+
+        // Move caret to start of next line
         charsPrinted = sprintf(buffer, "\e[%d;%dH", screen->margin_y + j + 1, screen->margin_x);
         for (i = 0; i < screen->ts.cols; i++) {
             index = i + j * screen->ts.cols;
@@ -209,16 +140,6 @@ int renderScreens() {
     memcpy(screen->prev_pixel_buffer, screen->pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     clearScreen(screen);
-
-    /*
-#if defined __linux__
-    pthread_mutex_unlock(&screen_lock);
-#elif defined _WIN32 || defined _WIN64
-    ReleaseMutex(screen_lock);
-#else
-#error "No defined OS"
-#endif
-*/
 
     fwrite("\e[0m", sizeof(char), 5, stdout);
     fflush(stdout);

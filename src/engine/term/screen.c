@@ -54,7 +54,9 @@ void initScreen(Screen *screen) {
     clearScreen(screen);
 
     for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
-        screen->prev_pixel_buffer[i] = PIXEL_NULL;
+        screen->prev_pixel_buffer[i].bg = -1;
+        screen->prev_pixel_buffer[i].fg = -1;
+        screen->prev_pixel_buffer[i].chr = -1;
     }
 }
 
@@ -66,7 +68,6 @@ void clearScreen(Screen *screen) {
         screen->light_buffer[i] = COLOR_BLANK;
         screen->pixel_buffer[i] = PIXEL_NULL;
     }
-
 }
 
 int closeScreen(Screen *screen) {

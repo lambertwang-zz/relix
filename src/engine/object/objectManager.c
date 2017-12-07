@@ -103,14 +103,6 @@ int clearObjects() {
     writeLog(LOG_OBJECTMANAGER, "objectManager::clearObjects(): Clearing game state");
     struct Iterator *it;
 
-    it = initIterator(&object_manager.event_listeners);
-    while (!done(it)) {
-        Tree *tree = getNext(it)->data;
-        clearTree(tree);
-    }
-    closeIterator(it);
-
-
     it = initIterator(&object_manager.insert_queue);
     while (!done(it)) {
         struct Object *obj = getNext(it)->data;
@@ -131,6 +123,14 @@ int clearObjects() {
         obj->close(obj);
     }
     closeIterator(it);
+
+    it = initIterator(&object_manager.event_listeners);
+    while (!done(it)) {
+        Tree *tree = getNext(it)->data;
+        clearTree(tree);
+    }
+    closeIterator(it);
+
 
     clearTree(&object_manager.insert_queue);
     clearTree(&object_manager.object_list);
@@ -250,10 +250,12 @@ int renderObjects() {
     // Render objects by sorted by depth
     it = initIterator(&depth_tree);
     while (!done(it)) {
-        struct Array *depth_node = getNext(it)->data;
+        Node *node = getNext(it);
+        // Array *depth_node = getNext(it)->data;
+        Array *depth_node = node->data;
         int i;
         for (i = 0; i < depth_node->count; i++) {
-            struct Object *obj = depth_node->data[i];
+            Object *obj = depth_node->data[i];
             objects_rendered += obj->render(obj, &screen_manager.main_screen);
         }
         closeArray(depth_node);

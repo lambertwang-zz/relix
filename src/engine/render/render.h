@@ -3,13 +3,19 @@
 
 #include "term/screen.h"
 
+// Insert object ids
 int oputString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg);
 int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg);
 
 int putString(Screen *s, int x, int y, char *str, Color fg, Color bg);
 int putRect(Screen *s, int x, int y, Rect rect, Color bg);
 
+// Ignore lighting
+int putStringL(Screen *s, int x, int y, char *str, Color fg, Color bg);
+int putRectL(Screen *s, int x, int y, Rect rect, Color bg);
+
 int putPixel(Screen *s, int x, int y, Pixel p);
+// Ignore lighting
 int putPixelL(Screen *s, int x, int y, Pixel p);
 int putPixelA(Screen *s, int x, int y, Pixel p);
 

@@ -11,38 +11,6 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-int oputString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg) {
-    int i;
-    Pixel p = (Pixel){rgbToTerm(fg), rgbToTerm(bg), fg, bg, ' ', id};
-    for (i = 0; i + x < s->ts.cols; i++) {
-        if (str[i] == '\0') {
-            break;
-        }
-        p.chr = str[i];
-        putPixelA(s, x + i, y, p);
-    }
-    return i;
-}
-
-int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg) {
-    int i, j;
-    Pixel p = (Pixel){0, rgbToTerm(bg), COLOR_BLANK, bg, ' ', id};
-    for (j = rect.top + y < 0 ? 0 : rect.top + y; j < rect.bottom + y && j < s->ts.lines; j++) {
-        for (i = rect.left + x < 0 ? 0 : rect.left + x; i < rect.right + x && i < s->ts.cols; i++) {
-            putPixelA(s, i, j, p);
-        }
-    }
-    return i;
-}
-
-int putString(Screen *s, int x, int y, char *str, Color fg, Color bg) {
-    return oputString(s, -1, x, y, str, fg, bg);
-}
-
-int putRect(Screen *s, int x, int y, Rect rect, Color bg) {
-    return oputRect(s, -1, x, y, rect, bg);
-}
-
 Color minColor(Color a, Color b) {
     return (Color){min(a.r, b.r), min(a.g, b.g), min(a.b, b.b), 1.0};
 }
@@ -61,7 +29,6 @@ int absColor(Color a) {
 }
 
 // Internal generic put pixel function
-// No bounds checking
 int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
     if (x < 0 || y < 0 || y >= s->ts.lines || x >= s->ts.cols) {
         return 1;
@@ -111,6 +78,56 @@ int putPixelL(Screen *s, int x, int y, Pixel p) {
 // Ignores p.bg
 int putPixelA(Screen *s, int x, int y, Pixel p) {
     return _putPixel(s, x, y, p, 0);
+}
+
+int _putString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg, int no_light) {
+    int i;
+    Pixel p = (Pixel){rgbToTerm(fg), rgbToTerm(bg), fg, bg, ' ', id, 255};
+    for (i = 0; i + x < s->ts.cols; i++) {
+        if (str[i] == '\0') {
+            break;
+        }
+        p.chr = str[i];
+        _putPixel(s, x + i, y, p, no_light);
+    }
+    return i;
+}
+
+int putString(Screen *s, int x, int y, char *str, Color fg, Color bg) {
+    return _putString(s, -1, x, y, str, fg, bg, 0);
+}
+
+int putStringL(Screen *s, int x, int y, char *str, Color fg, Color bg) {
+    return _putString(s, -1, x, y, str, fg, bg, 1);
+}
+
+int oputString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg) {
+    return _putString(s, id, x, y, str, fg, bg, 0);
+}
+
+int _putRect(Screen *s, int id, int x, int y, Rect rect, Color bg, int no_light) {
+    int i, j;
+    Pixel p = (Pixel){0, rgbToTerm(bg), COLOR_BLANK, bg, ' ', id, 255};
+    for (j = rect.top + y < 0 ? 0 : rect.top + y; j < rect.bottom + y && j < s->ts.lines; j++) {
+        for (i = rect.left + x < 0 ? 0 : rect.left + x; i < rect.right + x && i < s->ts.cols; i++) {
+            _putPixel(s, i, j, p, no_light);
+        }
+    }
+    return i;
+}
+
+int putRect(Screen *s, int x, int y, Rect rect, Color bg) {
+    return _putRect(s, -1, x, y, rect, bg, 0);
+}
+
+
+
+int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg) {
+    return _putRect(s, id, x, y, rect, bg, 0);
+}
+
+int putRectL(Screen *s, int x, int y, Rect rect, Color bg) {
+    return _putRect(s, -1, x, y, rect, bg, 1);
 }
 
 // Very unsafe function

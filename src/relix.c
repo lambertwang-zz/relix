@@ -6,7 +6,7 @@
 #include "log/log.h"
 
 // Game
-// #include "relix/menu/menu.h"
+#include "game/menu/menu.h"
 #include "game/world/world.h"
 #include "game/relix.h"
 #include "game/asset/asset.h"
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     //     return 0;
     // }
 
-    // initMainMenu();
+    initMainMenu();
     initWorld();
 
     loop();
