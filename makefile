@@ -5,7 +5,7 @@ ENGINE_LOC = $(SRC_LOC)engine/
 TEST_LOC = test/
 
 INCLUDE = -I$(ENGINE_LOC)
-LINK = -lm
+LINK = -lm -pthread
 
 CC = gcc $(FLAGS) $(INCLUDE)
 

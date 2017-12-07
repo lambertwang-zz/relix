@@ -1,13 +1,6 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 
-// Libaray
-#if defined __linux__
-#include <pthread.h>
-#elif defined _WIN32 || defined _WIN64
-#include <windows.h>
-#endif
-
 // Engine
 #include "color.h"
 #include "term.h"
@@ -39,12 +32,6 @@ typedef struct ScreenManager {
 
     Tree screen_tree;
 } ScreenManager;
-
-#if defined __linux__
-pthread_mutex_t screen_lock;
-#elif defined _WIN32 || defined _WIN64
-HANDLE screen_lock;
-#endif
 
 ScreenManager screen_manager;
 
