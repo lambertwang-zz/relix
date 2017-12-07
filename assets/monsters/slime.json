@@ -1,0 +1,45 @@
+{
+  "family": "Slime",
+  "min_level": 1,
+  "max_level": 5,
+  "environments": [
+    "dungeon",
+    "cave"
+  ],
+  "default_char": "s",
+  "entries": [
+    {
+      "name": "Blue Slime",
+      "level": 1,
+      "challenge": 1,
+      "hit_dice": "d6",
+      "natural_weapon": "d6",
+      "color": [
+        0, 0, 255
+      ]
+    },
+    {
+      "name": "Green Slime",
+      "level": 2,
+      "challenge": 1,
+      "hit_dice": "d8",
+      "natural_weapon": "d6",
+      "color": [
+        0, 255, 0
+      ]
+    },
+    {
+      "name": "Red Slime",
+      "level": 5,
+      "challenge": 2,
+      "hit_dice": "d8",
+      "natural_weapon": "d10+1",
+      "natural_damage": "fire",
+      "char": "S",
+      "color": [
+        255, 0, 0
+      ]
+    }
+  ]
+}
+

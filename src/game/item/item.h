@@ -47,12 +47,18 @@ typedef struct Wearable {
 typedef struct Consumable {
 } Consumable;
 
-#define ELEM_TRUE 0
-#define ELEM_PHYS 1
-#define ELEM_FIRE 2
-#define ELEM_ICE 3
-#define ELEM_LIGHTNING 4
-#define ELEM_HOLY 5
+#define ELEM_TRUE           0
+#define ELEM_TRUE_STR       "true"
+#define ELEM_PHYS           1
+#define ELEM_PHYS_STR       "physical"
+#define ELEM_FIRE           2
+#define ELEM_FIRE_STR       "fire"
+#define ELEM_ICE            3
+#define ELEM_ICE_STR        "ice"
+#define ELEM_LIGHTNING      4
+#define ELEM_LIGHTNING_STR  "lightning"
+#define ELEM_HOLY           5
+#define ELEM_HOLY_STR       "holy"
 
 typedef struct Damage {
     int element;
@@ -64,6 +70,9 @@ typedef struct Defense {
     int element;
     int defense;
 } Defense;
+
+int elementStrToInt(char *src);
+int elementIntToStr(int src, char *dest);
 
 #endif
 

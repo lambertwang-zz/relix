@@ -2,6 +2,7 @@
 #define __MAP_H__
 
 // Engine
+#include "constants.h"
 #include "render/render.h"
 #include "object/object.h"
 
@@ -11,8 +12,8 @@
 #define RANDOMWALK_ALG 2
 
 // Map environment types
-#define MAP_DUNGEON 1
-#define MAP_CAVE 4
+#define MAP_DUNGEON "dungeon"
+#define MAP_CAVE "cave"
 
 // Tile attributes
 #define SOFT 0
@@ -49,7 +50,7 @@ typedef struct Tile {
 typedef struct Map {
     int id;
 
-    int type;
+    char type[LABEL_SHORT];
 
     struct Tile *tiles;
     int width;
@@ -64,6 +65,12 @@ typedef struct Map {
 typedef struct MapEvent {
     struct Map *map;
 } MapEvent;
+
+typedef struct MapResourceManager {
+    Array map_types;
+} MapResourceManager;
+
+int initMapResources();
 
 int renderMap(struct Map *map, struct Screen *s);
 void clearMap(Map *o);

@@ -9,7 +9,7 @@
 // #include "relix/menu/menu.h"
 #include "game/world/world.h"
 #include "game/relix.h"
-#include "game/resource/resource.h"
+#include "game/asset/asset.h"
 
 void terminate(int a) {
     closeGame(a);
@@ -26,12 +26,13 @@ int main(int argc, char **argv) {
     addLogLevel(0xffffffff);
     addLogLevel(LOG_OBJECTMANAGER_V);
     addLogLevel(LOG_USER);
-    addLogLevel(LOG_LOAD_V);
+    addLogLevel(LOG_RESOURCE_V);
+    // removeLogLevel(LOG_RESOURCE_V);
 
-    if (initResources()) {
-        closeGame(1);
-        return 0;
-    }
+    // if (initResources()) {
+    //     closeGame(1);
+    //     return 0;
+    // }
 
     // initMainMenu();
     initWorld();

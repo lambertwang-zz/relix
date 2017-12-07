@@ -114,7 +114,7 @@ int loop() {
         delta(&game_clock);
         // Multiply microseconds to obtain sleep time in nanoseconds
         if (sleep_time > 0) {
-            uSleep(sleep_time);
+            // uSleep(sleep_time);
             // Calculate adjust from difference between expected and actual sleep times
             adjust_time = split(&game_clock) - sleep_time;
         } else {

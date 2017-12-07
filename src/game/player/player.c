@@ -54,8 +54,7 @@ int lightMapListener(struct Object *o, Event ev) {
 }
 
 void dropLight(Point target) {
-    struct Object *o = malloc(sizeof(struct Object));
-    initObject(o);
+    struct Object *o = createObject();
     o->pos = target;
     o->pos.z = 8;
     o->pix.chr = '1';
@@ -121,9 +120,7 @@ void closePlayer(Object *o) {
 }
 
 struct Object *addPlayer(Point start) {
-    struct Object *player = malloc(sizeof(struct Object));
-
-    initObject(player);
+    struct Object *player = createObject();
 
     strcpy(player->type, TYPE_PLAYER);
     player->pix.chr = '@';

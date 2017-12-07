@@ -45,9 +45,7 @@ void initWorld() {
     registerEvent(EVENT_TICK_PLAYER);
     registerEvent(EVENT_TICK_OTHER);
 
-    struct Object *o_world = malloc(sizeof(struct Object));
-
-    initObject(o_world);
+    struct Object *o_world = createObject();
 
     o_world->render = &renderWorld;
     o_world->close = &closeWorld;

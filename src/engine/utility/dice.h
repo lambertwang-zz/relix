@@ -4,6 +4,8 @@
 // Engine
 #include "constants.h"
 
+#define NULL_DICE (Dice){"", 0, 0, 0}
+
 typedef struct Dice {
     // [count]d[sides]+[flat]
     char label[LABEL_SHORT];

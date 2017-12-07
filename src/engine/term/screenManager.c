@@ -7,12 +7,17 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "utility/utility.h"
+
 // SIGWINCH is called when the window is resized.
 void handle_winch(int sig) {
 #if defined __linux__
-    pthread_mutex_lock(&screen_lock);
+    int lock_status = 1232131;
+    lock_status = pthread_mutex_lock(&screen_lock);
 #elif defined _WIN32 || defined _WIN64
     WaitForSingleObject(screen_lock, INFINITE);
+#else
+#error "No defined OS"
 #endif
 
     Iterator *it;
@@ -33,6 +38,8 @@ void handle_winch(int sig) {
     pthread_mutex_unlock(&screen_lock);
 #elif defined _WIN32 || defined _WIN64
     ReleaseMutex(screen_lock);
+#else
+#error "No defined OS"
 #endif
 }
 
@@ -118,6 +125,8 @@ int renderScreens() {
     pthread_mutex_lock(&screen_lock);
 #elif defined _WIN32 || defined _WIN64
     WaitForSingleObject(screen_lock, INFINITE);
+#else
+#error "No defined OS"
 #endif
 
     // Line-buffer
@@ -173,10 +182,14 @@ int renderScreens() {
 
     clearScreen(screen);
 
+    uSleep(999e3);
+
 #if defined __linux__
     pthread_mutex_unlock(&screen_lock);
 #elif defined _WIN32 || defined _WIN64
     ReleaseMutex(screen_lock);
+#else
+#error "No defined OS"
 #endif
 
     fwrite("\e[0m", sizeof(char), 5, stdout);

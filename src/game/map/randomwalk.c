@@ -1,10 +1,12 @@
 #include "map.h"
 
-#include "utility/random.h"
-#include "log/log.h"
-
+// Library
 #include <stdlib.h>
 #include <string.h>
+
+// Engine
+#include "utility/random.h"
+#include "log/log.h"
 
 int walk(struct Map *map, Point *next) {
     int ret = 0;
@@ -40,7 +42,7 @@ int walk(struct Map *map, Point *next) {
 }
 
 void mapRandomwalk(struct Map *map) {
-    map->type = MAP_CAVE;
+    strcpy(map->type, MAP_CAVE);
     int i;
 
     Point next = (Point){map->width / 2, map->height / 2};

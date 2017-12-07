@@ -22,6 +22,8 @@
 #define LOG_GAME_V          0x00001000
 #define LOG_SCREEN          0x00000020
 #define LOG_SCREEN_V        0x00002000
+#define LOG_RESOURCE          0x00000040
+#define LOG_RESOURCE_V        0x00004000
 
 FILE *relixLogFile;
 int flushLog;
@@ -33,6 +35,7 @@ void closeLog();
 void setFlush(unsigned int on);
 void setLogLevel(int level);
 void addLogLevel(int level);
+void removeLogLevel(int level);
 
 int writeLog(int level, const char *format, ...);
 int nwriteLog(int level, unsigned int n, const char *format, ...);

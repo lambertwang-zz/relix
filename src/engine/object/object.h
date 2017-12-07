@@ -39,7 +39,7 @@ int updateDefault(Object *o);
 void closeDefault(Object *o);
 
 int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event ev));
-void initObject(Object *o);
+Object *createObject();
 
 #endif
 

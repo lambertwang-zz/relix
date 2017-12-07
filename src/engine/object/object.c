@@ -33,21 +33,6 @@ int renderDefault(Object *o, Screen *s) {
 }
 
 int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Event)) {
-    /*
-    if (ev_id == o->events_size) {
-        writeLog(LOG_OBJECTMANAGER, "object::listenEvent(): Expanding object event list size %d for event id %d", o->events_size, ev_id);
-        int (**tmp_l)(struct Object *, Event) = malloc(sizeof(int (*)(struct Object *, Event)) * o->events_size * 2);
-        memcpy(tmp_l, o->event_listeners, sizeof(int (*)(struct Object *, Event)) * o->events_size);
-        free(o->event_listeners);
-        o->event_listeners = tmp_l;
-        int i;
-        for (i = o->events_size; i < o->events_size * 2; i++) {
-            o->event_listeners[i] = NULL;
-        }
-        o->events_size *= 2;
-    }
-    o->event_listeners[ev_id] = listener;
-    */
     Node *n = getTreeNode(&o->event_listeners, ev_id);
     if (n == NULL) {
         insert(&o->event_listeners, listener, ev_id);
@@ -67,23 +52,17 @@ void closeDefault(Object *o) {
     closeIterator(it);
     closeTree(&o->event_listeners);
 
-    /*
-    int i;
-    for (i = 0; i < o->events_size; i++) {
-        if (o->event_listeners[i] != NULL) {
-            unregisterListener(o, i);
-        }
-    }
-    free(o->event_listeners);
-    */
     if (o->data != NULL) {
         free(o->data);
     }
     free(o);
 }
 
-void initObject(struct Object *o) {
+Object *createObject() {
     static int id_iterator = 1;
+
+    Object *o = malloc(sizeof(Object));
+
     o->id = id_iterator++;
     strcpy(o->type, "");
 
@@ -102,13 +81,9 @@ void initObject(struct Object *o) {
     o->close = &closeDefault;
 
     initTree(&o->event_listeners);
-    // o->event_listeners = malloc(sizeof(int (*)(struct Object *)) * INIT_EVENT_COUNT);
-    // o->events_size = INIT_EVENT_COUNT;
-    // int i;
-    // for (i = 0; i < o->events_size; i++) {
-    //     o->event_listeners[i] = NULL;
-    // }
 
     o->data = NULL;
+
+    return o;
 }
 

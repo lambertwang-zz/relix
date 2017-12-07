@@ -1,5 +1,8 @@
 #include "map.h"
 
+// Library
+#include <string.h>
+
 // Engine
 #include "utility/random.h"
 
@@ -140,7 +143,7 @@ void placeDoors(struct Map *map, Rect room) {
 }
 
 void mapTunneling(struct Map *map) {
-    map->type = MAP_DUNGEON;
+    strcpy(map->type, MAP_DUNGEON);
     int i, j;
 
     int open_space = 0;

@@ -12,6 +12,12 @@
 #include "map.h"
 #include "../relix.h"
 
+static MapResourceManager map_resources;
+
+int initMapResources() {
+    initArray(&map_resources.map_types);
+    return 0;
+}
 
 int keyboardListener(struct Object *o, Event ev) {
     KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
@@ -72,9 +78,7 @@ void closeMap(struct Object *o) {
 }
 
 void initMapObj() {
-    struct Object *o_map = malloc(sizeof(struct Object));
-
-    initObject(o_map);
+    struct Object *o_map = createObject();
 
     listenEvent(o_map, EVENT_KEYBOARD, &keyboardListener);
     o_map->close = &closeMap;
@@ -89,7 +93,7 @@ void initMapObj() {
 void initMap(Map *map) {
     static int map_id_iterator = 0;
     map->id = map_id_iterator++;
-    map->type = 0;
+    map->type[0] = '\0';
     map->tiles = NULL;
     map->width = -1;
     map->height = -1;

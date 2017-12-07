@@ -36,6 +36,11 @@ void addLogLevel(int level) {
     logLevel |= level;
 }
 
+void removeLogLevel(int level) {
+    writeLog(LOG_LOG, "log::addLogLevel(): Removing log level 0x%x", level);
+    logLevel &= ~level;
+}
+
 int writeLog(int level, const char *format, ...) {
     char char_format[1024];
     

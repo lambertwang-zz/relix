@@ -35,8 +35,10 @@ typedef struct JsonObjData {
     Array props;
 } JsonObjData;
 
-void closeJsonNode(JsonNode *node);
+int closeJsonNode(JsonNode *node);
 JsonNode *parseFile(FILE *file);
+
+JsonNode *getObjValue(JsonNode *node, char *key);
 
 #endif
 

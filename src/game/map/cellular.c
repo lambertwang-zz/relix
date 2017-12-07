@@ -89,7 +89,7 @@ int fill_all_others(struct Map *map, Point center) {
 }
 
 void mapCellular(struct Map *map) {
-    map->type = MAP_CAVE;
+    strcpy(map->type, MAP_CAVE);
 
     int i, j, s, t;
 
