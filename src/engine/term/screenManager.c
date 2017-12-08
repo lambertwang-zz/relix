@@ -19,7 +19,9 @@ void handle_winch(int sig) {
 void initScreenManager() {
     resize_flag = 0;
 
+#if defined __linux__
     signal(SIGWINCH, handle_winch);
+#endif
 
     screen_manager.main_screen.times_init = 0;
     initScreen(&screen_manager.main_screen);
