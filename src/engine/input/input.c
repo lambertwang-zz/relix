@@ -10,6 +10,7 @@
 #include <termios.h>
 #elif defined _WIN32 || defined _WIN64
 #include <wchar.h>
+#define NOMINMAX
 #include <windows.h>
 #include <conio.h>
 #else
