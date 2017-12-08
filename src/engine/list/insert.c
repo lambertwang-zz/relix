@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-int insertRecurse(struct Node *node, struct Node *new) {
+int insertRecurse(Node *node, Node *new) {
     if (node->id == new->id) {
         return 1;
     }
@@ -22,22 +22,24 @@ int insertRecurse(struct Node *node, struct Node *new) {
     return insertRecurse(node->right, new);
 }
 
-void insert1(struct Node *node) {
+/*
+void insert1(Node *node) {
     return;
 }
+*/
 
-struct Node *insert2(struct Node *node) {
+Node *insert2(Node *node) {
     node->parent->isRed = 0;
     uncle(node)->isRed = 0;
-    struct Node *g = grandParent(node);
+    Node *g = grandParent(node);
     g->isRed = 1;
 	
 	return g;
 }
 
-void insert3_next(struct Node *node) {
-    struct Node *p = node->parent;
-    struct Node *g = grandParent(node);
+void insert3_next(Node *node) {
+    Node *p = node->parent;
+    Node *g = grandParent(node);
     
     if (node == p->left) {
         rotateRight(g);
@@ -48,8 +50,8 @@ void insert3_next(struct Node *node) {
     g->isRed = 1;
 }
 
-void insert3(struct Node *node) {
-    struct Node *g = grandParent(node);
+void insert3(Node *node) {
+    Node *g = grandParent(node);
 
     if (g->left != NULL && node == g->left->right) {
         rotateLeft(node->parent);
@@ -62,16 +64,16 @@ void insert3(struct Node *node) {
     insert3_next(node);
 }
 
-struct Node *insert_repair(struct Node *node) {
+Node *insert_repair(Node *node) {
     if (node->parent == NULL) {
         node->isRed = 0;
   		return NULL;
     }
     if (!node->parent->isRed) {
-        insert1(node);
+        // insert1(node);
         return NULL;
     }
-    struct Node *u = uncle(node);
+    Node *u = uncle(node);
     if (u != NULL && u->isRed) {
         return insert2(node);
     }
@@ -79,8 +81,8 @@ struct Node *insert_repair(struct Node *node) {
 	return NULL;
 }
 
-int insert(struct Tree *tree, void *data, unsigned int id) {
-    struct Node *new = newNode(data, id);
+int insert(Tree *tree, void *data, int id) {
+    Node *new = newNode(data, id);
     if (tree->root == NULL) {
         tree->root = new;
         tree->root->isRed = 0;
@@ -103,7 +105,7 @@ int insert(struct Tree *tree, void *data, unsigned int id) {
     }
     tree->count++;
 
-	struct Node *forRepair = new;
+	Node *forRepair = new;
 	do {
     	forRepair = insert_repair(forRepair);
 	} while (forRepair != NULL);

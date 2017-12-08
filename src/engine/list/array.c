@@ -12,7 +12,7 @@ int initArray(struct Array *array) {
 }
 
 int clearArray(Array *array) {
-    int i;
+    unsigned int i;
     for (i = 0; i < array->count; i++) {
         array->data[i] = NULL;
     }

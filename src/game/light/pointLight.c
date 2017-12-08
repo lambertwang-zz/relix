@@ -14,10 +14,12 @@ static Screen *tmp_screen;
 static Color tmp_color;
 static float *tmp_seen_buffer;
 
+// Marks tiles as seen and sets their entry in the seen buffer to their distance from source
 int illuminate(Map *map, Point origin, Point p, int range, float distance) {
     Point rel_pos = (Point){
         range + p.x - origin.x,
-        range + p.y - origin.y
+        range + p.y - origin.y,
+        0
     };
 
     if (rel_pos.x < 0 || rel_pos.y < 0 || rel_pos.x >= range * 2 || rel_pos.y >= range * 2) {
@@ -30,7 +32,8 @@ int illuminate(Map *map, Point origin, Point p, int range, float distance) {
     return 0;
 }
 
-void postFillLight(Map *map, Point origin, int range) {
+// Renders the lighting
+void postFillLight(Point origin, int range) {
     float l;
     int i, j, index;
     Point rel_pos;
@@ -45,7 +48,8 @@ void postFillLight(Map *map, Point origin, int range) {
             l = 1.0 - tmp_seen_buffer[index] / (float) range;
             rel_pos = (Point){
                 i + origin.x - range - tmp_screen->camera_bounds.left,
-                j + origin.y - range - tmp_screen->camera_bounds.top
+                j + origin.y - range - tmp_screen->camera_bounds.top,
+                0
             };
             tmp = scaleColor(tmp_color, l);
             putLight(tmp_screen, rel_pos.x, rel_pos.y, tmp);
@@ -68,10 +72,14 @@ int pointLight(Screen *s, Map *map, Point origin, Color c, int range) {
 
     illuminate(map, origin, origin, range, 0.0);
     for (i = 0; i < 8; i++) {
-        computeDiamondWalls(map, i, origin, range, 1, (Point){1, 1}, (Point){1, 0}, &illuminate);
+        computeDiamondWalls(
+            map, i, origin, range, 1, 
+            (Point){1, 1, 0}, 
+            (Point){1, 0, 0}, 
+            &illuminate);
     }
 
-    postFillLight(map, origin, range);
+    postFillLight(origin, range);
 
     free(tmp_seen_buffer);
 

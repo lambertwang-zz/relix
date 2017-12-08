@@ -31,9 +31,9 @@ struct TorchData {
 int renderTorchLight(Object *o, Screen *s) {
     // struct TorchData *data = o->data;
 
-    pointLight(s, world.current_map, o->pos, 
+    pointLight(s, getWorldData()->current_map, o->pos, 
         // scaleColor(data->c, data->factor),
-        (Color){192, 192, 90},
+        (Color){192, 192, 90, 1.0},
         10);
         // data->range);
 /*
@@ -68,7 +68,7 @@ void dropLight(Point target) {
     */
     
 
-    o->pix.c_fg = (Color){255, 255, 135},
+    o->pix.c_fg = (Color){255, 255, 135, 1.0},
 
     o->renderLight = &renderTorchLight;
 
@@ -77,7 +77,7 @@ void dropLight(Point target) {
     addObject(o);
 }
 
-int playerMapListener(struct Object *o, Event ev) {
+int playerMapListener(Object *o, Event ev) {
     MapEvent m_ev = *(MapEvent*)ev.data;
     
     o->pos.x = m_ev.map->player_start.x;
@@ -87,14 +87,20 @@ int playerMapListener(struct Object *o, Event ev) {
 }
 
 int playerListener(Object *o, Event ev) {
+    writeLog(10, "received player event action");
     TickEvent *tick = ev.data;
+    Event action;
     if (tick->act.code >= 0) {
         switch (tick->act.code) {
             case ACTION_MOVE:
+                writeLog(10, "received move action");
                 o->pos = tick->act.target;
                 break;
             case ACTION_DOOR:
-                openDoor(tick->act.target);
+                action.id = EVENT_OPEN_DOOR;
+                action.data = malloc(sizeof(DoorEvent));
+                ((DoorEvent *) action.data)->p = tick->act.target;
+                sendEvent(action);
                 break;
             case ACTION_LIGHT:
                 dropLight(tick->act.target);
@@ -120,14 +126,15 @@ void closePlayer(Object *o) {
 }
 
 struct Object *addPlayer(Point start) {
+    writeLog(10, "adding player");
     struct Object *player = createObject();
 
     strcpy(player->type, TYPE_PLAYER);
     player->pix.chr = '@';
-    player->pix.c_fg = (Color){192, 32, 128};
+    player->pix.c_fg = (Color){192, 32, 128, 1.0};
 
     player->pos = start;
-    player->pos.z = 10;
+    player->pos.z = PLAYER_DEPTH;
 
     player->data = malloc(sizeof(CharacterData));
 

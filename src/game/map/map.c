@@ -44,7 +44,8 @@ int renderMap(Map *map, Screen *s) {
             struct Tile tile = map->tiles[j + i * map->width];
             Point rel_pos =  {
                 j - s->camera_bounds.left,
-                i - s->camera_bounds.top
+                i - s->camera_bounds.top,
+                0
             };
             if (tile.seen) {
                 if (tile.type == TILE_WALL) {
@@ -56,7 +57,6 @@ int renderMap(Map *map, Screen *s) {
                     putPixelRgb(s, rel_pos.x, rel_pos.y, SEEN_COLOR);
                 }
             }
-
         }
     }
     return 1;
@@ -113,7 +113,7 @@ void generateMap(struct Map *map,
     map->tiles = malloc(sizeof(struct Tile) * width * height);
     map->width = width;
     map->height = height;
-    map->player_start = (Point){0, 0};
+    map->player_start = (Point){0, 0, 0};
 
     int i;
     for (i = 0; i < map->height * map->width; i++) {

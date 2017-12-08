@@ -1,4 +1,4 @@
-FLAGS = -Wall -g
+FLAGS = -Wall -Wextra -g
 
 SRC_LOC = src/
 ENGINE_LOC = $(SRC_LOC)engine/

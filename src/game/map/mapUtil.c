@@ -21,6 +21,6 @@ int isSolidOct(Map *map, Point p, int octant, Point origin) {
         case 7: default: nx += p.x; ny += p.y; break;
     }
 
-    return isSolid(map, (Point){nx, ny});
+    return isSolid(map, (Point){nx, ny, 0});
 }
 

@@ -39,7 +39,7 @@ void fillEmptyMonsterEntry(MonsterEntry *entry, MonsterFamily *family) {
 }
 
 MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
-    int i;
+    unsigned int i;
 
     MonsterEntry *new_entry = malloc(sizeof(MonsterEntry));
 
@@ -85,7 +85,8 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
                 new_entry->color = (Color){
                     r == NULL ? 0 : *r,
                     g == NULL ? 0 : *g,
-                    b == NULL ? 0 : *b
+                    b == NULL ? 0 : *b,
+                    1.0
                 };
             }
             continue;
@@ -100,7 +101,7 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
 }
 
 int closeMonsterFamily(MonsterFamily *family) {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < family->entries.count; i++) {
         free(getDataArray(&family->entries, i));
@@ -118,7 +119,7 @@ int loadMonsterFile(FILE *file) {
         writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): ERROR: Expected Json Object in file.");
         return 0;
     }
-    int i;
+    unsigned int i;
 
     MonsterFamily *family = malloc(sizeof(MonsterFamily));
     initArray(&family->entries);

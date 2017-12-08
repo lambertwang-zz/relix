@@ -43,7 +43,8 @@ int menuMouseListener(struct Object *o, Event ev) {
 
     for (i = 0; i < menu->item_count; i++) {
         if (pointInRect((Point){m_ev.x - menu->items[i].pos.x, 
-                                m_ev.y - menu->items[i].pos.y},
+                                m_ev.y - menu->items[i].pos.y,
+                                0},
                         menu->items[i].bounds)) {
             target = i;
             menu->item_index = i;
@@ -87,7 +88,7 @@ int render_menu(Object *o, Screen *s) {
 
         int y = s->ts.lines / 2 - (MENU_BUTTON_HEIGHT + 1) * (menu->item_count / 2 - i);
         putRectL(s, x, y, button, bg);
-        menu->items[i].pos = (Point){x, y};
+        menu->items[i].pos = (Point){x, y, 0};
         menu->items[i].bounds = button;
         putStringL(s, (screen_manager.main_screen.ts.cols - menu->items[i].label_len) >> 1, y + 1, menu->items[i].label, c, COLOR_EMPTY);
     }

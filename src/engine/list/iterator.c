@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Iterator *initIterator(struct Tree *tree) {
-    struct Iterator *new = malloc(sizeof(struct Iterator));
+Iterator *initIterator(Tree *tree) {
+    Iterator *new = malloc(sizeof(Iterator));
 
     new->tree = tree;
 
@@ -16,21 +16,21 @@ struct Iterator *initIterator(struct Tree *tree) {
     return new;
 }
 
-int closeIterator(struct Iterator *it) {
+int closeIterator(Iterator *it) {
     closeArray(&it->stack);
     free(it);
     return 0;
 }
 
-struct Node *getNode(const struct Iterator *it) {
+struct Node *getNode(const Iterator *it) {
     return it->current;
 }
 
-void *getItem(const struct Iterator *it) {
+void *getItem(const Iterator *it) {
     return it->current->data;
 }
 
-struct Node *getNext(struct Iterator *it) {
+struct Node *getNext(Iterator *it) {
     if (done(it)) {
         return NULL;
     }
@@ -40,7 +40,7 @@ struct Node *getNext(struct Iterator *it) {
     }
     
     if (it->stack.count) {
-        struct Node *temp;
+        Node *temp;
         it->current = pop(&it->stack);
         temp = it->current;
         it->current = it->current->right;
@@ -89,7 +89,7 @@ struct Node *getNext(struct Iterator *it) {
     */
 }
 
-void generate(struct Iterator *it) {
+void generate(Iterator *it) {
     it->current = it->tree->root;
     while (!done(it)) {
         if (it->current != NULL) {
@@ -107,6 +107,6 @@ void generate(struct Iterator *it) {
     }
 }
 
-int done(const struct Iterator *it) {
+int done(const Iterator *it) {
     return it->index >= it->tree->count ? 1 : 0;
 }

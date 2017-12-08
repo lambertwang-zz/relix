@@ -11,7 +11,7 @@
 typedef struct Action {
     int code;
     struct Point target;
-    struct Object other;
+    struct Object *other;
 } Action;
 
 #endif

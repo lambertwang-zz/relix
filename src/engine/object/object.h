@@ -33,9 +33,7 @@ typedef struct Object {
     void *data;
 } Object;
 
-int renderLightDefault(Object *o, Screen *s);
 int renderDefault(Object *o, Screen *s);
-int updateDefault(Object *o);
 void closeDefault(Object *o);
 
 int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event ev));

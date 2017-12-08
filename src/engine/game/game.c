@@ -11,6 +11,7 @@
 #include "log/log.h"
 #include "object/objectManager.h"
 #include "term/screen.h"
+#include "ui/ui.h"
 #include "utility/clock.h"
 #include "utility/random.h"
 #include "utility/utility.h"
@@ -54,8 +55,6 @@ int loop() {
         // !this->game_over) {
         // Reset clock
         delta(&game_clock);
-        // Increment step count
-        // this->step_count++;
         frame_count++;
         writeLog(LOG_GAME_V, "game::loop(): Beginning frame %d", frame_count);
 
@@ -78,6 +77,11 @@ int loop() {
         // Send EVENT_BEFOREDRAW to all objects
         // df::EventBeforeDraw p_bd_event = df::EventBeforeDraw();
         // onEvent(&p_bd_event);
+
+        // Ui layer is always on top and opaque. 
+        // Ui will render INT_MAX to the depth buffer.
+        int elementsRendered = renderUi();
+        writeLog(LOG_GAME_V, "game::loop(): Rendered %d UI elements", elementsRendered);
 
         // Render lighting before rendering objects
         int lightsRendered = renderObjectLights();

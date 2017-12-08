@@ -35,16 +35,16 @@ int computeDiamondWalls(
             top_y = ((x * 2 - 1) * top.y + top.x) / (top.x * 2); 
             int ay = (top_y * 2 + 1) * top.x;
 
-            if (isSolidOct(map, (Point){x, top_y}, octant, origin)) {
+            if (isSolidOct(map, (Point){x, top_y, 0}, octant, origin)) {
                 // if the top tile is a wall...
-                if(vecGrEq(top, (Point){x * 2, ay})) {
+                if(vecGrEq(top, (Point){x * 2, ay, 0})) {
                     // but the top vector misses the wall and passes into the tile above, move up
                     top_y++; 
                 }
             }
             else {
                 // the top tile is not a wall
-                if(vecGr(top, (Point){x * 2 + 1, ay})) {
+                if(vecGr(top, (Point){x * 2 + 1, ay, 0})) {
                     // so if the top vector passes into the tile above, move up
                     top_y++; 
                 }
@@ -73,18 +73,18 @@ int computeDiamondWalls(
             // NOTE: use the following line instead to make the algorithm symmetrical
             // if (inRange && (y != top.y || vecGrEq(top, (Point){x, y})) && (y != bottom_y || vecLtEq(bottom, (Point){x, y}))) {
             if (inRange) {
-                int result = illuminate(map, origin, (Point){tx, ty}, range, distance); 
+                int result = illuminate(map, origin, (Point){tx, ty, 0}, range, distance); 
                 if (result) {
                     return result;
                 }
             }
 
-            int isOpaque = (!inRange || isSolid(map, (Point){tx, ty})) ? 1 : 0;
+            int isOpaque = (!inRange || isSolid(map, (Point){tx, ty, 0})) ? 1 : 0;
             // if y == top_y or y == bottom_y, make sure the sector actually intersects the wall tile. if not, don't consider
             // it opaque to prevent the code below from moving the top vector up or the bottom vector down
             if (isOpaque &&
-                ((y == top_y && vecLtEq(top, (Point){x * 2, y * 2 - 1}) && !isSolidOct(map, (Point){x, y - 1}, octant, origin)) ||
-                (y == bottom_y && vecGrEq(bottom, (Point){x * 2, y * 2 + 1}) && !isSolidOct(map, (Point){x, y + 1}, octant, origin)))) {
+                ((y == top_y && vecLtEq(top, (Point){x * 2, y * 2 - 1, 0}) && !isSolidOct(map, (Point){x, y - 1, 0}, octant, origin)) ||
+                (y == bottom_y && vecGrEq(bottom, (Point){x * 2, y * 2 + 1, 0}) && !isSolidOct(map, (Point){x, y + 1, 0}, octant, origin)))) {
                 isOpaque = 0;
             }
 
@@ -96,10 +96,10 @@ int computeDiamondWalls(
                         // (x*2-1, y*2+1) is a vector to the top-left corner of the opaque block
                         if(!inRange || y == bottom_y) { 
                             // don't recurse unless necessary
-                            bottom = (Point){x * 2, y * 2 + 1}; 
+                            bottom = (Point){x * 2, y * 2 + 1, 0}; 
                             break; 
                         } else {
-                            int result = computeDiamondWalls(map, octant, origin, range, x+1, top, (Point){x * 2, y * 2 + 1}, illuminate);
+                            int result = computeDiamondWalls(map, octant, origin, range, x+1, top, (Point){x * 2, y * 2 + 1, 0}, illuminate);
                             if (result) {
                                 return result;
                             }
@@ -110,7 +110,7 @@ int computeDiamondWalls(
                     // adjust the top vector downwards and continue if we found a transition from opaque to clear 
                     // (x*2+1, y*2+1) is the top-right corner of the clear tile (i.e. the bottom-right of the opaque tile)
                     if(wasOpaque > 0) {
-                        top = (Point){x * 2, y*2+1};
+                        top = (Point){x * 2, y * 2 + 1, 0};
                     }
                     wasOpaque = 0;
                 }

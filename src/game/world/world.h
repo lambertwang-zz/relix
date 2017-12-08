@@ -20,17 +20,18 @@ typedef struct TickEvent {
     struct Action act;
 } TickEvent;
 
-World world;
+typedef struct DoorEvent {
+    struct Point p;
+} DoorEvent;
 
+World *getWorldData();
 void initWorld();
 
-struct Action moveToTile(struct Object *obj, struct Point p);
+int getDefaultAction(Object *obj, Object *target);
 
-int getDefaultAction(struct Object *obj, struct Object *target);
-
-int worldKeyboardListener(struct Object *o, struct Event ev);
-
-int openDoor(Point p);
+int worldDoorListener(Object *o, Event ev);
+// int worldPlayerListener(Object *o, Event ev);
+int worldKeyboardListener(Object *o, Event ev);
 
 #endif
 

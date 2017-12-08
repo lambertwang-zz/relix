@@ -11,19 +11,19 @@ typedef struct Iterator {
 
     struct Array stack;
 
-    int index;
+    unsigned int index;
     struct Node *current;
 } Iterator;
 
 typedef struct Tree {
     struct Node *root;
-    int count;
+    unsigned int count;
 } Tree;
 
 typedef struct Node {
     void *data;
-    unsigned int id;
-    unsigned char isRed;
+    int id;
+    char isRed;
 
     struct Node *left;
     struct Node *right;
@@ -48,17 +48,17 @@ void rotateRight(Node *node);
 Node **max(Node **node);
 Node **min(Node **node);
 
-Node *newNode(void *data, unsigned int id);
+Node *newNode(void *data, int id);
 
 // External tree functions
 int initTree(Tree *tree);
 int closeTree(Tree *tree);
 int clearTree(Tree *tree);
 
-void *getData(Tree *tree, unsigned int id);
-Node *getTreeNode(Tree *tree, unsigned int id);
-int insert(Tree *tree, void *data, unsigned int id);
-int removeId(Tree *tree, unsigned int id);
+void *getData(Tree *tree, int id);
+Node *getTreeNode(Tree *tree, int id);
+int insert(Tree *tree, void *data, int id);
+int removeId(Tree *tree, int id);
 
 // Iterator functions
 Iterator *initIterator(Tree *tree);

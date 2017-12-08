@@ -12,8 +12,18 @@
 #define EVENT_TICK_PLAYER 16
 #define EVENT_TICK_OTHER 17
 
+// Action results
+#define EVENT_OPEN_DOOR 24
+
 // Assets
 #define ASSET_DIR "assets/"
+
+// Render depths
+#define UI_DEPTH 32
+#define PLAYER_DEPTH 16
+#define MONSTER_DEPTH 8
+#define LOOT_DEPTH 4
+#define WORLD_DEPTH 0
 
 
 #endif

@@ -172,7 +172,7 @@ void mapTunneling(struct Map *map) {
                 int x1 = (rooms[i - 1].left + rooms[i - 1].right) / 2,
                     y1 = (rooms[i - 1].top + rooms[i - 1].bottom) / 2;
                 if (room_count == 1) {
-                    map->player_start = (Point){x1, y1};
+                    map->player_start = (Point){x1, y1, 0};
                 }
             }
 

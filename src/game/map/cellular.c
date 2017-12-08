@@ -148,7 +148,7 @@ void mapCellular(struct Map *map) {
         // Pick a random open space and (anti) flood-fill from there
         Point center;
         do {
-            center = (Point){drandom_i(0, map->width - 1), drandom_i(0, map->height - 1)};
+            center = (Point){drandom_i(0, map->width - 1), drandom_i(0, map->height - 1), 0};
         } while (map->tiles[center.x + center.y * map->width].type != TILE_ROOM);
         map->player_start = center;
         open_space = fill_all_others(map, center);

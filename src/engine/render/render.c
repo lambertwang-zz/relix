@@ -160,7 +160,8 @@ int putPointLight(Screen *s, Point p, Color l, int radius) {
     int i, j;
     Point rel_pos = (Point){
             p.x - s->camera_bounds.left,
-            p.y - s->camera_bounds.top
+            p.y - s->camera_bounds.top,
+            0
     };
 
     for (j = -radius; j < radius; j++) {

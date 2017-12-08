@@ -3,23 +3,23 @@
 
 #include <stdlib.h>
 
-void delete1(struct Node *node);
-void delete2(struct Node *node);
-void delete3(struct Node *node);
-void delete4(struct Node *node);
-void delete5(struct Node *node);
-void delete6(struct Node *node);
+void delete1(Node *node);
+void delete2(Node *node);
+void delete3(Node *node);
+void delete4(Node *node);
+void delete5(Node *node);
+void delete6(Node *node);
 
 // replaces the values inside the node
 // Dest is retained, target must be freed
-void replaceNode(struct Node *dest, struct Node *target) {
+void replaceNode(Node *dest, Node *target) {
     dest->data = target->data;
     dest->id = target->id;
 }
 
 // Swaps all references to the nodes 
 // target is retained, dest must be freed
-void swapNode(struct Node **dest, struct Node *target) {
+void swapNode(Node **dest, Node *target) {
     target->parent = (*dest)->parent;
     if ((*dest)->parent != NULL) {
         if ((*dest)->parent->left == *dest) {
@@ -35,14 +35,14 @@ void swapNode(struct Node **dest, struct Node *target) {
 }
 
 // Node is root and black. Done
-void delete1(struct Node *node) {
+void delete1(Node *node) {
     if (node->parent != NULL) {
         delete2(node);
     }
 }
 
-void delete2(struct Node *node) {
-   	struct Node *s = sibling(node);
+void delete2(Node *node) {
+   	Node *s = sibling(node);
 
     if (s != NULL && s->isRed) {
         node->parent->isRed = 1;
@@ -56,8 +56,8 @@ void delete2(struct Node *node) {
     delete3(node);
 }
 
-void delete3(struct Node *node) {
-    struct Node *s = sibling(node);
+void delete3(Node *node) {
+    Node *s = sibling(node);
 
     if (!node->parent->isRed &&
         !s->isRed &&
@@ -70,8 +70,8 @@ void delete3(struct Node *node) {
     }
 }
 
-void delete4(struct Node *node) {
-    struct Node *s = sibling(node);
+void delete4(Node *node) {
+    Node *s = sibling(node);
     if (node->parent->isRed &&
         (s == NULL || !s->isRed) &&
         (s->left == NULL || !s->left->isRed) &&
@@ -83,8 +83,8 @@ void delete4(struct Node *node) {
     }
 }
 
-void delete5(struct Node *node) {
-    struct Node *s = sibling(node);
+void delete5(Node *node) {
+    Node *s = sibling(node);
 
     if  (!s->isRed) { /* this if statement is trivial,
                          due to case 2 (even though case 2 changed the sibling to a sibling's child,
@@ -108,8 +108,8 @@ void delete5(struct Node *node) {
     delete6(node);
 }
 
-void delete6(struct Node *node) {
-    struct Node *s = sibling(node);
+void delete6(Node *node) {
+    Node *s = sibling(node);
 
     s->isRed = node->parent->isRed;
     node->parent->isRed = 0;
@@ -124,9 +124,9 @@ void delete6(struct Node *node) {
 }
 
 // At most one child
-int removeNodeOneChild(struct Node **indirect) {
-	struct Node *node = *indirect;
-    struct Node *child = node->left == NULL ? node->right : node->left;
+int removeNodeOneChild(Node **indirect) {
+	Node *node = *indirect;
+    Node *child = node->left == NULL ? node->right : node->left;
     if (child == NULL) {
         if (!node->isRed) {
             delete1(node);
@@ -148,10 +148,10 @@ int removeNodeOneChild(struct Node **indirect) {
 	return 0;
 }
 
-void removeNode(struct Node **indirect) {
-    struct Node *node = *indirect;
+void removeNode(Node **indirect) {
+    Node *node = *indirect;
     if (node->left != NULL && node->right != NULL) {
-		struct Node **target = min(&node->right);
+		Node **target = min(&node->right);
         replaceNode(node, *target);
         indirect = target;
     }
@@ -159,8 +159,8 @@ void removeNode(struct Node **indirect) {
 }
 
 
-int removeFromTree(struct Node **node, unsigned int id) {
-    if (*node == NULL) {
+int removeFromTree(Node **node, int id) {
+    if (*node == NULL || (*node)->id < 0) {
         return -1;
     }
     if ((*node)->id > id) {
@@ -173,7 +173,7 @@ int removeFromTree(struct Node **node, unsigned int id) {
     return 0;
 }
 
-int removeId(struct Tree *tree, unsigned int id) {
+int removeId(Tree *tree, int id) {
     if (tree->root == NULL) {
 #ifdef DEBUG_TREES
         validateTree(tree);

@@ -12,7 +12,7 @@ void addEncounter(Map *map, Rect loc, int challenge) {
     int i, j;
     for (j = loc.top; i < loc.bottom; j++) {
         for (i = loc.left; i < loc.right; i++) {
-            open_space -= isSolid(map, (Point){i, j});
+            open_space -= isSolid(map, (Point){i, j, 0});
         }
     }
 

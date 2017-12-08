@@ -10,21 +10,13 @@
 #include "render/render.h"
 #include "log/log.h"
 
-int updateDefault(Object *o) {
-    // pass
-    return 0;
-}
-
-int renderLightDefault(Object *o, Screen *s) {
-    return 0;
-}
-
 int renderDefault(Object *o, Screen *s) {
     o->pix.depth = o->pos.z;
     // Position on the screen
     Point rel_pos = (Point){
             o->pos.x - s->camera_bounds.left,
-            o->pos.y - s->camera_bounds.top
+            o->pos.y - s->camera_bounds.top,
+            0
     };
 
     putPixelA(s, rel_pos.x, rel_pos.y, o->pix);
@@ -32,7 +24,7 @@ int renderDefault(Object *o, Screen *s) {
     return 0;
 }
 
-int listenEvent(struct Object *o, int ev_id, int (*listener)(struct Object *, Event)) {
+int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event)) {
     Node *n = getTreeNode(&o->event_listeners, ev_id);
     if (n == NULL) {
         insert(&o->event_listeners, listener, ev_id);
@@ -75,9 +67,9 @@ Object *createObject() {
     o->pix.depth = o->pos.z;
     o->solid = OBJ_ETHER;
 
-    o->renderLight = &renderLightDefault;
+    o->renderLight = NULL;
+    o->update = NULL;
     o->render = &renderDefault;
-    o->update = &updateDefault;
     o->close = &closeDefault;
 
     initTree(&o->event_listeners);

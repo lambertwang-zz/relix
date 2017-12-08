@@ -15,7 +15,8 @@ void terminate(int a) {
     closeGame(a);
 }
 
-int main(int argc, char **argv) {
+// int main(int argc, char **argv) {
+int main() {
     initGame();
     signal(SIGINT, terminate);
 
@@ -28,13 +29,14 @@ int main(int argc, char **argv) {
     addLogLevel(LOG_USER);
     addLogLevel(LOG_RESOURCE_V);
     // removeLogLevel(LOG_RESOURCE_V);
+    removeLogLevel(LOG_GAME_V);
 
     // if (initResources()) {
     //     closeGame(1);
     //     return 0;
     // }
 
-    initMainMenu();
+    // initMainMenu();
     initWorld();
 
     loop();

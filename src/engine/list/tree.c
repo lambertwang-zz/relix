@@ -38,7 +38,7 @@ int minDistToNil(const Node *node) {
     return (node->isRed ? 0 : 1) + (distLeft < distRight ? distLeft : distRight);
 }
 
-int maxDistToNil(const struct Node *node) {
+int maxDistToNil(const Node *node) {
     if (node == NULL) {
         return 0;
     }
@@ -46,7 +46,7 @@ int maxDistToNil(const struct Node *node) {
     return (node->isRed ? 0 : 1) + (distLeft > distRight ? distLeft : distRight);
 }
 
-int checkNilDist(const struct Node *node) {
+int checkNilDist(const Node *node) {
     if (node == NULL) {
         return 0;
     }
@@ -103,7 +103,7 @@ void checkRefs(const Node *node) {
     }
 }
 
-void validateTree(const struct Tree *tree) {
+void validateTree(const Tree *tree) {
     // Root must be black
     if (tree->root != NULL && tree->root->isRed) {
         writeLog(0xffff, "ERROR: ROOT NOT BLACK");
@@ -114,14 +114,14 @@ void validateTree(const struct Tree *tree) {
     checkRefs(tree->root);
 }
 
-struct Node *grandParent(const struct Node *node) {
+Node *grandParent(const Node *node) {
     if (node->parent != NULL) {
         return node->parent->parent;
     }
     return NULL;
 }
 
-struct Node *sibling(const struct Node *node) {
+Node *sibling(const Node *node) {
     if (node->parent != NULL) {
         if (node->parent->left == node) {
             return node->parent->right;
@@ -131,14 +131,14 @@ struct Node *sibling(const struct Node *node) {
     return NULL;
 }
 
-struct Node *uncle(const struct Node *node) {
+Node *uncle(const Node *node) {
     if (grandParent(node) != NULL) {
         return sibling(node->parent);
     }
     return NULL;
 }
 
-const struct Node *getRoot(const struct Node *node) {
+const Node *getRoot(const Node *node) {
 	if (node->parent == NULL) {
 		return node;
 	}
@@ -146,7 +146,7 @@ const struct Node *getRoot(const struct Node *node) {
 }
 
 
-void printTree(const struct Node *node) {
+void printTree(const Node *node) {
     if (node == NULL) {
         return;
     } else {
@@ -156,7 +156,7 @@ void printTree(const struct Node *node) {
     }
 }
 
-void printNode(const struct Node *node) {
+void printNode(const Node *node) {
 	char buffer[512];
 	int i, c = 0;
 	for (i = 0; i < depth(node); i++) {
@@ -172,8 +172,8 @@ void printNode(const struct Node *node) {
 	writeLog(10, buffer);
 }
 
-void rotateLeft(struct Node *node) {
-    struct Node *new = node->right;
+void rotateLeft(Node *node) {
+    Node *new = node->right;
     node->right = new->left;
 	if (node->right != NULL) {
 		node->right->parent = node;
@@ -196,8 +196,8 @@ void rotateLeft(struct Node *node) {
     }
 }
 
-void rotateRight(struct Node *node) {
-    struct Node *new = node->left;
+void rotateRight(Node *node) {
+    Node *new = node->left;
     node->left= new->right;
 	if (node->left != NULL) {
 		node->left->parent = node;
@@ -220,27 +220,27 @@ void rotateRight(struct Node *node) {
     }
 }
 
-struct Node **max(struct Node **node) {
+Node **max(Node **node) {
     if ((*node)->right == NULL) {
         return node;
     }
     return max(&(*node)->right);
 }
 
-struct Node **min(struct Node **node) {
+Node **min(Node **node) {
     if ((*node)->left== NULL) {
         return node;
     }
     return min(&(*node)->left);
 }
 
-int initTree(struct Tree *tree) {
+int initTree(Tree *tree) {
     tree->root = NULL;
     tree->count = 0;
     return 0;
 }
 
-void freeNodes(struct Node *node) {
+void freeNodes(Node *node) {
     if (node != NULL) {
         freeNodes(node->left);
         freeNodes(node->right);
@@ -248,19 +248,19 @@ void freeNodes(struct Node *node) {
     }
 }
 
-int closeTree(struct Tree *tree) {
+int closeTree(Tree *tree) {
     freeNodes(tree->root);
     return 0;
 }
 
-int clearTree(struct Tree *tree) {
+int clearTree(Tree *tree) {
     freeNodes(tree->root);
     tree->root = NULL;
     tree->count = 0;
     return 0;
 }
 
-Node *searchTree(struct Node *node, unsigned int id) {
+Node *searchTree(Node *node, int id) {
     if (node == NULL) {
         return NULL;
     }
@@ -272,11 +272,11 @@ Node *searchTree(struct Node *node, unsigned int id) {
     return node;
 }
 
-Node *getTreeNode(struct Tree *tree, unsigned int id) {
+Node *getTreeNode(Tree *tree, int id) {
     return searchTree(tree->root, id);
 }
 
-void *getData(struct Tree *tree, unsigned int id) {
+void *getData(Tree *tree, int id) {
     Node *n = searchTree(tree->root, id);
     if (n == NULL) {
         return n;
@@ -284,8 +284,8 @@ void *getData(struct Tree *tree, unsigned int id) {
     return searchTree(tree->root, id)->data;
 }
 
-struct Node *newNode(void *data, unsigned int id) {
-    struct Node *newNode = malloc(sizeof(struct Node));
+Node *newNode(void *data, int id) {
+    Node *newNode = malloc(sizeof(Node));
     newNode->data = data;
     newNode->id = id;
     newNode->isRed = 1;
@@ -300,7 +300,7 @@ struct Node *newNode(void *data, unsigned int id) {
 }
 
 
-int addNodeToTree(struct Node *node, struct Node *new) {
+int addNodeToTree(Node *node, Node *new) {
     if (node->id > new->id) {
         if (node->left == NULL) {
             node->left = new;

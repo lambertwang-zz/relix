@@ -47,14 +47,16 @@ int writeLog(int level, const char *format, ...) {
     va_list args;
     va_start(args, format);
 
-    int charsPrinted = vsprintf(char_format, format, args);
+    // int charsPrinted = vsprintf(char_format, format, args);
+    vsprintf(char_format, format, args);
     fflush(stderr);
 
     va_end(args);
-    return nwriteLog(level, charsPrinted, char_format);
+    return nwriteLog(level, char_format);
 }
 
-int nwriteLog(int level, unsigned int n, const char *format, ...) {
+// int nwriteLog(int level, unsigned int n, const char *format, ...) {
+int nwriteLog(int level, const char *format, ...) {
     if (!(logLevel & level)) {
         return -1;
     }

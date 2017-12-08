@@ -12,7 +12,8 @@
 static int resize_flag;
 
 // SIGWINCH is called when the window is resized.
-void handle_winch(int sig) {
+// void handle_winch(int sig) {
+void handle_winch() {
     resize_flag = 1;
 }
 

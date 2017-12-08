@@ -23,7 +23,7 @@ int closeJsonNode(JsonNode *node) {
     }
 
     // writeLog(LOG_RESOURCE_V, "parser::closeJsonNode(): Closing Node.");
-    int i;
+    unsigned int i;
     if (node->data != NULL) {
         if (node->type == JSON_OBJ) {
             JsonObjData *obj_data = node->data;
@@ -288,7 +288,7 @@ JsonNode *getObjValue(JsonNode *node, char *key) {
         return NULL;
     }
 
-    int i;
+    unsigned int i;
     JsonObjData *obj_data = node->data;
     for (i = 0; i < obj_data->props.count; i++) {
         JsonObjProp *obj_prop = getDataArray(&obj_data->props, i);

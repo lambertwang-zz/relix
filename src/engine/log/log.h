@@ -38,7 +38,8 @@ void addLogLevel(int level);
 void removeLogLevel(int level);
 
 int writeLog(int level, const char *format, ...);
-int nwriteLog(int level, unsigned int n, const char *format, ...);
+// int nwriteLog(int level, unsigned int n, const char *format, ...);
+int nwriteLog(int level, const char *format, ...);
 
 #endif
 

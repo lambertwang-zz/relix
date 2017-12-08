@@ -17,7 +17,7 @@ int walk(struct Map *map, Point *next) {
 
     Point add;
     while (1) {
-        add = (Point){next->x, next->y};
+        add = (Point){next->x, next->y, 0};
         int north = 10 + ((next->y > map->height * .75) ? 4: 0);
         int south = 10 + ((next->y < map->height * .25) ? 4: 0);
         int east = 19 + ((next->x < map->width * .25) ? 7: 0);
@@ -45,7 +45,7 @@ void mapRandomwalk(struct Map *map) {
     strcpy(map->type, MAP_CAVE);
     int i;
 
-    Point next = (Point){map->width / 2, map->height / 2};
+    Point next = (Point){map->width / 2, map->height / 2, 0};
     int open_space = 0;
     int iter = 0;
     int max_iter = map->width * map->height * 4;

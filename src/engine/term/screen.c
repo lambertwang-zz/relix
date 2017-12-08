@@ -45,7 +45,7 @@ void initScreen(Screen *screen) {
         screen->ts.cols= MAX_WIDTH;
     }
 
-    setCamera(screen, (Point){0, 0});
+    setCamera(screen, (Point){0, 0, 0});
     
     screen->light_buffer = malloc(sizeof(Color) * screen->ts.cols * screen->ts.lines);
     screen->pixel_buffer = malloc(sizeof(Pixel) * screen->ts.cols * screen->ts.lines);

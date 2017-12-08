@@ -202,8 +202,10 @@ int updateObjects() {
 
     it = initIterator(&object_manager.object_list);
     while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
-        obj->update(obj);
+        Object *obj = getNext(it)->data;
+        if (obj->update != NULL) {
+            obj->update(obj);
+        }
     }
     closeIterator(it);
 
@@ -211,14 +213,16 @@ int updateObjects() {
 }
 
 int renderObjectLights() {
-    struct Iterator *it;
+    Iterator *it;
     int lights_rendered = 0;
 
     // Render lights
     it = initIterator(&object_manager.object_list);
     while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
-        lights_rendered += obj->renderLight(obj, &screen_manager.main_screen);
+        Object *obj = getNext(it)->data;
+        if (obj->renderLight != NULL) {
+            lights_rendered += obj->renderLight(obj, &screen_manager.main_screen);
+        }
     }
     closeIterator(it);
 
@@ -253,7 +257,7 @@ int renderObjects() {
         Node *node = getNext(it);
         // Array *depth_node = getNext(it)->data;
         Array *depth_node = node->data;
-        int i;
+        unsigned int i;
         for (i = 0; i < depth_node->count; i++) {
             Object *obj = depth_node->data[i];
             objects_rendered += obj->render(obj, &screen_manager.main_screen);
