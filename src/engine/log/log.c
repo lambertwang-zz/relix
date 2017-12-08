@@ -3,15 +3,19 @@
 // Library
 #include <stdarg.h>
 #include <stdio.h>
+#include <pthread.h>
 
 // Engine
 #include "utility/clock.h"
 #include "game/game.h"
 
+static pthread_mutex_t log_mutex;
+
 void initLog() {
     flushLog = 1;
     logLevel = LOG_LEVEL_DEFAULT;
     relixLogFile = fopen(LOG_FILE, "w");
+    pthread_mutex_init(&log_mutex, NULL);
 
     writeLog(LOG_INIT, "log::initLog(): Initialized logging");
 }
@@ -19,6 +23,7 @@ void initLog() {
 void closeLog() {
     writeLog(LOG_INIT, "log::closeLog(): Closing logging");
     fclose(relixLogFile);
+    pthread_mutex_destroy(&log_mutex);
 }
 
 void setFlush(unsigned int on) {
@@ -66,6 +71,9 @@ int nwriteLog(int level, const char *format, ...) {
                 //if (this->p_f && this->isStarted()) {
     // Print timestring and frame number to log file
     // df::GameManager &game_manager = df::GameManager::getInstance();
+
+    pthread_mutex_lock(&log_mutex);
+
     fprintf(relixLogFile, "%8s  %6d : ", timeString(), frame_count);
     // Format arguments
     va_list args;
@@ -79,6 +87,9 @@ int nwriteLog(int level, const char *format, ...) {
     if (flushLog) {
         fflush(relixLogFile);
     }
+
+    pthread_mutex_unlock(&log_mutex);
+
     return chars_printed;
     // }
     // }

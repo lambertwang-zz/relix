@@ -1,6 +1,8 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 
+#include <semaphore.h>
+
 // Engine
 #include "color.h"
 #include "term.h"
@@ -19,7 +21,12 @@ typedef struct Screen {
     Rect camera_bounds;
 
     Color *light_buffer;
+
+    // Current frame that the engine draws to
     Pixel *pixel_buffer;
+
+    // Current frame that the screen manager is piping out
+    Pixel *current_pixel_buffer;
 
     // Refers to previous frame
     Pixel *prev_pixel_buffer;
@@ -31,6 +38,9 @@ typedef struct ScreenManager {
     Screen main_screen;
 
     Tree screen_tree;
+
+    sem_t writes_allowed;
+    sem_t reads_allowed;
 } ScreenManager;
 
 ScreenManager screen_manager;
