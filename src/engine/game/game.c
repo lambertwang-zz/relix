@@ -78,6 +78,9 @@ int loop() {
         // df::EventBeforeDraw p_bd_event = df::EventBeforeDraw();
         // onEvent(&p_bd_event);
 
+        // Check that it's okay to write to the buffer
+        sem_wait(&screen_manager.writes_allowed);
+
         // Ui layer is always on top and opaque. 
         // Ui will render INT_MAX to the depth buffer.
         int elementsRendered = renderUi();
@@ -90,21 +93,24 @@ int loop() {
         int objectsRendered = renderObjects();
         writeLog(LOG_GAME_V, "game::loop(): Rendered %d objects", objectsRendered);
 
-        renderScreens();
+        // Let the renderer know that we're done preparing the frame
+        sem_post(&screen_manager.reads_allowed);
 
         // swapScreen();
 
+        // TODO: we can't safely write the status line anymore because
+        // the game loop doesn't own output
         if (frame_count % 30 == 0) {
             loop_time_saved = loop_time;
         }
-        printf("\e[1G\e[%dC", 0);
-        printf(" Loop: %5d ", loop_time_saved);
-        printf("Frame: %3d ", frame_count);
+        // printf("\e[1G\e[%dC", 0);
+        // printf(" Loop: %5d ", loop_time_saved);
+        // printf("Frame: %3d ", frame_count);
         // printf("Inits: %3d ", screen.times_init);
         // printf("Lines: %3d ", screen.ts.lines);
         // printf("Cols: %3d ", screen.ts.cols);
-        printf("Obj rendered: %3d ", objectsRendered);
-        fflush(stdout);
+        // printf("Obj rendered: %3d ", objectsRendered);
+        // fflush(stdout);
 
         // Swap graphics buffers
         // df::GraphicsManager &graphics_manager =

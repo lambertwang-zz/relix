@@ -24,6 +24,7 @@ void initScreen(Screen *screen) {
     if (screen->times_init > 0) {
         free(screen->light_buffer);
         free(screen->pixel_buffer);
+        free(screen->current_pixel_buffer);
         free(screen->prev_pixel_buffer);
     } else {
         screen->id = screen_id_iterator++;
@@ -47,9 +48,11 @@ void initScreen(Screen *screen) {
 
     setCamera(screen, (Point){0, 0, 0});
     
+    size_t screen_size = sizeof(Pixel) * screen->ts.cols * screen->ts.lines;
     screen->light_buffer = malloc(sizeof(Color) * screen->ts.cols * screen->ts.lines);
-    screen->pixel_buffer = malloc(sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
-    screen->prev_pixel_buffer = malloc(sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
+    screen->pixel_buffer = malloc(screen_size);
+    screen->current_pixel_buffer = malloc(screen_size);
+    screen->prev_pixel_buffer = malloc(screen_size);
 
     clearScreen(screen);
 
@@ -57,6 +60,8 @@ void initScreen(Screen *screen) {
         screen->prev_pixel_buffer[i].bg = -1;
         screen->prev_pixel_buffer[i].fg = -1;
         screen->prev_pixel_buffer[i].chr = -1;
+
+        screen->current_pixel_buffer[i] = PIXEL_NULL;
     }
 }
 
@@ -73,6 +78,7 @@ void clearScreen(Screen *screen) {
 int closeScreen(Screen *screen) {
     free(screen->light_buffer);
     free(screen->pixel_buffer);
+    free(screen->current_pixel_buffer);
     free(screen->prev_pixel_buffer);
 
     return 0;
