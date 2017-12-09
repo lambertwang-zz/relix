@@ -350,7 +350,7 @@ int captureInputEvents() {
                     winMouseEvent(input.Event.MouseEvent);
                     break;
                 case WINDOW_BUFFER_SIZE_EVENT:
-                    writeLog(LOG_INPUT, "input::readInputEvents(): Unsupported input event");
+                    resize_flag = 1;
                     break;
                 case FOCUS_EVENT:
                 case MENU_EVENT:

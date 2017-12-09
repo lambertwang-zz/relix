@@ -11,7 +11,6 @@
 #include "utility/utility.h"
 #include "log/log.h"
 
-static int resize_flag;
 static int abort_output_thread_flag;
 static pthread_t output_thread;
 
@@ -113,6 +112,9 @@ int renderScreens() {
 
         // Clear terminal
         printf("\033[2J");
+
+        // Hide the cursor
+        printf("\e[?25l");
     }
 
     // Copy the prepared frame into our thread's internal buffer

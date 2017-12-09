@@ -9,6 +9,9 @@
 #include "geometry/geometry.h"
 #include "list/tree.h"
 
+// Set this flag to 1 when the window has been resized
+int resize_flag;
+
 typedef struct Screen {
     int id;
 
