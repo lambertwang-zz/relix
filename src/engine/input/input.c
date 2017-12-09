@@ -217,14 +217,18 @@ int csi() {
         switch (buff) {
             case '<': // SGR
                 return sgrMouse();
+#ifdef __LINUX__
             case 'M': // x10 compat
                 return x10Mouse();
+#endif
             case ARROW_UP_WIN:
                 return csiArrow(ARROW_UP);
             case ARROW_DOWN_WIN:
                 return csiArrow(ARROW_DOWN);
-            // case ARROW_RIGHT_WIN:
+#if defined _WIN32 || defined _WIN64
+            case ARROW_RIGHT_WIN:
                 return csiArrow(ARROW_RIGHT);
+#endif
             case ARROW_LEFT_WIN:
                 return csiArrow(ARROW_LEFT);
             case ARROW_UP:
