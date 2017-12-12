@@ -69,8 +69,8 @@ int neighbors(struct Map *map, int x, int y, int range) {
     return map->tiles[x + y * map->width].type == TILE_ROOM ? count : count - 1;
 }
 
-int check_tile(struct Map *map, int x, int y) {
-    if (x < 0 || y < 0 || x >= map->width || y >= map->width) {
+int check_tile(Map *map, int x, int y) {
+    if (x < 0 || y < 0 || x >= map->width || y >= map->height) {
         return 0;
     }
     if (map->tiles[x + y * map->width].type == TILE_ROOM) {
@@ -84,7 +84,7 @@ int check_tile(struct Map *map, int x, int y) {
     return 0;
 }
 
-int fill_all_others(struct Map *map, Point center) {
+int fill_all_others(Map *map, Point center) {
     return check_tile(map, center.x, center.y);
 }
 
@@ -94,7 +94,7 @@ void mapCellular(struct Map *map) {
     int i, j, s, t;
 
     int open_space = 0;
-    struct Tile *swap = malloc(sizeof(struct Tile) * map->width * map->height);
+    Tile *swap = malloc(sizeof(Tile) * map->width * map->height);
 
     t = 0;
     int max_iter = 20;
@@ -109,7 +109,7 @@ void mapCellular(struct Map *map) {
                 map->tiles[i].type = TILE_WALL;
             }
         }
-        memcpy(swap, map->tiles, sizeof(struct Tile) * map->width * map->height);
+        memcpy(swap, map->tiles, sizeof(Tile) * map->width * map->height);
 
         // Simulate
         //
@@ -126,7 +126,7 @@ void mapCellular(struct Map *map) {
                     }
                 }
             }
-            memcpy(map->tiles, swap, sizeof(struct Tile) * map->width * map->height);
+            memcpy(map->tiles, swap, sizeof(Tile) * map->width * map->height);
         }
 
         for (s = 0; s < 10; s++) {
@@ -142,7 +142,7 @@ void mapCellular(struct Map *map) {
                     }
                 }
             }
-            memcpy(map->tiles, swap, sizeof(struct Tile) * map->width * map->height);
+            memcpy(map->tiles, swap, sizeof(Tile) * map->width * map->height);
         }
 
         // Pick a random open space and (anti) flood-fill from there
