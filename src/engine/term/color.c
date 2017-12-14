@@ -1,5 +1,33 @@
 #include "color.h"
 
+// Library
+#include <stdlib.h>
+
+void copyPixel(Pixel *dest, const Pixel *src) {
+    dest->__fg = src->__fg;
+    dest->__bg = src->__bg;
+
+    dest->c_fg = src->c_fg;
+    dest->c_bg = src->c_bg;
+
+    if (dest->chr == NULL) {
+        if (src->chr != NULL) {
+            dest->chr = createString();
+            stringCopy(dest->chr, src->chr);
+        }
+    } else {
+        if (src->chr == NULL) {
+            deleteString(dest->chr);
+            dest->chr = NULL;
+        } else {
+            stringCopy(dest->chr, src->chr);
+        }
+    }
+
+    dest->id = src->id;
+    dest->depth = src->depth;
+}
+
 Color scaleColor(Color c, float f) {
     return (Color){c.r * f, c.g * f, c.b * f, c.a};
 }

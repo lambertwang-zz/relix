@@ -4,6 +4,7 @@
 // Engine
 #include "game/game.h"
 #include "log/log.h"
+#include "ui/ui.h"
 
 // Game
 #include "game/menu/menu.h"
@@ -29,7 +30,10 @@ int main() {
     addLogLevel(LOG_USER);
     addLogLevel(LOG_RESOURCE_V);
     // removeLogLevel(LOG_RESOURCE_V);
-    removeLogLevel(LOG_GAME_V);
+    // removeLogLevel(LOG_GAME_V);
+
+    Element *e = createElement();
+    registerUiElement(e);
 
     // if (initResources()) {
     //     closeGame(1);
@@ -37,6 +41,7 @@ int main() {
     // }
 
     // initMainMenu();
+    useStatusLine();
     initWorld();
 
     loop();

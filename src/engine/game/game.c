@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // Engine
 #include "constants.h"
@@ -16,6 +17,7 @@
 #include "utility/random.h"
 #include "utility/utility.h"
 
+static Element *status_line;
 
 int initGame() {
     frame_count = 0;
@@ -24,21 +26,32 @@ int initGame() {
     initRandom_s(9877);
     // Init objects and event registration
     initObjects();
+    initUi();
     initInput();
     initScreenManager();
     writeLog(LOG_INIT, "game::initGame(): Initialized game");
 
     signal(SIGINT, closeGame);
+
+    status_line = NULL;
+
     return 0;
 }
 
 void closeGame(int a) {
     closeScreenManager();
     closeInput();
+    closeUi();
     closeObjects();
     closeLog();
 
     exit(a);
+}
+
+void useStatusLine() {
+    status_line = createElement();
+    status_line->bg_c = COLOR_BLACK;
+    registerUiElement(status_line);
 }
 
 int loop() {
@@ -49,6 +62,7 @@ int loop() {
     unsigned long adjust_time = 0;
     int loop_time = 0;
     int loop_time_saved = 0;
+    frame_count = 0;
 
     while (1) {
         fflush(stdout);
@@ -98,18 +112,22 @@ int loop() {
 
         // swapScreen();
 
-        // TODO: we can't safely write the status line anymore because
-        // the game loop doesn't own output
         if (frame_count % 30 == 0) {
             loop_time_saved = loop_time;
         }
+
+        if (status_line != NULL) {
+            String *status_label = createString();
         // printf("\e[1G\e[%dC", 0);
-        // printf(" Loop: %5d ", loop_time_saved);
+            sputf(status_label, " Loop: %5d Frame: %5d Obj rendered: %3d", loop_time_saved, frame_count, objectsRendered);
         // printf("Frame: %3d ", frame_count);
         // printf("Inits: %3d ", screen.times_init);
         // printf("Lines: %3d ", screen.ts.lines);
         // printf("Cols: %3d ", screen.ts.cols);
         // printf("Obj rendered: %3d ", objectsRendered);
+            stringCopy(status_line->text, status_label);
+            deleteString(status_label);
+        }
         // fflush(stdout);
 
         // Swap graphics buffers

@@ -143,7 +143,7 @@ void placeDoors(struct Map *map, Rect room) {
 }
 
 void mapTunneling(struct Map *map) {
-    strcpy(map->type, MAP_DUNGEON);
+    sputf(map->type, MAP_DUNGEON);
     int i, j;
 
     int open_space = 0;

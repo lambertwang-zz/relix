@@ -63,37 +63,30 @@ int renderMap(Map *map, Screen *s) {
 }
 
 void clearMap(Map *map) {
-    if (map != NULL && map->tiles != NULL) {
-        free(map->tiles);
-    }
-    if (map != NULL && map->data != NULL) {
-        free(map->data);
+    if (map != NULL) {
+        if (map->tiles != NULL) {
+            int i;
+            for (i = 0; i < map->width * map->height; i++) {
+                deleteString(map->tiles[i].p.chr);
+            }
+            free(map->tiles);
+        }
+        if (map->data != NULL) {
+            free(map->data);
+        }
+        sputf(map->type, "");
     }
 }
 
-void closeMap(struct Object *o) {
-    struct Map *map = o->data;
+void closeMap(Map *map) {
     clearMap(map);
-    closeDefault(o);
+    deleteString(map->type);
 }
 
-void initMapObj() {
-    struct Object *o_map = createObject();
-
-    listenEvent(o_map, EVENT_KEYBOARD, &keyboardListener);
-    o_map->close = &closeMap;
-
-    addObject(o_map);
-
-    struct Map *map = malloc(sizeof(struct Map));
-    o_map->data = map;
-    initMap(map);
-}
-    
 void initMap(Map *map) {
     static int map_id_iterator = 0;
     map->id = map_id_iterator++;
-    map->type[0] = '\0';
+    map->type = createString();
     map->tiles = NULL;
     map->width = -1;
     map->height = -1;
@@ -117,6 +110,7 @@ void generateMap(struct Map *map,
 
     int i;
     for (i = 0; i < map->height * map->width; i++) {
+        map->tiles[i].p.chr = NULL;
         putWall(&map->tiles[i]);
     }
 

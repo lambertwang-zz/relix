@@ -1,8 +1,5 @@
 #include "asset.h"
 
-// Library
-#include <string.h>
-
 // Engine
 #include "log/log.h"
 
@@ -17,13 +14,13 @@ int initResources() {
     return 0;
 }
 
-int loadStringToEntry(char *dest, JsonNode *node) {
+int loadStringToEntry(String *dest, JsonNode *node) {
     if (node == NULL || node->type != JSON_STRING) {
         writeLog(LOG_LOAD, "monster_load::loadStringToEntry(): ERROR: Expected string property.");
         return 1;
     }
 
-    strncpy(dest, node->data, LABEL_MED);
+    stringCopy(dest, node->data);
 
     return 0;
 }

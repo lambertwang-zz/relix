@@ -94,6 +94,8 @@ int initInput() {
     registerEvent(EVENT_KEYBOARD);
     registerEvent(EVENT_MOUSE);
 
+    writeLog(LOG_INPUT, "input::initInput(): Successfully initialized input.");
+
     return 0;
 }
 

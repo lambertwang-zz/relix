@@ -19,7 +19,6 @@
 #define ASSET_DIR "assets/"
 
 // Render depths
-#define UI_DEPTH 32
 #define PLAYER_DEPTH 16
 #define MONSTER_DEPTH 8
 #define LOOT_DEPTH 4

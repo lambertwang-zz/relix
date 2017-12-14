@@ -3,21 +3,22 @@
 
 // Engine
 #include "constants.h"
+#include "string/string.h"
 
-#define NULL_DICE (Dice){"", 0, 0, 0}
+#define NULL_DICE (Dice){0, 0, 0}
 
 typedef struct Dice {
     // [count]d[sides]+[flat]
-    char label[LABEL_SHORT];
-
     int count;
     int sides;
     int flat;
 } Dice;
 
-Dice parseDice(const char *label);
+Dice parseDice(String *label);
 
 int rollDice(const Dice dice);
+
+int sprintDice(String *dest, const Dice dice);
 
 #endif
 

@@ -1,7 +1,9 @@
 #ifndef __MENU_H__
 #define __MENU_H__
 
+// Engine
 #include "geometry/geometry.h"
+#include "string/string.h"
 
 #define MAX_LABEL_SIZE 128
 
@@ -17,8 +19,7 @@ struct MenuData {
 };
 
 struct MenuItem {
-    char label[MAX_LABEL_SIZE];
-    int label_len;
+    String *label;
 
     Point pos;
     Rect bounds;

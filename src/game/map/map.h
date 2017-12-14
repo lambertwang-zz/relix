@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "render/render.h"
 #include "object/object.h"
+#include "string/string.h"
 
 // Map generation algorithm types
 #define TUNNELING_ALG 0
@@ -36,7 +37,7 @@
 // #define HALL_COLOR (Color){64, 64, 64, 1.0};
 // #define HALL_COLOR (Color){135, 135, 175, 1.0};
 #define HALL_COLOR (Color){175, 175, 175, 1.0};
-#define DOOR_COLOR (Color){95, 95, 0, 1.0};
+#define DOOR_COLOR (Color){128, 128, 0, 1.0};
 
 #define SEEN_COLOR (Color){24, 24, 24, 1.0}
 
@@ -50,20 +51,20 @@ typedef struct Tile {
 typedef struct Map {
     int id;
 
-    char type[LABEL_SHORT];
+    String *type;
 
-    struct Tile *tiles;
+    Tile *tiles;
     int width;
     int height;
 
     // Algorithm specific data for the map
     void *data;
 
-    struct Point player_start;
+    Point player_start;
 } Map;
 
 typedef struct MapEvent {
-    struct Map *map;
+    Map *map;
 } MapEvent;
 
 typedef struct MapResourceManager {
@@ -72,9 +73,9 @@ typedef struct MapResourceManager {
 
 int initMapResources();
 
-int renderMap(struct Map *map, struct Screen *s);
-void clearMap(Map *o);
-void closeMap(Object *o);
+int renderMap(Map *map, Screen *s);
+void clearMap(Map *map);
+void closeMap(Map *map);
 
 void initMapObj();
 void initMap(Map *map);

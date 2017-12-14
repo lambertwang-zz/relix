@@ -57,7 +57,6 @@ void dropLight(Point target) {
     struct Object *o = createObject();
     o->pos = target;
     o->pos.z = 8;
-    o->pix.chr = '1';
     /*
 
     struct TorchData *data = malloc(sizeof(struct TorchData));
@@ -130,8 +129,11 @@ struct Object *addPlayer(Point start) {
     struct Object *player = createObject();
 
     strcpy(player->type, TYPE_PLAYER);
-    player->pix.chr = '@';
-    player->pix.c_fg = (Color){192, 32, 128, 1.0};
+    if (player->pix.chr == NULL) {
+        player->pix.chr = createString();
+    }
+    sputf(player->pix.chr, "@");
+    player->pix.c_fg = (Color){255, 32, 192, 1.0};
 
     player->pos = start;
     player->pos.z = PLAYER_DEPTH;

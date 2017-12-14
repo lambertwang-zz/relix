@@ -7,16 +7,16 @@
 // Engine
 #include "random.h"
 
-Dice parseDice(const char *label) {
-    char temp[LABEL_SHORT];
+Dice parseDice(String *label) {
+    String *temp = createString();
     char *token;
-    strncpy(temp, label, LABEL_SHORT);
+    stringCopy(temp, label);
 
     Dice new_dice;
-    strcpy(new_dice.label, temp);
 
-    token = strtok(temp, "dD");
+    token = strtok(temp->s, "dD");
     if (token == NULL) {
+        deleteString(temp);
         return new_dice;
     }
     new_dice.count = atoi(token);
@@ -29,16 +29,18 @@ Dice parseDice(const char *label) {
         new_dice.sides = atoi(token);
     }
 
-    token = strrchr(label, '+');
+    token = strrchr(label->s, '+');
     if (token == NULL) {
-        token = strrchr(label, '-');
+        token = strrchr(label->s, '-');
         if (token == NULL) {
             new_dice.flat = 0;
+            deleteString(temp);
             return new_dice;
         }
     }
     new_dice.flat = atoi(token);
 
+    deleteString(temp);
     return new_dice;
 }
 
@@ -50,5 +52,9 @@ int rollDice(const Dice dice) {
     result += dice.flat;
 
     return result;
+}
+
+int sprintDice(String *dest, const Dice dice) {
+    return sputf(dest, "%dD%d%+d", dice.count, dice.sides, dice.flat);
 }
 

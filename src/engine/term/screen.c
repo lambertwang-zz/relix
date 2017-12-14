@@ -7,6 +7,7 @@
 
 // Engine
 #include "constants.h"
+#include "log/log.h"
 
 void setCamera(Screen *screen, Point loc) {
     screen->camera = loc;
@@ -22,10 +23,7 @@ void initScreen(Screen *screen) {
 
     // If re-init, free buffers
     if (screen->times_init > 0) {
-        free(screen->light_buffer);
-        free(screen->pixel_buffer);
-        free(screen->current_pixel_buffer);
-        free(screen->prev_pixel_buffer);
+        closeScreen(screen);
     } else {
         screen->id = screen_id_iterator++;
     }
@@ -54,28 +52,38 @@ void initScreen(Screen *screen) {
     screen->current_pixel_buffer = malloc(screen_size);
     screen->prev_pixel_buffer = malloc(screen_size);
 
-    clearScreen(screen);
-
     for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
-        screen->prev_pixel_buffer[i].bg = -1;
-        screen->prev_pixel_buffer[i].fg = -1;
-        screen->prev_pixel_buffer[i].chr = -1;
-
+        screen->light_buffer[i] = COLOR_BLANK;
         screen->current_pixel_buffer[i] = PIXEL_NULL;
+        screen->pixel_buffer[i] = PIXEL_NULL;
+
+        screen->prev_pixel_buffer[i].__bg = -1;
+        screen->prev_pixel_buffer[i].__fg = -1;
+        screen->prev_pixel_buffer[i].chr = NULL;
     }
 }
 
 // Clears a screen buffer
 void clearScreen(Screen *screen) {
+    writeLog(LOG_SCREEN_V, "screen::clearScreen(): Clearing screen.");
+
     int i;
 
     for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
         screen->light_buffer[i] = COLOR_BLANK;
+        deleteString(screen->pixel_buffer[i].chr);
         screen->pixel_buffer[i] = PIXEL_NULL;
     }
 }
 
 int closeScreen(Screen *screen) {
+    writeLog(LOG_SCREEN, "screen::closeScreen(): Closing screen.");
+    int i;
+    for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
+        deleteString(screen->pixel_buffer[i].chr);
+        deleteString(screen->current_pixel_buffer[i].chr);
+        deleteString(screen->prev_pixel_buffer[i].chr);
+    }
     free(screen->light_buffer);
     free(screen->pixel_buffer);
     free(screen->current_pixel_buffer);

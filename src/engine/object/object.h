@@ -15,6 +15,8 @@ typedef struct Object {
     unsigned int id;
     char type[32];
 
+    // pos.z is used for depth rendering and checking.
+    // Note: depth 1024 is reserved for UI elements
     Point pos;
     Pixel pix;
 

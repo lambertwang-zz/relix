@@ -1,13 +1,17 @@
 #include "map.h"
 
+// Library
+#include <stdlib.h>
+
 void initTile(Tile *tile) {
     tile->seen = 0;
 
     Pixel *pix = &tile->p;
-    pix->bg = rgbToTerm(pix->c_bg);
-    pix->fg = rgbToTerm(pix->c_fg);
     pix->depth = 0;
-    pix->chr = ' ';
+    if (pix->chr == NULL) {
+        pix->chr = createString();
+    }
+    sputf(pix->chr, " ");
 }
 
 void putWall(struct Tile *tile) {
@@ -54,6 +58,6 @@ void putDoor(struct Tile *tile) {
     tile->p.c_fg = COLOR_BLACK;
     initTile(tile);
 
-    tile->p.chr = '|';
+    sputf(tile->p.chr, "▓");
 }
 

@@ -29,7 +29,7 @@ int worldDoorListener(Object *o, Event ev) {
     if (tile->type == TILE_DOOR) {
         if (tile->solid) {
             tile->solid = SOFT;
-            tile->p.chr = '_';
+            sputf(tile->p.chr, "_");
         }
     }
 

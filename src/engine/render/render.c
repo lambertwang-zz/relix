@@ -1,7 +1,11 @@
 #include "render.h"
 
 // Library
+#include <stdlib.h>
 #include <math.h>
+
+// Engine
+#include "constants.h"
 
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -47,17 +51,19 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
         // p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
         // p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
         p.c_bg = colorMultL(p.c_bg, s->light_buffer[index]);
-        if (p.chr != ' ') {
+        /* Rendered characters ignore lighting.
+        if (p.chr != NULL) {
             p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);
         }
+        */
     }
     
-    p.bg = rgbToTerm(p.c_bg);
-    if (p.chr != ' ') {
-        p.fg = rgbToTerm(p.c_fg);
+    p.__bg = rgbToTerm(p.c_bg);
+    if (p.chr != NULL) {
+        p.__fg = rgbToTerm(p.c_fg);
     }
 
-    s->pixel_buffer[index] = p;
+    copyPixel(&s->pixel_buffer[index], &p);
 
     return 0;
 }
@@ -80,34 +86,35 @@ int putPixelA(Screen *s, int x, int y, Pixel p) {
     return _putPixel(s, x, y, p, 0);
 }
 
-int _putString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg, int no_light) {
+int _putString(Screen *s, int id, int x, int y, String *str, Color fg, Color bg, int no_light) {
     int i;
-    Pixel p = (Pixel){rgbToTerm(fg), rgbToTerm(bg), fg, bg, ' ', id, 255};
+    Pixel p = (Pixel){0, 0, fg, bg, createString(), id, UI_DEPTH};
     for (i = 0; i + x < s->ts.cols; i++) {
-        if (str[i] == '\0') {
+        if (str->s[i] == '\0') {
             break;
         }
-        p.chr = str[i];
+        sgetc(p.chr, str, i);
         _putPixel(s, x + i, y, p, no_light);
     }
+    deleteString(p.chr);
     return i;
 }
 
-int putString(Screen *s, int x, int y, char *str, Color fg, Color bg) {
+int putString(Screen *s, int x, int y, String *str, Color fg, Color bg) {
     return _putString(s, -1, x, y, str, fg, bg, 0);
 }
 
-int putStringL(Screen *s, int x, int y, char *str, Color fg, Color bg) {
+int putStringL(Screen *s, int x, int y, String *str, Color fg, Color bg) {
     return _putString(s, -1, x, y, str, fg, bg, 1);
 }
 
-int oputString(Screen *s, int id, int x, int y, char *str, Color fg, Color bg) {
+int oputString(Screen *s, int id, int x, int y, String *str, Color fg, Color bg) {
     return _putString(s, id, x, y, str, fg, bg, 0);
 }
 
 int _putRect(Screen *s, int id, int x, int y, Rect rect, Color bg, int no_light) {
     int i, j;
-    Pixel p = (Pixel){0, rgbToTerm(bg), COLOR_BLANK, bg, ' ', id, 255};
+    Pixel p = (Pixel){0, 0, COLOR_BLANK, bg, NULL, id, UI_DEPTH};
     for (j = rect.top + y < 0 ? 0 : rect.top + y; j < rect.bottom + y && j < s->ts.lines; j++) {
         for (i = rect.left + x < 0 ? 0 : rect.left + x; i < rect.right + x && i < s->ts.cols; i++) {
             _putPixel(s, i, j, p, no_light);
@@ -134,7 +141,7 @@ int putRectL(Screen *s, int x, int y, Rect rect, Color bg) {
 int putPixelRgb(Screen *s, int x, int y, Color c) {
     unsigned int index = x + y * s->ts.cols;
     s->pixel_buffer[index].c_bg = c;
-    s->pixel_buffer[index].bg = rgbToTerm(s->pixel_buffer[index].c_bg);
+    s->pixel_buffer[index].__bg = rgbToTerm(s->pixel_buffer[index].c_bg);
 
     return 0;
 }

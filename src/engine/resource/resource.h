@@ -5,9 +5,10 @@
 #include "constants.h"
 #include "list/array.h"
 #include "utility/dice.h"
+#include "string/string.h"
 
 typedef struct ResourceEntry {
-    char tag[LABEL_MED];
+    String *tag;
     void *data;
 } ResourceEntry;
 
@@ -15,8 +16,8 @@ typedef struct ResourceManager {
     Array resource_store;
 } ResourceManager;
 
-int registerResource(ResourceManager *res, char tag[LABEL_SHORT], void *data);
-int retrieveResource(ResourceManager *res, char tag[LABEL_SHORT]);
+int registerResource(ResourceManager *res, String *tag, void *data);
+int retrieveResource(ResourceManager *res, String *tag);
 
 #endif
 

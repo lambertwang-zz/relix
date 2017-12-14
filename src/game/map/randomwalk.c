@@ -42,7 +42,7 @@ int walk(struct Map *map, Point *next) {
 }
 
 void mapRandomwalk(struct Map *map) {
-    strcpy(map->type, MAP_CAVE);
+    sputf(map->type, MAP_CAVE);
     int i;
 
     Point next = (Point){map->width / 2, map->height / 2, 0};

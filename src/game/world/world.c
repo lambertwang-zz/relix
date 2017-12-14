@@ -11,6 +11,7 @@
 #include "../map/map.h"
 #include "../relix.h"
 #include "../player/player.h"
+#include "../component/component.h"
 
 static World *world;
 
@@ -27,10 +28,11 @@ int renderWorld(Object *o, Screen *s) {
 
 void closeWorld(Object *o) {
     Iterator *it;
+
     it = initIterator(&world->map_tree);
     while (!done(it)) {
         Map *map = getNext(it)->data;
-        clearMap(map);
+        closeMap(map);
         free(map);
     }
     closeIterator(it);
@@ -72,6 +74,8 @@ void initWorld() {
     insert(&world->map_tree, world->current_map, world->current_map->id);
     
     world->player = addPlayer(world->current_map->player_start);
+
+    // Initialize UI
 }
 
 int getDefaultAction(struct Object *obj, struct Object *target) {

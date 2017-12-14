@@ -15,7 +15,7 @@
 
 MonsterEntry *createEmptyMonsterEntry() {
     MonsterEntry *new_entry = malloc(sizeof(MonsterEntry));
-    new_entry->name[0] = '\0';
+    new_entry->name = createString();
     new_entry->level = -1;
     new_entry->challenge = -1;
     new_entry->hit_dice = NULL_DICE;
@@ -23,7 +23,7 @@ MonsterEntry *createEmptyMonsterEntry() {
     new_entry->nat_damage = ELEM_PHYS;
     new_entry->loot_qual = 100;
 
-    new_entry->chr = -1;
+    new_entry->chr = createString();
 
     return new_entry;
 }
@@ -33,8 +33,8 @@ void fillEmptyMonsterEntry(MonsterEntry *entry, MonsterFamily *family) {
         entry->challenge = entry->level;
     }
 
-    if (entry->chr == -1) {
-        entry->chr = family->default_chr;
+    if (entry->chr->len == 0) {
+        stringCopy(entry->chr, family->default_chr);
     }
 }
 
@@ -47,37 +47,37 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
     for (i = 0; i < monster_props->count; i++) {
         JsonObjProp *prop = getDataArray(monster_props, i);
 
-        if (!strcmp(prop->key, TOK_MON_NAME)) {
+        if (!strcmp(prop->key->s, TOK_MON_NAME)) {
             loadStringToEntry(new_entry->name, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_LEVEL)) {
+        if (!strcmp(prop->key->s, TOK_MON_LEVEL)) {
             loadIntToEntry(&new_entry->level, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_CHALLENGE)) {
+        if (!strcmp(prop->key->s, TOK_MON_CHALLENGE)) {
             loadIntToEntry(&new_entry->challenge, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_HD)) {
+        if (!strcmp(prop->key->s, TOK_MON_HD)) {
             loadDiceToEntry(&new_entry->hit_dice, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_NAT_WEAPON)) {
+        if (!strcmp(prop->key->s, TOK_MON_NAT_WEAPON)) {
             loadDiceToEntry(&new_entry->nat_weapon, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_NAT_DAMAGE)) {
+        if (!strcmp(prop->key->s, TOK_MON_NAT_DAMAGE)) {
             if (prop->value->type == JSON_STRING) {
                 new_entry->nat_damage = elementStrToInt(prop->value->data);
             }
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_LOOT_QUAL)) {
+        if (!strcmp(prop->key->s, TOK_MON_LOOT_QUAL)) {
             loadIntToEntry(&new_entry->loot_qual, prop->value);
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_COLOR)) {
+        if (!strcmp(prop->key->s, TOK_MON_COLOR)) {
             if (prop->value->type == JSON_ARRAY) {
                 int *r = getDataArray(prop->value->data, 0),
                     *g = getDataArray(prop->value->data, 0),
@@ -91,8 +91,8 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
             }
             continue;
         }
-        if (!strcmp(prop->key, TOK_MON_CHR)) {
-            loadCharToEntry(&new_entry->chr, prop->value);
+        if (!strcmp(prop->key->s, TOK_MON_CHR)) {
+            loadStringToEntry(new_entry->chr, prop->value);
             continue;
         }
     }
@@ -128,26 +128,26 @@ int loadMonsterFile(FILE *file) {
     for (i = 0; i < data->props.count; i++) {
         JsonObjProp *prop = getDataArray(&data->props, i);
         writeLog(LOG_LOAD_V, "monster_load::loadMonsterFile(): Parsing token '%s'.", prop->key);
-        if (!strcmp(prop->key, TOK_FAMILY)) {
+        if (!strcmp(prop->key->s, TOK_FAMILY)) {
             if (loadStringToEntry(family->name, prop->value)) {
                 writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): ERROR: Cannot parse '%s'.", TOK_FAMILY);
             }
             continue;
         }
-        if (!strcmp(prop->key, TOK_MIN_LEVEL)) {
+        if (!strcmp(prop->key->s, TOK_MIN_LEVEL)) {
             if (loadIntToEntry(&family->min_level, prop->value)) {
                 writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): ERROR: Cannot parse '%s'.", TOK_MIN_LEVEL);
             }
             continue;
         }
-        if (!strcmp(prop->key, TOK_MAX_LEVEL)) {
+        if (!strcmp(prop->key->s, TOK_MAX_LEVEL)) {
             if (loadIntToEntry(&family->max_level, prop->value)) {
                 writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): ERROR: Cannot parse '%s'.", TOK_MAX_LEVEL);
             }
             continue;
         }
-        if (!strcmp(prop->key, TOK_DEFAULT_CHAR)) {
-            if (loadCharToEntry(&family->default_chr, prop->value)) {
+        if (!strcmp(prop->key->s, TOK_DEFAULT_CHAR)) {
+            if (loadStringToEntry(family->default_chr, prop->value)) {
                 writeLog(LOG_LOAD, "monster_load::loadMonsterFile(): ERROR: Cannot parse '%s'.", TOK_DEFAULT_CHAR);
             }
             continue;
@@ -177,15 +177,13 @@ int loadMonsterFile(FILE *file) {
 }
 
 int loadMonsterResources() {
-    char monster_dir[LABEL_LONG];
-    strncpy(monster_dir, ASSET_DIR, LABEL_LONG);
-    strncat(monster_dir, MONSTER_DIR, LABEL_LONG - strlen(monster_dir));
-    int dir_len = strlen(monster_dir);
+    String *monster_dir = createString();
+    sputf(monster_dir, "%s%s", ASSET_DIR, MONSTER_DIR);
 
     struct dirent *p_dirent;
     DIR *p_dir;
 
-    p_dir = opendir(monster_dir);
+    p_dir = opendir(monster_dir->s);
     if (p_dir == NULL) {
         writeLog(LOG_LOAD, "monster_load::loadMonsterResources(): ERROR: Cannot open directory '%s'", monster_dir);
         return 1;
@@ -205,8 +203,8 @@ int loadMonsterResources() {
             continue;
         }
 
-        strncpy(monster_dir + dir_len, p_dirent->d_name, LABEL_LONG - dir_len);
-        FILE *mon_file = fopen(monster_dir, "r");
+        sputf(monster_dir, "%s%s%s", ASSET_DIR, MONSTER_DIR, p_dirent->d_name);
+        FILE *mon_file = fopen(monster_dir->s, "r");
         if (mon_file == NULL) {
             writeLog(LOG_LOAD, "monster_load::loadMonsterResources(): ERROR: Cannot open file '%s'", monster_dir);
             continue;

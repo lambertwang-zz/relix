@@ -47,6 +47,10 @@ void closeDefault(Object *o) {
     if (o->data != NULL) {
         free(o->data);
     }
+
+    if (o->pix.chr != NULL) {
+        deleteString(o->pix.chr);
+    }
     free(o);
 }
 

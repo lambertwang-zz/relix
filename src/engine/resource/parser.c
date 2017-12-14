@@ -25,25 +25,35 @@ int closeJsonNode(JsonNode *node) {
     // writeLog(LOG_RESOURCE_V, "parser::closeJsonNode(): Closing Node.");
     unsigned int i;
     if (node->data != NULL) {
-        if (node->type == JSON_OBJ) {
-            JsonObjData *obj_data = node->data;
-            for (i = 0; i < obj_data->props.count; i++) {
-                JsonObjProp *obj_prop = getDataArray(&obj_data->props, i);
-                if (obj_prop->value != NULL) {
-                    closeJsonNode(obj_prop->value);
+        JsonObjData *obj_data = node->data;
+        Array *array_data = node->data;
+        switch (node->type) {
+            case JSON_OBJ:
+                for (i = 0; i < obj_data->props.count; i++) {
+                    JsonObjProp *obj_prop = getDataArray(&obj_data->props, i);
+                    if (obj_prop->value != NULL) {
+                        closeJsonNode(obj_prop->value);
+                    }
+                    free(obj_prop);
                 }
-                free(obj_prop);
-            }
-            closeArray(&obj_data->props);
-        } else if (node->type == JSON_ARRAY) {
-            Array *array_data = node->data;
-            for (i = 0; i < array_data->count; i++) {
-                JsonNode *array_item = getDataArray(array_data, i);
-                closeJsonNode(array_item);
-            }
-            closeArray(array_data);
+                closeArray(&obj_data->props);
+                free(node->data);
+                break;
+            case JSON_ARRAY:
+                for (i = 0; i < array_data->count; i++) {
+                    JsonNode *array_item = getDataArray(array_data, i);
+                    closeJsonNode(array_item);
+                }
+                closeArray(array_data);
+                free(node->data);
+                break;
+            case JSON_STRING:
+                deleteString(node->data);
+                break;
+            default:
+                free(node->data);
+                break;
         }
-        free(node->data);
     }
     free(node);
     return 0;
@@ -67,36 +77,29 @@ int parseWhitespace(FILE *file, char *c_buf) {
 JsonNode *parseString(FILE *file, char *c_buf) {
     // writeLog(LOG_RESOURCE_V, "parser::parseString(): Beginning to parse string.");
     JsonNode *new_node = createJsonNode(); 
-    char *result = malloc(sizeof(char) * LABEL_LONG);
-    char *head = result;
+    String *result = createString();
 
     new_node->data = result;
     new_node->type = JSON_STRING;
 
     if (*c_buf != '"') {
         writeLog(LOG_RESOURCE, "parser::parseString(): ERROR: Expected '\"' at start of string.");
-        free(result);
+        deleteString(result);
         return NULL;
     }
 
     while ((*c_buf = fgetc(file)) != EOF) {
         switch (*c_buf) {
             case '"':
-                *head = '\0';
                 *c_buf = fgetc(file);
-                writeLog(LOG_RESOURCE_V, "parser::parseString(): Parsed string '%s'.", result);
+                writeLog(LOG_RESOURCE_V, "parser::parseString(): Parsed string '%s'.", result->s);
                 return new_node;
             default:
-                *head++ = *c_buf;
-                if (head - LABEL_LONG >= result) {
-                    writeLog(LOG_RESOURCE, "parser::parseString(): ERROR: String too long '%s'.", result);
-                    closeJsonNode(new_node);
-                    return NULL;
-                }
+                spush(result, *c_buf);
                 break;
         }
     }
-    writeLog(LOG_RESOURCE, "parser::parseString(): ERROR: Reached end of file reading string '%s'.", result);
+    writeLog(LOG_RESOURCE, "parser::parseString(): ERROR: Reached end of file reading string '%s'.", result->s);
     closeJsonNode(new_node);
     return NULL;
 }
@@ -106,9 +109,8 @@ JsonNode *parseInt(FILE *file, char *c_buf) {
     JsonNode *new_node = createJsonNode(); 
     int *value = malloc(sizeof(int));
 
-    char result[LABEL_SHORT];
-    *result = *c_buf;
-    char *head = result;
+    String *result = createString();
+    spush(result, *c_buf);
 
     new_node->data = value;
     new_node->type = JSON_INT;
@@ -116,22 +118,18 @@ JsonNode *parseInt(FILE *file, char *c_buf) {
     // Only supports integers
     while (*c_buf != EOF) {
         if ((*c_buf >= '0' && *c_buf <= '9') || *c_buf == '-') {
-            *head++ = *c_buf;
-            if (head - LABEL_SHORT >= result - 1) {
-                writeLog(LOG_RESOURCE, "parser::parseInt(): ERROR: Int too long '%s'.", result);
-                closeJsonNode(new_node);
-                return NULL;
-            }
+            spush(result, *c_buf);
         } else {
-            *head = '\0';
-            *value = atoi(result);
-            writeLog(LOG_RESOURCE_V, "parser::parseInt(): Parsed int string '%s' to value %d.", result, *value);
+            *value = atoi(result->s);
+            writeLog(LOG_RESOURCE_V, "parser::parseInt(): Parsed int string '%s' to value %d.", result->s, *value);
+            deleteString(result);
             return new_node;
         }
         *c_buf = fgetc(file);
     }
-    writeLog(LOG_RESOURCE, "parser::parseInt(): ERROR: Reached end of file reading int '%s'.", result);
+    writeLog(LOG_RESOURCE, "parser::parseInt(): ERROR: Reached end of file reading int '%s'.", result->s);
     closeJsonNode(new_node);
+    deleteString(result);
     return NULL;
 }
 
@@ -161,7 +159,7 @@ JsonNode *parseObject(FILE *file, char *c_buf) {
             closeJsonNode(new_node);
             return NULL;
         }
-        strcpy(prop->key, keyNode->data);
+        stringCopy(prop->key, keyNode->data);
         closeJsonNode(keyNode);
         // writeLog(LOG_RESOURCE_V, "parser::parseObject(): Parsed key '%s'.", prop->key);
 
@@ -292,7 +290,7 @@ JsonNode *getObjValue(JsonNode *node, char *key) {
     JsonObjData *obj_data = node->data;
     for (i = 0; i < obj_data->props.count; i++) {
         JsonObjProp *obj_prop = getDataArray(&obj_data->props, i);
-        if (!strcmp(obj_prop->key, key)) {
+        if (!strcmp(obj_prop->key->s, key)) {
             return obj_prop->value;
         }
     }

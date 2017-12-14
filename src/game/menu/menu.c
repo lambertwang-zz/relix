@@ -90,7 +90,7 @@ int render_menu(Object *o, Screen *s) {
         putRectL(s, x, y, button, bg);
         menu->items[i].pos = (Point){x, y, 0};
         menu->items[i].bounds = button;
-        putStringL(s, (screen_manager.main_screen.ts.cols - menu->items[i].label_len) >> 1, y + 1, menu->items[i].label, c, COLOR_EMPTY);
+        putStringL(s, (screen_manager.main_screen.ts.cols - menu->items[i].label->len) >> 1, y + 1, menu->items[i].label, c, COLOR_EMPTY);
     }
 
     return 1;
@@ -110,17 +110,10 @@ void initMainMenu() {
     menu->item_index = 0;
     menu->items = malloc(sizeof(struct MenuItem) * menu->item_count);
 
-    strcpy(menu->items[0].label, MENU_START);
-    menu->items[0].label_len = strlen(MENU_START);
-
-    strcpy(menu->items[1].label, MENU_START);
-    menu->items[1].label_len = strlen(MENU_START);
-
-    strcpy(menu->items[2].label, MENU_START);
-    menu->items[2].label_len = strlen(MENU_START);
-
-    strcpy(menu->items[3].label, MENU_START);
-    menu->items[3].label_len = strlen(MENU_START);
+    sputf(menu->items[0].label, MENU_START);
+    sputf(menu->items[1].label, MENU_START);
+    sputf(menu->items[2].label, MENU_START);
+    sputf(menu->items[3].label, MENU_START);
 
     menu_object->pos.z = 100;
 

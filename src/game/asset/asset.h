@@ -32,18 +32,18 @@
 typedef struct MonsterFamily {
     struct Array entries;
     // name
-    char name[LABEL_MED];
+    String *name;
     // min_level
     int min_level;
     // max_level
     int max_level;
     // default_char
-    char default_chr;
+    String *default_chr;
 } MonsterFamily;
 
 typedef struct MosnterEntry {
     // name
-    char name[LABEL_MED];
+    String *name;
     // level
     int level;
     // challenge
@@ -59,14 +59,13 @@ typedef struct MosnterEntry {
     // color
     Color color;
     // char
-    char chr;
+    String *chr;
 } MonsterEntry;
 
 int initResources();
 
-int loadStringToEntry(char *dest, JsonNode *node);
+int loadStringToEntry(String *dest, JsonNode *node);
 int loadDiceToEntry(Dice *dest, JsonNode *node);
-int loadCharToEntry(char *dest, JsonNode *node);
 int loadIntToEntry(int *dest, JsonNode *node);
 
 int loadMonsterResources();

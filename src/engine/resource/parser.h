@@ -7,6 +7,7 @@
 // Engine
 #include "constants.h"
 #include "list/array.h"
+#include "string/string.h"
 
 // Value types
 #define JSON_NULL 0
@@ -27,7 +28,7 @@ typedef struct JsonNode {
 } JsonNode;
 
 typedef struct JsonObjProp {
-    char key[LABEL_LONG];
+    String *key;
     JsonNode *value;
 } JsonObjProp;
 

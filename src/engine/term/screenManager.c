@@ -21,15 +21,16 @@ void handle_winch() {
 }
 
 void *outputThreadWork() {
-    writeLog(LOG_SCREEN, "screenManager::outputThreadWork output thread started");
+    writeLog(LOG_SCREEN, "screenManager::outputThreadWork(): Starting output thread.");
     while (!abort_output_thread_flag) {
         renderScreens();
     }
-    writeLog(LOG_SCREEN, "screenManager::outputThreadWork output thread exiting");
+    writeLog(LOG_SCREEN, "screenManager::outputThreadWork(): Exiting output thread.");
     return 0;
 }
 
 void initScreenManager() {
+    writeLog(LOG_SCREEN, "screenManager::initScreenManager(): Initializing screen manager.");
     // writes_allowed starts at 1 to allow the first frame to render
     sem_init(&screen_manager.writes_allowed, 0, 1);
     sem_init(&screen_manager.reads_allowed, 0, 0);
@@ -55,6 +56,7 @@ void initScreenManager() {
     printf("\033[2J");
 
     pthread_create(&output_thread, NULL, outputThreadWork, NULL);
+    writeLog(LOG_SCREEN, "screenManager::initScreenManager(): Successfully initialized screen manager.");
 }
 
 void closeScreenManager() {
@@ -92,6 +94,7 @@ void closeScreenManager() {
 }
 
 int renderScreens() {
+    int i, j;
     Screen *screen = &screen_manager.main_screen;
 
     // Wait for the engine to finish preparing this frame
@@ -119,7 +122,10 @@ int renderScreens() {
 
     // Copy the prepared frame into our thread's internal buffer
     // This will result in a blank frame if the window was resized
-    memcpy(screen->current_pixel_buffer, screen->pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
+    writeLog(LOG_SCREEN_V, "screenManager::renderScreens(): Copying prepared frame to screen buffer.");
+    for (int i = 0; i < screen->ts.cols * screen->ts.lines; i++) {
+        copyPixel(&screen->current_pixel_buffer[i], &screen->pixel_buffer[i]);
+    }
 
     // Clear the shared buffers
     clearScreen(screen);
@@ -127,13 +133,12 @@ int renderScreens() {
     // Let the engine know that it's safe to continue rendering
     sem_post(&screen_manager.writes_allowed);
 
-    int i, j;
     unsigned int index;
     // Refers to preceding pixel in the row
     int prevFg, prevBg;
 
     unsigned char fg, bg;
-    char chr;
+    String *chr;
 
     // Line-buffer
     // TODO: Clear still-reachable memory block (not a leak)
@@ -152,14 +157,14 @@ int renderScreens() {
         for (i = 0; i < screen->ts.cols; i++) {
             index = i + j * screen->ts.cols;
 
-            fg = screen->current_pixel_buffer[index].fg;
-            bg = screen->current_pixel_buffer[index].bg;
+            fg = screen->current_pixel_buffer[index].__fg;
+            bg = screen->current_pixel_buffer[index].__bg;
             chr = screen->current_pixel_buffer[index].chr;
             
             // Check if pixel was unchanged from last frame
-            if (fg == screen->prev_pixel_buffer[index].fg &&
-                bg == screen->prev_pixel_buffer[index].bg &&
-                chr == screen->prev_pixel_buffer[index].chr) {
+            if (fg == screen->prev_pixel_buffer[index].__fg &&
+                bg == screen->prev_pixel_buffer[index].__bg &&
+                stringCompare(chr, screen->prev_pixel_buffer[index].chr) == 0) {
                 unchangedPixels++;
                 continue;
             }
@@ -178,7 +183,12 @@ int renderScreens() {
                 charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg);
                 prevBg = bg;
             }
-            charsPrinted += sprintf(buffer + charsPrinted, "%c", chr); 
+            
+            if (chr == NULL) {
+                charsPrinted += sprintf(buffer + charsPrinted, " "); 
+            } else {
+                charsPrinted += sprintf(buffer + charsPrinted, "%s", chr->s); 
+            }
         }
 
         fwrite(buffer, sizeof(char), charsPrinted, stdout);
@@ -186,7 +196,10 @@ int renderScreens() {
 
     free(buffer);
 
-    memcpy(screen->prev_pixel_buffer, screen->current_pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
+    // Copy buffers
+    for (i = 0; i < screen->ts.cols * screen->ts.lines; i++) {
+        copyPixel(&screen->prev_pixel_buffer[i], &screen->current_pixel_buffer[i]);
+    }
 
     fwrite("\e[0m", sizeof(char), 5, stdout);
     fflush(stdout);
