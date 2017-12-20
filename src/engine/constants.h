@@ -5,6 +5,8 @@
 // #define DEBUG_INPUT
 // #define DEBUG_TREES
 //
+// Max length of supported unicode characters
+#define UNICODE_MAX 5
 // Reserved depth for ui elements
 #define UI_DEPTH 1024
 

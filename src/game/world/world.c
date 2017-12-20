@@ -76,6 +76,7 @@ void initWorld() {
     world->player = addPlayer(world->current_map->player_start);
 
     // Initialize UI
+    createPlayerPanel();
 }
 
 int getDefaultAction(struct Object *obj, struct Object *target) {

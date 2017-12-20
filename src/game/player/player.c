@@ -33,7 +33,7 @@ int renderTorchLight(Object *o, Screen *s) {
 
     pointLight(s, getWorldData()->current_map, o->pos, 
         // scaleColor(data->c, data->factor),
-        (Color){192, 192, 90, 1.0},
+        (Color){160, 160, 80, 1.0},
         10);
         // data->range);
 /*
@@ -48,7 +48,7 @@ int renderTorchLight(Object *o, Screen *s) {
     return 1;
 }
 
-int lightMapListener(struct Object *o, Event ev) {
+int lightMapListener(struct Object *o, Event *ev) {
     removeObject(o);
     return 0;
 }
@@ -67,7 +67,7 @@ void dropLight(Point target) {
     */
     
 
-    o->pix.c_fg = (Color){255, 255, 135, 1.0},
+    o->pix.fg = (Color){255, 255, 135, 1.0},
 
     o->renderLight = &renderTorchLight;
 
@@ -76,8 +76,8 @@ void dropLight(Point target) {
     addObject(o);
 }
 
-int playerMapListener(Object *o, Event ev) {
-    MapEvent m_ev = *(MapEvent*)ev.data;
+int playerMapListener(Object *o, Event *ev) {
+    MapEvent m_ev = *(MapEvent*)ev->data;
     
     o->pos.x = m_ev.map->player_start.x;
     o->pos.y = m_ev.map->player_start.y;
@@ -85,9 +85,9 @@ int playerMapListener(Object *o, Event ev) {
     return 0;
 }
 
-int playerListener(Object *o, Event ev) {
+int playerListener(Object *o, Event *ev) {
     writeLog(10, "received player event action");
-    TickEvent *tick = ev.data;
+    TickEvent *tick = ev->data;
     Event action;
     if (tick->act.code >= 0) {
         switch (tick->act.code) {
@@ -129,11 +129,8 @@ struct Object *addPlayer(Point start) {
     struct Object *player = createObject();
 
     strcpy(player->type, TYPE_PLAYER);
-    if (player->pix.chr == NULL) {
-        player->pix.chr = createString();
-    }
-    sputf(player->pix.chr, "@");
-    player->pix.c_fg = (Color){255, 32, 192, 1.0};
+    strcpy(player->pix.chr, "@");
+    player->pix.fg = (Color){255, 32, 192, 1.0};
 
     player->pos = start;
     player->pos.z = PLAYER_DEPTH;

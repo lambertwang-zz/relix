@@ -7,6 +7,7 @@
 // Engine
 #include "constants.h"
 #include "log/log.h"
+#include "ui/ui.h"
 
 static void (*clearGame)();
 
@@ -23,20 +24,29 @@ int sendEvent(Event ev) {
     if (ensureEventExists("sendEvent", ev.id)) {
         return 1;
     }
-    // writeLog(LOG_OBJECTMANAGER, "objectManager::registerEvent(): Registering event id %d", ev_id);
+    ev.stop_propagation = 0;
+
+    if (ev.id == EVENT_MOUSE || ev.id == EVENT_KEYBOARD) {
+        writeLog(LOG_OBJECTMANAGER_V, "objectManager::sendEvent(): Sending event to UI.");
+        sendUiEvent(&ev);
+        if (ev.stop_propagation) {
+            return 0;
+        }
+    }
+
     struct Iterator *it;
 
     // it = initIterator(getData(object_manager.event_listeners[ev.id]);
     it = initIterator(getData(&object_manager.event_listeners, ev.id));
-    while (!done(it)) {
+    while (!done(it) && !ev.stop_propagation) {
         struct Object *obj= getNext(it)->data;
 
-        int (*listener)(struct Object *m, Event ev) = getData(&obj->event_listeners, ev.id);
+        int (*listener)(struct Object *m, Event *ev) = getData(&obj->event_listeners, ev.id);
         if (listener == NULL) {
             writeLog(LOG_OBJECTMANAGER, "objectManager::sendEvent(): WARNING: No listener for Event id %d for object", ev.id, obj->id);
             continue;
         }
-        listener(obj, ev);
+        listener(obj, &ev);
     }
     closeIterator(it);
 

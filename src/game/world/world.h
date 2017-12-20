@@ -29,9 +29,9 @@ void initWorld();
 
 int getDefaultAction(Object *obj, Object *target);
 
-int worldDoorListener(Object *o, Event ev);
+int worldDoorListener(Object *o, Event *ev);
 // int worldPlayerListener(Object *o, Event ev);
-int worldKeyboardListener(Object *o, Event ev);
+int worldKeyboardListener(Object *o, Event *ev);
 
 #endif
 

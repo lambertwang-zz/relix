@@ -17,7 +17,5 @@ void addEncounter(Map *map, Rect loc, int challenge) {
     }
 
     writeLog(LOG_MAP, "encounter::addEncounter(): Open space: %d", open_space);
-    
-
 }
 

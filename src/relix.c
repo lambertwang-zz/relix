@@ -24,21 +24,19 @@ int main() {
     // addLogLevel(LOG_GAME_V);
     // addLogLevel(LOG_GAME_V);
     // addLogLevel(LOG_INPUT_V);
-    // addLogLevel(LOG_SCREEN_V);
+    addLogLevel(LOG_SCREEN_V);
     addLogLevel(0xffffffff);
-    addLogLevel(LOG_OBJECTMANAGER_V);
-    addLogLevel(LOG_USER);
-    addLogLevel(LOG_RESOURCE_V);
+    // addLogLevel(LOG_OBJECTMANAGER_V);
+    // addLogLevel(LOG_USER);
+    // addLogLevel(LOG_RESOURCE_V);
+    addLogLevel(LOG_UI_V);
     // removeLogLevel(LOG_RESOURCE_V);
     // removeLogLevel(LOG_GAME_V);
 
-    Element *e = createElement();
-    registerUiElement(e);
-
-    // if (initResources()) {
-    //     closeGame(1);
-    //     return 0;
-    // }
+    if (initResources()) {
+        // closeGame(1);
+        // return 0;
+    }
 
     // initMainMenu();
     useStatusLine();
@@ -46,6 +44,5 @@ int main() {
 
     loop();
 
-    closeGame(0);
     return 0;
 }

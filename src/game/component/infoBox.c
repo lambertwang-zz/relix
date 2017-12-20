@@ -6,5 +6,4 @@
 void createInfoBox() {
     Element *infoBox = createElement();
     // infoBox.str = 
-    registerUiElement(infoBox);
 }

@@ -65,10 +65,6 @@ int renderMap(Map *map, Screen *s) {
 void clearMap(Map *map) {
     if (map != NULL) {
         if (map->tiles != NULL) {
-            int i;
-            for (i = 0; i < map->width * map->height; i++) {
-                deleteString(map->tiles[i].p.chr);
-            }
             free(map->tiles);
         }
         if (map->data != NULL) {
@@ -110,7 +106,7 @@ void generateMap(struct Map *map,
 
     int i;
     for (i = 0; i < map->height * map->width; i++) {
-        map->tiles[i].p.chr = NULL;
+        map->tiles[i].p = PIXEL_BLANK;
         putWall(&map->tiles[i]);
     }
 

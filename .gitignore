@@ -8,3 +8,4 @@ relix.exe
 test/tree
 test/input
 test/event
+*.sh

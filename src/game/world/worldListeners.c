@@ -1,5 +1,6 @@
 // Library
 #include <stdlib.h>
+#include <string.h>
 
 // Engine
 #include "event/event.h"
@@ -14,10 +15,10 @@
 
 #include "log/log.h"
 
-int worldDoorListener(Object *o, Event ev) {
+int worldDoorListener(Object *o, Event *ev) {
     writeLog(10, "received door event");
     World *world = o->data;
-    Point p = ((DoorEvent *)ev.data)->p;
+    Point p = ((DoorEvent *)ev->data)->p;
     if (p.x < 0 || p.y < 0 || 
         p.x >= world->current_map->width || 
         p.y >= world->current_map->height) {
@@ -29,7 +30,7 @@ int worldDoorListener(Object *o, Event ev) {
     if (tile->type == TILE_DOOR) {
         if (tile->solid) {
             tile->solid = SOFT;
-            sputf(tile->p.chr, "_");
+            strcpy(tile->p.chr, "_");
         }
     }
 
@@ -69,9 +70,9 @@ Action worldPlayerHandler(World *world, Point p) {
     return (Action){ACTION_IMPASSIBLE};
 }
 
-int worldKeyboardPlayerActive(Object *o, Event ev) {
+int worldKeyboardPlayerActive(Object *o, Event *ev) {
     World *world = getWorldData();
-    KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
+    KeyboardEvent k_ev = *(KeyboardEvent *)ev->data;
     Point target = world->player->pos;
 
     Event ev_tick;
@@ -144,7 +145,7 @@ int worldKeyboardPlayerActive(Object *o, Event ev) {
     return 0;
 }
 
-int worldKeyboardListener(Object *o, Event ev) {
+int worldKeyboardListener(Object *o, Event *ev) {
     return worldKeyboardPlayerActive(o, ev);
 }
 

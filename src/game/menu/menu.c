@@ -13,8 +13,8 @@
 #include "render/render.h"
 #include "term/screen.h"
 
-int menuKeyboardListener(struct Object *o, Event ev) {
-    KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
+int menuKeyboardListener(struct Object *o, Event *ev) {
+    KeyboardEvent k_ev = *(KeyboardEvent *)ev->data;
     struct MenuData *menu = o->data;
     switch (k_ev.type) {
         case KEYBOARD_NORMAL:
@@ -36,8 +36,8 @@ int menuKeyboardListener(struct Object *o, Event ev) {
     return 0;
 }
 
-int menuMouseListener(struct Object *o, Event ev) {
-    MouseEvent m_ev = *(MouseEvent *)ev.data;
+int menuMouseListener(struct Object *o, Event *ev) {
+    MouseEvent m_ev = *(MouseEvent *)ev->data;
     struct MenuData *menu = o->data;
     int i, target = -1;
 
@@ -90,7 +90,12 @@ int render_menu(Object *o, Screen *s) {
         putRectL(s, x, y, button, bg);
         menu->items[i].pos = (Point){x, y, 0};
         menu->items[i].bounds = button;
-        putStringL(s, (screen_manager.main_screen.ts.cols - menu->items[i].label->len) >> 1, y + 1, menu->items[i].label, c, COLOR_EMPTY);
+        putStringL(
+                s, 
+                (Point){(screen_manager.main_screen.ts.cols - menu->items[i].label->len) >> 1, y + 1, 0}, 
+                menu->items[i].label, 
+                c, 
+                COLOR_EMPTY);
     }
 
     return 1;

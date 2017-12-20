@@ -19,12 +19,15 @@ int renderDefault(Object *o, Screen *s) {
             0
     };
 
-    putPixelA(s, rel_pos.x, rel_pos.y, o->pix);
+    int render_res = putPixelA(s, rel_pos.x, rel_pos.y, o->pix);
+    if (render_res) {
+        writeLog(10, "Object failed to render: code = %d", render_res);
+    }
 
     return 0;
 }
 
-int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event)) {
+int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event *)) {
     Node *n = getTreeNode(&o->event_listeners, ev_id);
     if (n == NULL) {
         insert(&o->event_listeners, listener, ev_id);
@@ -48,9 +51,6 @@ void closeDefault(Object *o) {
         free(o->data);
     }
 
-    if (o->pix.chr != NULL) {
-        deleteString(o->pix.chr);
-    }
     free(o);
 }
 

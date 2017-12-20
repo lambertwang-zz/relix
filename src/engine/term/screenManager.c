@@ -41,10 +41,9 @@ void initScreenManager() {
     signal(SIGWINCH, handle_winch);
 #endif
 
+    screen_manager.is_closed = 0;
     screen_manager.main_screen.times_init = 0;
     initScreen(&screen_manager.main_screen);
-
-    initTree(&screen_manager.screen_tree);
 
     // Set auto flush
     // setbuf(stdout, NULL);
@@ -60,21 +59,18 @@ void initScreenManager() {
 }
 
 void closeScreenManager() {
+    writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): Closing the screen manager.");
+    screen_manager.is_closed = 1;
     // Safely terminate the output thread
     // There's no way that the engine can write to the buffer anymore, so wake
     // up the output thread to flush the last frame and check the exit flag.
     abort_output_thread_flag = 1;
+    writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): 1.");
     sem_post(&screen_manager.reads_allowed);
+    writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): 3.");
     pthread_join(output_thread, NULL);
-    
-    Iterator *it;
-    it = initIterator(&screen_manager.screen_tree);
-    while (!done(it)) {
-        Screen *screen = getNext(it)->data;
-        closeScreen(screen);
-    }
-    closeIterator(it);
 
+    writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): 2.");
     closeScreen(&screen_manager.main_screen);
 
     sem_destroy(&screen_manager.reads_allowed);
@@ -91,6 +87,7 @@ void closeScreenManager() {
     // Reset text attributes
     printf("\e[0m");
     fflush(stdout);
+    writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): Successfully closed the screen manager.");
 }
 
 int renderScreens() {
@@ -103,13 +100,6 @@ int renderScreens() {
     // Resizing can only happen when the engine isn't touching the buffer
     if (resize_flag) {
         resize_flag = 0;
-        Iterator *it;
-        it = initIterator(&screen_manager.screen_tree);
-        while (!done(it)) {
-            Screen *screen= getNext(it)->data;
-            initScreen(screen);
-        }
-        closeIterator(it);
 
         initScreen(&screen_manager.main_screen);
 
@@ -123,33 +113,37 @@ int renderScreens() {
     // Copy the prepared frame into our thread's internal buffer
     // This will result in a blank frame if the window was resized
     writeLog(LOG_SCREEN_V, "screenManager::renderScreens(): Copying prepared frame to screen buffer.");
-    for (int i = 0; i < screen->ts.cols * screen->ts.lines; i++) {
-        copyPixel(&screen->current_pixel_buffer[i], &screen->pixel_buffer[i]);
-    }
-
-    // Clear the shared buffers
-    clearScreen(screen);
+    memcpy(screen->current_pixel_buffer, screen->pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     // Let the engine know that it's safe to continue rendering
     sem_post(&screen_manager.writes_allowed);
 
     unsigned int index;
+
+    // Legacy 8-bit colors
     // Refers to preceding pixel in the row
-    int prevFg, prevBg;
+    // int prevFg, prevBg;
+    // unsigned char fg, bg;
+    Color prevFg, prevBg;
+    Color fg, bg;
+    char *chr;
 
-    unsigned char fg, bg;
-    String *chr;
-
-    // Line-buffer
-    // TODO: Clear still-reachable memory block (not a leak)
-    char *buffer = malloc(sizeof(char) * 24 * screen->ts.cols);
+    /**
+     * Line-buffer
+     * TODO: Clear still-reachable memory block (not a leak)
+     * Max size for each char: \e[38;5;100;100;100m (20 * 2 for color codes)
+     * ~40 bytes for rgb ansi color codes
+     * ~4 bytes for utf-8 unicode
+     * ~44 bytes max per char
+     */
+    char *buffer = malloc(sizeof(char) * 48 * screen->ts.cols);
     unsigned int charsPrinted;
 
     int unchangedPixels;
 
     for (j = 0; j < screen->ts.lines; j++) {
-        prevFg = -1;
-        prevBg = -1;
+        prevFg = COLOR_UNDEFINED;
+        prevBg = COLOR_UNDEFINED;
         unchangedPixels = 0;
 
         // Move caret to start of next line
@@ -157,38 +151,44 @@ int renderScreens() {
         for (i = 0; i < screen->ts.cols; i++) {
             index = i + j * screen->ts.cols;
 
-            fg = screen->current_pixel_buffer[index].__fg;
-            bg = screen->current_pixel_buffer[index].__bg;
+            // fg = screen->current_pixel_buffer[index].__fg;
+            // bg = screen->current_pixel_buffer[index].__bg;
+            fg = screen->current_pixel_buffer[index].fg;
+            bg = screen->current_pixel_buffer[index].bg;
             chr = screen->current_pixel_buffer[index].chr;
             
             // Check if pixel was unchanged from last frame
-            if (fg == screen->prev_pixel_buffer[index].__fg &&
-                bg == screen->prev_pixel_buffer[index].__bg &&
-                stringCompare(chr, screen->prev_pixel_buffer[index].chr) == 0) {
+            // if (fg == screen->prev_pixel_buffer[index].__fg &&
+            //     bg == screen->prev_pixel_buffer[index].__bg &&
+            if (!compareColor(fg, screen->prev_pixel_buffer[index].fg) &&
+                !compareColor(bg, screen->prev_pixel_buffer[index].bg) &&
+                !strcmp(chr, screen->prev_pixel_buffer[index].chr)) {
                 unchangedPixels++;
                 continue;
             }
 
             // If preceding pixels are unchanged, skip characters
-            if (unchangedPixels) {
+            if (unchangedPixels > 0) {
                 charsPrinted += sprintf(buffer + charsPrinted, "\e[%dC", unchangedPixels);
                 unchangedPixels = 0;
             }
 
-            if (prevFg != fg) {
-                charsPrinted += sprintf(buffer + charsPrinted, "\e[38;5;%dm", fg);
+            if (compareColor(prevFg, fg)) {
+                // charsPrinted += sprintf(buffer + charsPrinted, "\e[38;5;%dm", fg.r);
+                charsPrinted += sprintf(buffer + charsPrinted, 
+                        "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
                 prevFg = fg;
             }
-            if (prevBg != bg) {
-                charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg);
+            if (compareColor(prevBg, bg)) {
+                // charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg.r);
+                charsPrinted += sprintf(buffer + charsPrinted, 
+                        "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
+                // charsPrinted += sprintf(buffer + charsPrinted, 
+                        //"\x1b[48;2;0;0;0m");
                 prevBg = bg;
             }
             
-            if (chr == NULL) {
-                charsPrinted += sprintf(buffer + charsPrinted, " "); 
-            } else {
-                charsPrinted += sprintf(buffer + charsPrinted, "%s", chr->s); 
-            }
+            charsPrinted += sprintf(buffer + charsPrinted, "%s", chr); 
         }
 
         fwrite(buffer, sizeof(char), charsPrinted, stdout);
@@ -197,9 +197,7 @@ int renderScreens() {
     free(buffer);
 
     // Copy buffers
-    for (i = 0; i < screen->ts.cols * screen->ts.lines; i++) {
-        copyPixel(&screen->prev_pixel_buffer[i], &screen->current_pixel_buffer[i]);
-    }
+    memcpy(screen->prev_pixel_buffer, screen->current_pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     fwrite("\e[0m", sizeof(char), 5, stdout);
     fflush(stdout);

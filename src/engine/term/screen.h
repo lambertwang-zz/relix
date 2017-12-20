@@ -40,7 +40,7 @@ typedef struct Screen {
 typedef struct ScreenManager {
     Screen main_screen;
 
-    Tree screen_tree;
+    int is_closed;
 
     sem_t writes_allowed;
     sem_t reads_allowed;
