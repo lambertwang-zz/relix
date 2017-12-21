@@ -22,8 +22,10 @@
 #define LOG_GAME_V          0x00001000
 #define LOG_SCREEN          0x00000020
 #define LOG_SCREEN_V        0x00002000
-#define LOG_RESOURCE          0x00000040
-#define LOG_RESOURCE_V        0x00004000
+#define LOG_RESOURCE        0x00000040
+#define LOG_RESOURCE_V      0x00004000
+#define LOG_UI              0x00000080
+#define LOG_UI_V            0x00008000
 
 FILE *relixLogFile;
 int flushLog;

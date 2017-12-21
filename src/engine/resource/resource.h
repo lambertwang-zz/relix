@@ -13,11 +13,17 @@ typedef struct ResourceEntry {
 } ResourceEntry;
 
 typedef struct ResourceManager {
-    Array resource_store;
+    Array store;
+
+    // delete data callback
+    void (*deleteData)(void *);
 } ResourceManager;
 
+void initResourceManager(ResourceManager *manager, void (*deleteData)(void *));
+void closeResourceManager(ResourceManager *res);
+
 int registerResource(ResourceManager *res, String *tag, void *data);
-int retrieveResource(ResourceManager *res, String *tag);
+void *retrieveResource(ResourceManager *res, String *tag);
 
 #endif
 

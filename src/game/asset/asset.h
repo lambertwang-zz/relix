@@ -7,6 +7,7 @@
 #include "utility/dice.h"
 #include "term/color.h"
 #include "resource/parser.h"
+#include "resource/resource.h"
 
 #define MONSTER_DIR "monsters/"
 
@@ -41,13 +42,11 @@ typedef struct MonsterFamily {
     String *default_chr;
 } MonsterFamily;
 
-typedef struct MosnterEntry {
+typedef struct MonsterEntry {
     // name
     String *name;
     // level
     int level;
-    // challenge
-    int challenge;
     // hit_dice
     struct Dice hit_dice;
     // natural_weapon
@@ -68,6 +67,10 @@ int loadStringToEntry(String *dest, JsonNode *node);
 int loadDiceToEntry(Dice *dest, JsonNode *node);
 int loadIntToEntry(int *dest, JsonNode *node);
 
+ResourceManager *getMonsterRes();
+
+void initMonsterResources();
+void closeMonsterResources();
 int loadMonsterResources();
 
 #endif

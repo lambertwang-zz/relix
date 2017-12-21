@@ -3,29 +3,17 @@
 // Library
 #include <stdlib.h>
 
-void copyPixel(Pixel *dest, const Pixel *src) {
-    dest->__fg = src->__fg;
-    dest->__bg = src->__bg;
+#ifndef abs
+#define abs(a) ((a) < 0 ? -(a) : (a))
+#endif
 
-    dest->c_fg = src->c_fg;
-    dest->c_bg = src->c_bg;
-
-    if (dest->chr == NULL) {
-        if (src->chr != NULL) {
-            dest->chr = createString();
-            stringCopy(dest->chr, src->chr);
-        }
-    } else {
-        if (src->chr == NULL) {
-            deleteString(dest->chr);
-            dest->chr = NULL;
-        } else {
-            stringCopy(dest->chr, src->chr);
-        }
+int compareColor(Color a, Color b) {
+    if (a.a < 0 || b.a < 0) {
+        return -1;
     }
-
-    dest->id = src->id;
-    dest->depth = src->depth;
+    return abs(a.r - b.r) +
+           abs(a.g - b.g) +
+           abs(a.b - b.b);
 }
 
 Color scaleColor(Color c, float f) {

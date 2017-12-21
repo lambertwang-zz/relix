@@ -34,6 +34,7 @@ int closeJsonNode(JsonNode *node) {
                     if (obj_prop->value != NULL) {
                         closeJsonNode(obj_prop->value);
                     }
+                    deleteString(obj_prop->key);
                     free(obj_prop);
                 }
                 closeArray(&obj_data->props);
@@ -95,6 +96,7 @@ JsonNode *parseString(FILE *file, char *c_buf) {
                 writeLog(LOG_RESOURCE_V, "parser::parseString(): Parsed string '%s'.", result->s);
                 return new_node;
             default:
+                // writeLog(LOG_RESOURCE_V, "parser::parseString(): Found char '%c'.", *c_buf);
                 spush(result, *c_buf);
                 break;
         }
@@ -110,7 +112,6 @@ JsonNode *parseInt(FILE *file, char *c_buf) {
     int *value = malloc(sizeof(int));
 
     String *result = createString();
-    spush(result, *c_buf);
 
     new_node->data = value;
     new_node->type = JSON_INT;
@@ -151,8 +152,10 @@ JsonNode *parseObject(FILE *file, char *c_buf) {
         }
 
         JsonObjProp *prop = malloc(sizeof(JsonObjProp));
+        prop->key = createString();
         push(&result->props, prop);
 
+        writeLog(LOG_RESOURCE_V, "parser::parseObject(): Attempting to parse object prop key.");
         JsonNode *keyNode = parseString(file, c_buf);
         if (keyNode == NULL) {
             writeLog(LOG_RESOURCE, "parser::parseObject(): ERROR: Unable to parse string for object key.");
@@ -190,9 +193,10 @@ JsonNode *parseObject(FILE *file, char *c_buf) {
                 writeLog(LOG_RESOURCE_V, "parser::parseObject(): Parsed object.");
                 return new_node;
             case ',':
+                writeLog(LOG_RESOURCE_V, "parser::parseObject(): Found ',' after obj property.", *c_buf);
                 continue;
             default:
-                writeLog(LOG_RESOURCE_V, "parser::parseObject(): ERROR: Expected comma or end of object. Found '%c'.", *c_buf);
+                writeLog(LOG_RESOURCE, "parser::parseObject(): ERROR: Expected comma or end of object. Found '%c'.", *c_buf);
                 closeJsonNode(new_node);
                 return NULL;
         }

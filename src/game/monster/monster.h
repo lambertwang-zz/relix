@@ -4,9 +4,10 @@
 // Engine
 #include "object/object.h"
 
-#define TYPE_MONSTER "monster"
+// Game
+#include "../asset/asset.h"
 
-Object *addMonster(Point loc);
+Object *createMonster(const MonsterEntry *entry);
 
 #endif
 

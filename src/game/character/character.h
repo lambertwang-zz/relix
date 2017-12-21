@@ -3,22 +3,27 @@
 
 // Engine
 #include "list/tree.h"
-
-#define MAX_NAME_LEN 64
+#include "string/string.h"
+#include "object/object.h"
 
 typedef struct CharacterData {
+    String *name;
+
     int max_health;
     int health;
 
     int level;
 
+    // Equipped on person
+    Tree equipment;
+    // In bag
     Tree inventory;
-
-    char name[MAX_NAME_LEN];
 } CharacterData;
 
-void initCharData(CharacterData *data);
+CharacterData *createCharData();
 void closeCharData(CharacterData *data);
+
+int attackCharacter(Object *aggressor, Object *victim);
 
 #endif
 

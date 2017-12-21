@@ -55,35 +55,28 @@ void initScreen(Screen *screen) {
     for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
         screen->light_buffer[i] = COLOR_BLANK;
         screen->current_pixel_buffer[i] = PIXEL_NULL;
-        screen->pixel_buffer[i] = PIXEL_NULL;
+        screen->pixel_buffer[i] = PIXEL_BLANK;
 
-        screen->prev_pixel_buffer[i].__bg = -1;
-        screen->prev_pixel_buffer[i].__fg = -1;
-        screen->prev_pixel_buffer[i].chr = NULL;
+        // screen->prev_pixel_buffer[i].__bg = -1;
+        // screen->prev_pixel_buffer[i].__fg = -1;
+        screen->prev_pixel_buffer[i].bg = COLOR_UNDEFINED;
+        screen->prev_pixel_buffer[i].fg = COLOR_UNDEFINED;
     }
 }
 
 // Clears a screen buffer
 void clearScreen(Screen *screen) {
     writeLog(LOG_SCREEN_V, "screen::clearScreen(): Clearing screen.");
-
     int i;
 
     for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
         screen->light_buffer[i] = COLOR_BLANK;
-        deleteString(screen->pixel_buffer[i].chr);
-        screen->pixel_buffer[i] = PIXEL_NULL;
+        screen->pixel_buffer[i] = PIXEL_BLANK;
     }
 }
 
 int closeScreen(Screen *screen) {
     writeLog(LOG_SCREEN, "screen::closeScreen(): Closing screen.");
-    int i;
-    for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
-        deleteString(screen->pixel_buffer[i].chr);
-        deleteString(screen->current_pixel_buffer[i].chr);
-        deleteString(screen->prev_pixel_buffer[i].chr);
-    }
     free(screen->light_buffer);
     free(screen->pixel_buffer);
     free(screen->current_pixel_buffer);

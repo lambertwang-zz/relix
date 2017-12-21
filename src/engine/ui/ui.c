@@ -5,77 +5,39 @@
 #include <string.h>
 
 // Engine
-#include "render/render.h"
+#include "log/log.h"
 
 static UiManager ui_manager;
+static Element *focus;
 
-int onRenderDefaultElement(Element *e, Screen *s) {
-    putStringL(s, e->pos.x, e->pos.y, e->text, e->text_c, e->bg_c);
-
-    Iterator *it;
-
-    it = initIterator(&e->_children);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
-        elem->onRender(elem, s);
-    }
-    closeIterator(it);
-
-    return 1;
+UiManager *getUiManager() {
+    return &ui_manager;
 }
 
-Element *createElement() {
-    static int ui_elem_iterator = 0;
-
-    Element *new_elem = malloc(sizeof(Element));
-    new_elem->id = ui_elem_iterator++;
-    new_elem->tag = createString();
-    new_elem->text = createString();
-
-
-    // Default Styling
-    new_elem->positioning = POS_STATIC;
-    new_elem->pos = (Point){0, 0, UI_DEPTH};
-    
-    new_elem->text_c = COLOR_WHITE;
-    new_elem->bg_c = COLOR_EMPTY;
-
-
-    // Default callbacks
-    new_elem->onRender = &onRenderDefaultElement;
-    new_elem->onClick = NULL;
-
-    initTree(&new_elem->_children);
-    new_elem->_bounds = (Rect){0, 0, 0, 0};
-
-    return new_elem;
+Element *getFocus() {
+    return focus;
 }
 
-int deleteElement(Element *elem) {
-    deleteString(elem->tag);
-    deleteString(elem->text);
-
-    Iterator *it;
-
-    it = initIterator(&elem->_children);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
-        deleteElement(elem);
-    }
-    closeIterator(it);
-
-    closeTree(&elem->_children);
-
-    free(elem);
-    return 0;
+void setFocus(Element *elem) {
+    focus = elem;
 }
+
+int registerUiElement(Element *e) {
+    writeLog(LOG_UI, "ui::registerUiElement(): Registered UI Element id %d.", e->id);
+    return insert(&ui_manager.ui_tree, e, e->id);
+}
+
 
 int initUi() {
+    writeLog(LOG_UI, "ui::initUi(): Initializing UI.");
     initTree(&ui_manager.ui_tree);
+    initTree(&ui_manager.event_listeners);
+    focus = NULL;
     return 0;
 }
 
 int clearUi() {
+    writeLog(LOG_UI, "ui::clearUi(): Clearing UI.");
     Iterator *it;
 
     it = initIterator(&ui_manager.ui_tree);
@@ -85,23 +47,35 @@ int clearUi() {
     }
     closeIterator(it);
 
-    return 0;
-}
+    it = initIterator(&ui_manager.event_listeners);
+    while (!done(it)) {
+        Tree *tree = getNext(it)->data;
+        clearTree(tree);
+    }
+    closeIterator(it);
 
-int sendUiEvent() {
+
     return 0;
 }
 
 int closeUi() {
+    writeLog(LOG_UI, "ui::closeUi(): Closing UI.");
+    clearUi();
     closeTree(&ui_manager.ui_tree);
+
+    Iterator *it = initIterator(&ui_manager.event_listeners);
+    while (!done(it)) {
+        Tree *tree = getNext(it)->data;
+        closeTree(tree);
+        free(tree);
+    }
+    closeIterator(it);
+    closeTree(&ui_manager.event_listeners);
+
     return 0;
 }
 
-int registerUiElement(Element *e) {
-    return insert(&ui_manager.ui_tree, e, e->id);
-}
-
-int renderUi(Screen *s) {
+int renderUi() {
     int elements_rendered = 0;
     Iterator *it;
 

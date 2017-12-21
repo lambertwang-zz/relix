@@ -13,7 +13,7 @@
 
 typedef struct Object {
     unsigned int id;
-    char type[32];
+    String *type;
 
     // pos.z is used for depth rendering and checking.
     // Note: depth 1024 is reserved for UI elements
@@ -38,7 +38,7 @@ typedef struct Object {
 int renderDefault(Object *o, Screen *s);
 void closeDefault(Object *o);
 
-int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event ev));
+int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event *));
 Object *createObject();
 
 #endif

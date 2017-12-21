@@ -3,6 +3,7 @@
 // Library
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 // Engine
 #include "constants.h"
@@ -46,11 +47,11 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
     }
 
     // BG pixel is always opaque
-    p.c_bg = alphaComposite(p.c_bg, s->pixel_buffer[index].c_bg);
+    p.bg = alphaComposite(p.bg, s->pixel_buffer[index].bg);
     if (!no_light) {
         // p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
         // p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
-        p.c_bg = colorMultL(p.c_bg, s->light_buffer[index]);
+        p.bg = colorMultL(p.bg, s->light_buffer[index]);
         /* Rendered characters ignore lighting.
         if (p.chr != NULL) {
             p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);
@@ -58,19 +59,20 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
         */
     }
     
-    p.__bg = rgbToTerm(p.c_bg);
-    if (p.chr != NULL) {
-        p.__fg = rgbToTerm(p.c_fg);
-    }
+    // Legacy 8-bit Colors
+    // p.__bg = rgbToTerm(p.c_bg);
+    // if (p.chr != NULL) {
+        // p.__fg = rgbToTerm(p.c_fg);
+    // }
 
-    copyPixel(&s->pixel_buffer[index], &p);
+    s->pixel_buffer[index] = p;
 
     return 0;
 }
 
 // Ignores precomponted values for bg and fg and computes them based on c_bg and c_fg
 int putPixel(Screen *s, int x, int y, Pixel p) {
-    p.c_bg.a = 1.0;
+    p.bg.a = 1.0;
 
     return _putPixel(s, x, y, p, 0);
 }
@@ -86,35 +88,38 @@ int putPixelA(Screen *s, int x, int y, Pixel p) {
     return _putPixel(s, x, y, p, 0);
 }
 
-int _putString(Screen *s, int id, int x, int y, String *str, Color fg, Color bg, int no_light) {
-    int i;
-    Pixel p = (Pixel){0, 0, fg, bg, createString(), id, UI_DEPTH};
-    for (i = 0; i + x < s->ts.cols; i++) {
-        if (str->s[i] == '\0') {
-            break;
-        }
-        sgetc(p.chr, str, i);
-        _putPixel(s, x + i, y, p, no_light);
+int rawPutString(Screen *s, int id, int start, int end, Point pos, String *str, Color fg, Color bg, int no_light) {
+    int i = start;
+    // Pixel p = (Pixel){0, 0, fg, bg, createString(), id, UI_DEPTH};
+    Pixel p = (Pixel){fg, bg, " ", id, UI_DEPTH};
+    String *tmp = createString();
+    sgetc(tmp, str, i);
+    while (tmp->s[0] != '\0' && i + pos.x - start < s->ts.cols && i < end) {
+        sgetc(tmp, str, i);
+        strncpy(p.chr, tmp->s, UNICODE_MAX);
+        _putPixel(s, pos.x + i - start, pos.y, p, no_light);
+        i++;
     }
-    deleteString(p.chr);
+    deleteString(tmp);
     return i;
 }
 
-int putString(Screen *s, int x, int y, String *str, Color fg, Color bg) {
-    return _putString(s, -1, x, y, str, fg, bg, 0);
+int putString(Screen *s, Point pos, String *str, Color fg, Color bg) {
+    return rawPutString(s, -1, 0, s->ts.cols, pos, str, fg, bg, 0);
 }
 
-int putStringL(Screen *s, int x, int y, String *str, Color fg, Color bg) {
-    return _putString(s, -1, x, y, str, fg, bg, 1);
+int putStringL(Screen *s, Point pos, String *str, Color fg, Color bg) {
+    return rawPutString(s, -1, 0, s->ts.cols, pos, str, fg, bg, 1);
 }
 
-int oputString(Screen *s, int id, int x, int y, String *str, Color fg, Color bg) {
-    return _putString(s, id, x, y, str, fg, bg, 0);
+int oputString(Screen *s, int id, Point pos, String *str, Color fg, Color bg) {
+    return rawPutString(s, id, 0, s->ts.cols, pos, str, fg, bg, 0);
 }
 
 int _putRect(Screen *s, int id, int x, int y, Rect rect, Color bg, int no_light) {
     int i, j;
-    Pixel p = (Pixel){0, 0, COLOR_BLANK, bg, NULL, id, UI_DEPTH};
+    // Pixel p = (Pixel){0, 0, COLOR_BLANK, bg, NULL, id, UI_DEPTH};
+    Pixel p = (Pixel){COLOR_BLANK, bg, " ", id, UI_DEPTH};
     for (j = rect.top + y < 0 ? 0 : rect.top + y; j < rect.bottom + y && j < s->ts.lines; j++) {
         for (i = rect.left + x < 0 ? 0 : rect.left + x; i < rect.right + x && i < s->ts.cols; i++) {
             _putPixel(s, i, j, p, no_light);
@@ -127,21 +132,23 @@ int putRect(Screen *s, int x, int y, Rect rect, Color bg) {
     return _putRect(s, -1, x, y, rect, bg, 0);
 }
 
-
+int putRectL(Screen *s, int x, int y, Rect rect, Color bg) {
+    return _putRect(s, -1, x, y, rect, bg, 1);
+}
 
 int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg) {
     return _putRect(s, id, x, y, rect, bg, 0);
 }
 
-int putRectL(Screen *s, int x, int y, Rect rect, Color bg) {
-    return _putRect(s, -1, x, y, rect, bg, 1);
+int oputRectL(Screen *s, int id, int x, int y, Rect rect, Color bg) {
+    return _putRect(s, id, x, y, rect, bg, 1);
 }
 
 // Very unsafe function
 int putPixelRgb(Screen *s, int x, int y, Color c) {
     unsigned int index = x + y * s->ts.cols;
-    s->pixel_buffer[index].c_bg = c;
-    s->pixel_buffer[index].__bg = rgbToTerm(s->pixel_buffer[index].c_bg);
+    s->pixel_buffer[index].bg = c;
+    // s->pixel_buffer[index].__bg = rgbToTerm(s->pixel_buffer[index].c_bg);
 
     return 0;
 }

@@ -2,19 +2,32 @@
 #define __UI_H__
 
 // Engine
+#include "event/event.h"
 #include "constants.h"
 #include "list/tree.h"
 #include "term/screen.h"
 #include "string/string.h"
 
 // Style definitions
+// Positioned to top-left of parent
 #define POS_STATIC 0
-// #define POS_REL 1
-// #define POS_ABS 2
-// #define POS_FIXED 3
+// Position in pixels
+#define POS_ABS 1
+// Position in % of parent
+#define POS_REL 2
+
+#define SIZE_NONE 0
+// Absolute size in pixels
+#define SIZE_ABS 1
+// Size relative to parent in percentage
+#define SIZE_REL 2
+// Match size to parent
+#define SIZE_PARENT 3
 
 typedef struct UiManager {
     Tree ui_tree;
+
+    Tree event_listeners;
 } UiManager;
 
 typedef struct Element {
@@ -23,11 +36,17 @@ typedef struct Element {
     // Unique label for the element
     String *tag;
 
+    int focusable;
+
     // Text content of the element
     String *text;
 
     // Styling
     int positioning;
+    int sizing;
+
+    int width;
+    int height;
 
     // Top left coordinates for the element
     Point pos;
@@ -35,23 +54,42 @@ typedef struct Element {
     // Text and background color
     Color text_c;
     Color bg_c;
+    Color bg_c_focus;
 
     // Function callbacks
     int (*onRender)(struct Element *, Screen *);
-    int (*onClick)(struct Element *);
+    int (*onEvent)(struct Element *, Event *);
+    Tree event_listeners;
+
+    // Data for use by this element
+    void *data;
 
     // Private
+    struct Element *_parent;
     Tree _children;
     Rect _bounds;
 } Element;
 
+
+int registerUiListener(const Element *el, int ev_id);
+int unregisterUiListener(const Element *el, int ev_id);
+
 Element *createElement();
+int deleteElement(Element *elem);
+int listenUiEvent(Element *el, int ev_id, int (*listener)(Element *, Event *));
+
+UiManager *getUiManager();
+
+Element *getFocus();
+void setFocus(Element *elem);
+
+int registerUiElement(Element *e);
 
 int initUi();
 int closeUi();
 int renderUi();
 
-int registerUiElement(Element *e);
+int sendUiEvent(Event *ev);
 
 #endif
 

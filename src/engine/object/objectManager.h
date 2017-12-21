@@ -7,6 +7,7 @@
 struct ObjectManager object_manager;
 
 struct ObjectManager {
+    // TODO: Enable storing and retrieving game states
     Tree insert_queue;
     Tree object_list;
     Tree remove_queue; 

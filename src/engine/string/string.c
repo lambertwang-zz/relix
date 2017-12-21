@@ -31,11 +31,11 @@ void deleteString(String *s) {
 }
 
 int strInc(String *s) {
-    writeLog(10, "HEY >>>>>>>>>>>>>>>>>>> Doubling string");
-
-    s->size = s->size * 2;
+    char *tmp = malloc(sizeof(char) * s->size * 2);
+    strcpy(tmp, s->s);
     free(s->s);
-    s->s = malloc(sizeof(char) * s->size);
+    s->size = s->size * 2;
+    s->s = tmp;
 
     return s->size;
 }
@@ -57,6 +57,8 @@ char *stringCopy(String *dest, const String *src) {
         dest->s = malloc(sizeof(char) * dest->size);
     }
 
+    dest->len = src->len;
+
     return strcpy(dest->s, src->s);
 }
 
@@ -77,7 +79,6 @@ int sputf(String *s, const char *format, ...) {
         va_end(args);
     } while (s->len >= s->size - 1);
     fflush(stderr);
-    
 
     return s->len;
 }
@@ -97,6 +98,9 @@ int sgetc(String *dest, const String *src, const int index) {
     int i = 0;
     char *head = src->s;
     while (i < index && *head != '\0') {
+        if (head >= src->s + src->len) {
+            // return 0;
+        }
         // Detect if leading bit is high (utf-8)
         if (*head & 0x80) {
             // Found start of unicode
@@ -117,13 +121,13 @@ int sgetc(String *dest, const String *src, const int index) {
         }
         dest->s[new_len++] = *head;
         head++;
-    } while (*head != '\0' && (*head & 0xa0) == 0x80);
+    } while (head < src->s + src->len - 1 && 
+            *head != '\0' && 
+            (*head & 0xa0) == 0x80);
+    // } while (*head != '\0' && (*head & 0xa0) == 0x80);
 
     dest->s[new_len] = '\0';
     dest->len = new_len;
-
-    // sputf(dest, "%1d", (head - src->s) % 10);
-    // sputf(dest, "%1d", (index - i + 10) % 10);
 
     return new_len;
 }

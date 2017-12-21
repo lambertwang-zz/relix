@@ -1,52 +1,35 @@
 #ifndef __ITEM_H__
 #define __ITEM_H__
 
-#define ITEM_NAME_MAX_LEN 256
+// Engine
+#include "string/string.h"
+#include "list/array.h"
+#include "list/tree.h"
+#include "utility/dice.h"
 
-#define ITEM_WEAPON 1
-#define ITEM_WEARABLE 2
-#define ITEM_CONSUMABLE 3
+// Item types
+#define ITEM_WEAPON_ONEHAND 1
+// onehand weapons can be wielded in the offhand
+#define ITEM_WEAPON_OFFHAND 2
+// twohand weapons require both the main and off hands to wield
+#define ITEM_WEAPON_TWOHAND 3
 
-typedef struct Item {
-    int id;
-    int type;
-    char name[ITEM_NAME_MAX_LEN];
+#define ITEM_HELMET 16
+#define ITEM_CHEST 17
+#define ITEM_PANTS 18
+#define ITEM_GLOVE 19
+#define ITEM_BOOTS 20
 
-    void *data;
-} Item;
+#define ITEM_RING 32
+// Rings can be wielded in ring_2
+#define ITEM_RING_2 33
+#define ITEM_NECK 34
+#define ITEM_BELT 35
 
-#define SLOT_ONEHAND 1
-#define SLOT_OFFHAND 2
-#define SLOT_TWOHAND 3
+#define ITEM_CONSUMABLE 64
 
-#define SLOT_HEAD 16
-#define SLOT_BODY 17
-#define SLOT_LEGS 18
-#define SLOT_ARMS 19
-#define SLOT_HANDS 20
-
-#define SLOT_NECK 32
-#define SLOT_RING 33
-#define SLOT_WAIST 34
-
-typedef struct Weapon {
-    int range;
-    int slot;
-
-    struct Damage *dam;
-    int damage_count;
-} Weapon;
-
-typedef struct Wearable {
-    int slot;
-
-    struct Defense *def;
-    int def_count;
-} Wearable;
-
-typedef struct Consumable {
-} Consumable;
-
+//
+#define ELEM_COUNT          6
 #define ELEM_TRUE           0
 #define ELEM_TRUE_STR       "true"
 #define ELEM_PHYS           1
@@ -60,16 +43,47 @@ typedef struct Consumable {
 #define ELEM_HOLY           5
 #define ELEM_HOLY_STR       "holy"
 
-typedef struct Damage {
-    int element;
-    int min_damage;
-    int max_damage;
-} Damage;
+typedef struct Item {
+    int id;
+    int type;
+    String *name;
 
-typedef struct Defense {
-    int element;
-    int defense;
-} Defense;
+    void *data;
+} Item;
+
+typedef struct Slot {
+    // Corresponds to item type
+    int id;
+    /**
+     * TODO: Enable extensibility for slots
+     * Custom slots, multi-handed creatures, etc
+     */
+    char label[16]; // Hard-coded labels
+
+    Item *item;
+} Slot;
+
+typedef struct Weapon {
+    int range;
+    int slot;
+
+    Dice dam[ELEM_COUNT];
+} Weapon;
+
+typedef struct Armor{
+    int slot;
+
+    int def[ELEM_COUNT];
+} Armor;
+
+typedef struct Consumable {
+} Consumable;
+
+Slot *getWeapon(Tree *equip);
+int rollDamage(Weapon weapon, Tree *def);
+
+void initEquipment(Tree *tree);
+void closeEquipment(Tree *tree);
 
 int elementStrToInt(char *src);
 int elementIntToStr(int src, char *dest);

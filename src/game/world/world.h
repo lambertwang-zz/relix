@@ -11,8 +11,6 @@ typedef struct World {
     struct Map *current_map;
     struct Tree map_tree;
 
-    struct Array collisions;
-
     struct Object *player;
 } World;
 
@@ -27,11 +25,11 @@ typedef struct DoorEvent {
 World *getWorldData();
 void initWorld();
 
-int getDefaultAction(Object *obj, Object *target);
+Action getDefaultAction(Object *obj, Object *other, Point p);
 
-int worldDoorListener(Object *o, Event ev);
+int worldDoorListener(Object *o, Event *ev);
 // int worldPlayerListener(Object *o, Event ev);
-int worldKeyboardListener(Object *o, Event ev);
+int worldKeyboardListener(Object *o, Event *ev);
 
 #endif
 

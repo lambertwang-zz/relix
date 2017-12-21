@@ -54,6 +54,10 @@ int rollDice(const Dice dice) {
     return result;
 }
 
+int maxDice(const Dice dice) {
+    return dice.count * dice.sides + dice.flat;
+}
+
 int sprintDice(String *dest, const Dice dice) {
     return sputf(dest, "%dD%d%+d", dice.count, dice.sides, dice.flat);
 }

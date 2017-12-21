@@ -4,8 +4,6 @@
 // Engine
 #include "object/object.h"
 
-#define TYPE_PLAYER "player"
-
 Object *addPlayer(Point start);
 
 int renderPlayerLight(Object *o, Screen *s);

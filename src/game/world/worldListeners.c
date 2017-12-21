@@ -1,5 +1,6 @@
 // Library
 #include <stdlib.h>
+#include <string.h>
 
 // Engine
 #include "event/event.h"
@@ -14,10 +15,10 @@
 
 #include "log/log.h"
 
-int worldDoorListener(Object *o, Event ev) {
-    writeLog(10, "received door event");
+int worldDoorListener(Object *o, Event *ev) {
+    writeLog(LOG_WORLD, "worldListeners::worldDoorListener(): Received door event.");
     World *world = o->data;
-    Point p = ((DoorEvent *)ev.data)->p;
+    Point p = ((DoorEvent *)ev->data)->p;
     if (p.x < 0 || p.y < 0 || 
         p.x >= world->current_map->width || 
         p.y >= world->current_map->height) {
@@ -29,7 +30,7 @@ int worldDoorListener(Object *o, Event ev) {
     if (tile->type == TILE_DOOR) {
         if (tile->solid) {
             tile->solid = SOFT;
-            sputf(tile->p.chr, "_");
+            strcpy(tile->p.chr, "_");
         }
     }
 
@@ -46,6 +47,30 @@ Action worldPlayerHandler(World *world, Point p) {
         return (Action){ACTION_IMPASSIBLE, p, NULL};
     }
 
+    // First check for interactions between other objects
+    Array collisions;
+    initArray(&collisions);
+    getObjAt(&collisions, p, OBJ_SOLID);
+
+    Object *other;
+    if (collisions.count > 0) {
+        writeLog(LOG_WORLD, "worldListeners::worldPlayerHandler(): Collided with something.");
+        // Find collision object with highest depth
+        other = getDataArray(&collisions, 0);
+        unsigned int i;
+        for (i = 1; i < collisions.count; i++) {
+            Object *next = getDataArray(&collisions, i);
+            if (next->pix.depth >= other->pix.depth) {
+                other = next;
+            }
+        }
+        closeArray(&collisions);
+        return getDefaultAction(world->player, other, p);
+    }
+
+    closeArray(&collisions);
+
+    // Next check for interactions with the map
     Tile tile = world->current_map->tiles[p.x + p.y * world->current_map->width];
 
     switch (tile.type) {
@@ -64,19 +89,19 @@ Action worldPlayerHandler(World *world, Point p) {
             break;
     }
 
-    getObjAt(&world->collisions, p, OBJ_SOLID);
-
-    return (Action){ACTION_IMPASSIBLE};
+    return (Action){ACTION_IMPASSIBLE, p, NULL};
 }
 
-int worldKeyboardPlayerActive(Object *o, Event ev) {
-    World *world = getWorldData();
-    KeyboardEvent k_ev = *(KeyboardEvent *)ev.data;
+int worldKeyboardPlayerActive(Object *o, Event *ev) {
+    World *world = o->data;
+    KeyboardEvent k_ev = *(KeyboardEvent *)ev->data;
     Point target = world->player->pos;
 
     Event ev_tick;
     ev_tick.id = EVENT_TICK_PLAYER;
     ev_tick.data = malloc(sizeof(TickEvent));
+    TickEvent *data = ev_tick.data;
+    data->act.code = ACTION_NONE;
 
     switch (k_ev.type) {
         case KEYBOARD_NORMAL:
@@ -84,25 +109,25 @@ int worldKeyboardPlayerActive(Object *o, Event ev) {
                 case 'K':
                 case 'k':
                     target.y--;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_DOWN:
                 case 'J':
                 case 'j':
                     target.y++;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_LEFT:
                 case 'H':
                 case 'h':
                     target.x--;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_RIGHT:
                 case 'L':
                 case 'l':
                     target.x++;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ' ':
                     ((TickEvent *) ev_tick.data)->act = (Action){ACTION_LIGHT, target, NULL};
@@ -119,23 +144,33 @@ int worldKeyboardPlayerActive(Object *o, Event ev) {
             switch (k_ev.value) {
                 case ARROW_UP:
                     target.y--;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_DOWN:
                     target.y++;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_LEFT:
                     target.x--;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
                 case ARROW_RIGHT:
                     target.x++;
-                    ((TickEvent *) ev_tick.data)->act = worldPlayerHandler(world, target);
+                    data->act.code = ACTION_MOVE;
                     break;
             }
             break;
         default:
+            free(ev_tick.data);
+            return 0;
+    }
+
+    switch (data->act.code) {
+        case ACTION_MOVE:
+            data->act = worldPlayerHandler(world, target);
+            break;
+        default:
+            free(ev_tick.data);
             return 0;
     }
 
@@ -144,7 +179,7 @@ int worldKeyboardPlayerActive(Object *o, Event ev) {
     return 0;
 }
 
-int worldKeyboardListener(Object *o, Event ev) {
+int worldKeyboardListener(Object *o, Event *ev) {
     return worldKeyboardPlayerActive(o, ev);
 }
 

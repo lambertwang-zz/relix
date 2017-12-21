@@ -37,7 +37,7 @@
 // #define HALL_COLOR (Color){64, 64, 64, 1.0};
 // #define HALL_COLOR (Color){135, 135, 175, 1.0};
 #define HALL_COLOR (Color){175, 175, 175, 1.0};
-#define DOOR_COLOR (Color){128, 128, 0, 1.0};
+#define DOOR_COLOR (Color){255, 160, 48, 1.0};
 
 #define SEEN_COLOR (Color){24, 24, 24, 1.0}
 
@@ -51,6 +51,10 @@ typedef struct Tile {
 typedef struct Map {
     int id;
 
+    // Characteristics of the map
+    // Average challenge of encounters in the map
+    int challenge;
+    // What types of monsters to generate for the map
     String *type;
 
     Tile *tiles;

@@ -19,12 +19,14 @@ int renderDefault(Object *o, Screen *s) {
             0
     };
 
-    putPixelA(s, rel_pos.x, rel_pos.y, o->pix);
+    if (putPixelA(s, rel_pos.x, rel_pos.y, o->pix)) {
+        return 0;
+    }
 
-    return 0;
+    return 1;
 }
 
-int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event)) {
+int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event *)) {
     Node *n = getTreeNode(&o->event_listeners, ev_id);
     if (n == NULL) {
         insert(&o->event_listeners, listener, ev_id);
@@ -36,6 +38,8 @@ int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event)) {
 }
 
 void closeDefault(Object *o) {
+    deleteString(o->type);
+
     Iterator *it = initIterator(&o->event_listeners);
     while (!done(it)) {
         Node *n = getNext(it);
@@ -48,9 +52,6 @@ void closeDefault(Object *o) {
         free(o->data);
     }
 
-    if (o->pix.chr != NULL) {
-        deleteString(o->pix.chr);
-    }
     free(o);
 }
 
@@ -60,7 +61,7 @@ Object *createObject() {
     Object *o = malloc(sizeof(Object));
 
     o->id = id_iterator++;
-    strcpy(o->type, "");
+    o->type = createString();
 
     o->pos.x = 0;
     o->pos.y = 0;

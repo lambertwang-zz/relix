@@ -17,6 +17,7 @@ typedef struct Dice {
 Dice parseDice(String *label);
 
 int rollDice(const Dice dice);
+int maxDice(const Dice dice);
 
 int sprintDice(String *dest, const Dice dice);
 

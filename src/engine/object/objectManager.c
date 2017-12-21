@@ -7,6 +7,7 @@
 // Engine
 #include "constants.h"
 #include "log/log.h"
+#include "ui/ui.h"
 
 static void (*clearGame)();
 
@@ -23,20 +24,30 @@ int sendEvent(Event ev) {
     if (ensureEventExists("sendEvent", ev.id)) {
         return 1;
     }
-    // writeLog(LOG_OBJECTMANAGER, "objectManager::registerEvent(): Registering event id %d", ev_id);
+    ev.stop_propagation = 0;
+
+    writeLog(LOG_OBJECTMANAGER_V, "objectManager::sendEvent(): Sending event to UI.");
+    sendUiEvent(&ev);
+    if (ev.stop_propagation) {
+        if (ev.data != NULL) {
+            free(ev.data);
+        }
+        return 0;
+    }
+
     struct Iterator *it;
 
     // it = initIterator(getData(object_manager.event_listeners[ev.id]);
     it = initIterator(getData(&object_manager.event_listeners, ev.id));
-    while (!done(it)) {
+    while (!done(it) && !ev.stop_propagation) {
         struct Object *obj= getNext(it)->data;
 
-        int (*listener)(struct Object *m, Event ev) = getData(&obj->event_listeners, ev.id);
+        int (*listener)(struct Object *m, Event *ev) = getData(&obj->event_listeners, ev.id);
         if (listener == NULL) {
             writeLog(LOG_OBJECTMANAGER, "objectManager::sendEvent(): WARNING: No listener for Event id %d for object", ev.id, obj->id);
             continue;
         }
-        listener(obj, ev);
+        listener(obj, &ev);
     }
     closeIterator(it);
 
@@ -76,12 +87,20 @@ int unregisterListener(const struct Object *obj, int ev_id) {
 int registerEvent(int ev_id) {
     Node *n = getTreeNode(&object_manager.event_listeners, ev_id);
     if (n == NULL) {
+        writeLog(LOG_OBJECTMANAGER, "objectManager::registerEvent(): Registering event id %d", ev_id);
+
+        // Object event listener
         Tree *new_tree = malloc(sizeof(Tree));
         initTree(new_tree);
         insert(&object_manager.event_listeners, new_tree, ev_id);
-        writeLog(LOG_OBJECTMANAGER, "objectManager::registerEvent(): Registering event id %d", ev_id);
+
+        // Ui Event Listener
+        Tree *new_tree_ui = malloc(sizeof(Tree));
+        initTree(new_tree_ui);
+        insert(&getUiManager()->event_listeners, new_tree_ui, ev_id);
         return 0;
     }
+
     writeLog(LOG_OBJECTMANAGER, "objectManager::registerEvent(): WARNING: event id %d already registered", ev_id);
     return 1;
 }

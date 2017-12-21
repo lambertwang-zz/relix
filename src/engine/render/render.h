@@ -16,17 +16,15 @@
 
 // string and rect rendering is reserved for UI rendering.
 // These functions will set the depthbuffer to 1024
-// Insert object ids
-int oputString(Screen *s, int id, int x, int y, String *str, Color fg, Color bg);
-int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg);
+int rawPutString(Screen *s, int id, int start, int end, Point pos, String *str, Color fg, Color bg, int no_light);
+int putString(Screen *s, Point pos, String *str, Color fg, Color bg);
+int putStringL(Screen *s, Point pos, String *str, Color fg, Color bg);
+int oputString(Screen *s, int id, Point pos, String *str, Color fg, Color bg);
 
-int putString(Screen *s, int x, int y, String *str, Color fg, Color bg);
 int putRect(Screen *s, int x, int y, Rect rect, Color bg);
-
-// Ignore lighting
-int putStringL(Screen *s, int x, int y, String *str, Color fg, Color bg);
 int putRectL(Screen *s, int x, int y, Rect rect, Color bg);
-
+int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg);
+int oputRectL(Screen *s, int id, int x, int y, Rect rect, Color bg);
 
 // Normal rendering functions
 int putPixel(Screen *s, int x, int y, Pixel p);

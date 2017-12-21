@@ -7,6 +7,7 @@
 #include "../relix.h"
 
 int initResources() {
+    initMonsterResources();
     if (loadMonsterResources() == 0) {
         writeLog(LOG_LOAD, "relix::loadResources(): ERROR: Unable to load any monster resources.");
         return 1;

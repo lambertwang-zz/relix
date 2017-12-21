@@ -6,6 +6,8 @@
 #define LOG_MAP     0x00010000
 #define LOG_LOAD    0x00020000
 #define LOG_LOAD_V  0x02000000
+#define LOG_WORLD   0x00040000
+#define LOG_WORLD_V 0x04000000
 
 // Event ids
 #define EVENT_MAP 8
@@ -24,6 +26,9 @@
 #define LOOT_DEPTH 4
 #define WORLD_DEPTH 0
 
+// Object types
+#define TYPE_PLAYER "player"
+#define TYPE_MONSTER "monster"
 
 #endif
 

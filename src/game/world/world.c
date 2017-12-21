@@ -1,5 +1,6 @@
 // Library
 #include <stdlib.h>
+#include <string.h>
 
 // Engine
 #include "constants.h"
@@ -23,7 +24,7 @@ int renderWorld(Object *o, Screen *s) {
     if (world->current_map == NULL) {
         return 0;
     }
-    return renderMap(world->current_map, s);
+    return renderMap(((World *) o->data)->current_map, s);
 }
 
 void closeWorld(Object *o) {
@@ -37,7 +38,6 @@ void closeWorld(Object *o) {
     }
     closeIterator(it);
 
-    closeArray(&world->collisions);
     closeTree(&world->map_tree);
 
     closeDefault(o);
@@ -46,7 +46,6 @@ void closeWorld(Object *o) {
 void initWorld() {
     // Init map data
     world = malloc(sizeof(World));
-    initArray(&world->collisions);
     initTree(&world->map_tree);
 
     // Register events with the worldmanager
@@ -76,9 +75,22 @@ void initWorld() {
     world->player = addPlayer(world->current_map->player_start);
 
     // Initialize UI
+    createPlayerPanel();
 }
 
-int getDefaultAction(struct Object *obj, struct Object *target) {
-    return 0;
+Action getDefaultAction(Object *obj, Object *other, Point p) {
+    writeLog(LOG_WORLD, "world::getDefaultAction(): Finding encounter.");
+    if (obj->id == other->id) {
+        writeLog(LOG_WORLD, "world::getDefaultAction(): Object encountered self.");
+        return (Action){ACTION_NONE, p, NULL};
+    }
+    if (!strcmp(obj->type->s, TYPE_PLAYER)) {
+        if (!strcmp(other->type->s, TYPE_MONSTER)) {
+            writeLog(LOG_WORLD, "world::getDefaultAction(): Player encountered monster.");
+            return (Action){ACTION_ATTACK, p, other};
+        }
+    }
+    // if (stringCompare(other->type
+    return (Action){ACTION_NONE, p, NULL};
 }
 

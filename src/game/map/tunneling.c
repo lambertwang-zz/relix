@@ -6,6 +6,9 @@
 // Engine
 #include "utility/random.h"
 
+// Game
+#include "../encounter/encounter.h"
+
 #define MAX_ROOM_SIZE 24
 #define MIN_ROOM_SIZE 10
 #define MAX_ROOMS 2048
@@ -198,6 +201,11 @@ void mapTunneling(struct Map *map) {
     }
     for (i = 0; i < room_count; i++) {
         placeDoors(map, rooms[i]);
+    }
+
+    // Place an encounter in every room
+    for (i = 1; i < room_count; i++) {
+        addEncounter(map, rooms[i], map->challenge);
     }
 }
 

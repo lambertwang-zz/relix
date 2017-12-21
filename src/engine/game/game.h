@@ -4,7 +4,7 @@
 unsigned int frame_count;
 
 int initGame();
-void closeGame(int a);
+void closeGame();
 void useStatusLine();
 int loop();
 
