@@ -92,8 +92,12 @@ int onRenderDefaultElement(Element *e, Screen *s) {
 
 int onEventDefaultElement(Element *e, Event *ev) {
     writeLog(LOG_UI_V, "element::onEventDefaultElement(): Received event.");
+    MouseEvent m_ev = *(MouseEvent *)ev->data;
     switch (ev->id) {
         case EVENT_MOUSE:
+            if (e->onClick != NULL && m_ev.value != MOUSE_MOVE) {
+                e->onClick(e, m_ev);
+            }
             if (e->focusable) {
                 writeLog(LOG_UI_V, "element::onEventDefaultElement(): Setting focus.");
                 setFocus(e);
@@ -131,6 +135,7 @@ Element *createElement() {
     // Default callbacks
     new_elem->onRender = &onRenderDefaultElement;
     new_elem->onEvent = &onEventDefaultElement;
+    new_elem->onClick = NULL;
     initTree(&new_elem->event_listeners);
 
     new_elem->data = NULL;

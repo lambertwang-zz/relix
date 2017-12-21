@@ -7,6 +7,7 @@
 #include "list/tree.h"
 #include "term/screen.h"
 #include "string/string.h"
+#include "input/input.h"
 
 // Style definitions
 // Positioned to top-left of parent
@@ -59,6 +60,7 @@ typedef struct Element {
     // Function callbacks
     int (*onRender)(struct Element *, Screen *);
     int (*onEvent)(struct Element *, Event *);
+    int (*onClick)(struct Element *, MouseEvent);
     Tree event_listeners;
 
     // Data for use by this element

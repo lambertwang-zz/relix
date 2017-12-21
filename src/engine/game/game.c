@@ -18,6 +18,7 @@
 #include "utility/utility.h"
 
 static Element *status_line;
+static int status_mode;
 static int is_gameover;
 
 void terminate() {
@@ -55,11 +56,19 @@ void closeGame() {
     exit(0);
 }
 
+int changeStatusMode(Element *el, MouseEvent ev) {
+    if (ev.status == MOUSE_PRESS) {
+        status_mode = (status_mode + 1) % 3;
+    }
+}
+
 void useStatusLine() {
     status_line = createElement();
+    status_mode = 0;
     status_line->bg_c = COLOR_BLACK;
     status_line->bg_c_focus = COLOR_RED;
     status_line->focusable = 1;
+    status_line->onClick = &changeStatusMode;
 
     registerUiElement(status_line);
 }
@@ -137,11 +146,27 @@ int loop() {
 
             if (status_line != NULL) {
                 String *status_label = createString();
-                sputf(status_label, "Loop: %5d Frame: %5d Obj rendered: %3d Times Init %3d", 
-                        loop_time_saved, 
-                        frame_count, 
-                        objectsRendered,
-                        screen->times_init);
+                switch (status_mode) {
+                    case 0:
+                        sputf(status_label, "Loop: %5d Frame: %5d",
+                                loop_time_saved, 
+                                frame_count);
+
+                        break;
+                    case 1:
+                        sputf(status_label, "Objects: %4d Elements: %4d Lights: %4d", 
+                                objectsRendered,
+                                elementsRendered,
+                                lightsRendered);
+                        break;
+                    case 2:
+                    default:
+                        sputf(status_label, "Cols: %3d Lines: %3d Times Init %3d", 
+                                screen->ts.cols,
+                                screen->ts.lines,
+                                screen->times_init);
+                        break;
+                }
                 writeLog(LOG_GAME_V, "game::loop(): Status %s.", status_label->s);
                 stringCopy(status_line->text, status_label);
                 deleteString(status_label);
