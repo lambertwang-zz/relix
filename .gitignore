@@ -8,4 +8,7 @@ relix.exe
 test/tree
 test/input
 test/event
+test/render
+test/resource
+test/util
 *.sh
