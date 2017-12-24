@@ -11,11 +11,14 @@
 
 // Event ids
 #define EVENT_MAP 8
+
 #define EVENT_TICK_PLAYER 16
 #define EVENT_TICK_OTHER 17
 
-// Action results
 #define EVENT_OPEN_DOOR 24
+
+#define EVENT_MESSAGE 32
+#define EVENT_CHAR_INFO 33
 
 // Assets
 #define ASSET_DIR "assets/"

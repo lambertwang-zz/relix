@@ -28,15 +28,12 @@ int renderWorld(Object *o, Screen *s) {
 }
 
 void closeWorld(Object *o) {
-    Iterator *it;
-
-    it = initIterator(&world->map_tree);
-    while (!done(it)) {
-        Map *map = getNext(it)->data;
+    Iterator it = initIterator(&world->map_tree);
+    while (!done(&it)) {
+        Map *map = getNext(&it)->data;
         closeMap(map);
         free(map);
     }
-    closeIterator(it);
 
     closeTree(&world->map_tree);
 
@@ -53,6 +50,8 @@ void initWorld() {
     registerEvent(EVENT_TICK_PLAYER);
     registerEvent(EVENT_TICK_OTHER);
     registerEvent(EVENT_OPEN_DOOR);
+    registerEvent(EVENT_MESSAGE);
+    registerEvent(EVENT_CHAR_INFO);
 
     struct Object *o_world = createObject();
 
@@ -76,6 +75,8 @@ void initWorld() {
 
     // Initialize UI
     createPlayerPanel();
+    createCharPanel();
+    createConsole();
 }
 
 Action getDefaultAction(Object *obj, Object *other, Point p) {

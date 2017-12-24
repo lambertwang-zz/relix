@@ -12,23 +12,17 @@
 int attackCharacter(Object *aggressor, Object *victim) {
     CharacterData *attacker = aggressor->data,
                   *defender = victim->data;
-    Slot *slot = getWeapon(&attacker->equipment);
 
-    Weapon damage;
+    int result = 0;
 
-    if (slot->item == NULL) {
-        unsigned int i;
-        for (i = 0; i < ELEM_COUNT; i++) {
-            damage.dam[i] = NULL_DICE;
-        }
-        damage.dam[ELEM_PHYS] = (Dice){1, 4, 0};
-    } else {
-        damage = *(Weapon *)slot->item->data;
+    if (attacker->equipment != NULL) {
+        result = rollDamage(attacker->equipment, defender->equipment);
     }
-    int result = rollDamage(damage, &defender->equipment);
+    if (result <= 0) {
+        result = 1;
+    }
 
     defender->health -= result;
-
     return result;
 }
 

@@ -41,8 +41,10 @@ void initScreenManager() {
     signal(SIGWINCH, handle_winch);
 #endif
 
+    screen_manager._line_buffer = NULL;
     screen_manager.main_screen.times_init = 0;
     initScreen(&screen_manager.main_screen);
+
 
     // Set auto flush
     // setbuf(stdout, NULL);
@@ -123,15 +125,6 @@ int renderScreens() {
     Color fg, bg;
     char *chr;
 
-    /**
-     * Line-buffer
-     * TODO: Clear still-reachable memory block (not a leak)
-     * Max size for each char: \e[38;5;100;100;100m (20 * 2 for color codes)
-     * ~40 bytes for rgb ansi color codes
-     * ~4 bytes for utf-8 unicode
-     * ~44 bytes max per char
-     */
-    char *buffer = malloc(sizeof(char) * 48 * screen->ts.cols);
     unsigned int charsPrinted;
 
     int unchangedPixels;
@@ -142,7 +135,7 @@ int renderScreens() {
         unchangedPixels = 0;
 
         // Move caret to start of next line
-        charsPrinted = sprintf(buffer, "\e[%d;%dH", screen->margin_y + j + 1, screen->margin_x);
+        charsPrinted = sprintf(screen_manager._line_buffer, "\e[%d;%dH", screen->margin_y + j + 1, screen->margin_x);
         for (i = 0; i < screen->ts.cols; i++) {
             index = i + j * screen->ts.cols;
 
@@ -164,32 +157,32 @@ int renderScreens() {
 
             // If preceding pixels are unchanged, skip characters
             if (unchangedPixels > 0) {
-                charsPrinted += sprintf(buffer + charsPrinted, "\e[%dC", unchangedPixels);
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "\e[%dC", unchangedPixels);
                 unchangedPixels = 0;
             }
 
             if (compareColor(prevFg, fg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[38;5;%dm", fg.r);
-                charsPrinted += sprintf(buffer + charsPrinted, 
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
                         "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
                 prevFg = fg;
             }
             if (compareColor(prevBg, bg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg.r);
-                charsPrinted += sprintf(buffer + charsPrinted, 
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
                         "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
-                // charsPrinted += sprintf(buffer + charsPrinted, 
-                        //"\x1b[48;2;0;0;0m");
                 prevBg = bg;
             }
             
-            charsPrinted += sprintf(buffer + charsPrinted, "%s", chr); 
+            if (chr[0] != '\0') {
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "%s", chr); 
+            } else {
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, " "); 
+            }
         }
 
-        fwrite(buffer, sizeof(char), charsPrinted, stdout);
+        fwrite(screen_manager._line_buffer, sizeof(char), charsPrinted, stdout);
     }
-
-    free(buffer);
 
     // Copy buffers
     memcpy(screen->prev_pixel_buffer, screen->current_pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);

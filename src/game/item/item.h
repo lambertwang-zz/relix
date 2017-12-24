@@ -8,6 +8,18 @@
 #include "utility/dice.h"
 
 // Item types
+#define TYPE_WEAPON 1
+#define TYPE_ARMOR 2
+#define TYPE_ACCESSORY 3
+
+// Slot types
+#define SLOT_WEAPON 1
+#define SLOT_HEAD   8
+#define SLOT_HANDS  9
+#define SLOT_TORSO  10
+#define SLOT_FEET   11
+
+// Item subtypes
 #define ITEM_WEAPON_ONEHAND 1
 // onehand weapons can be wielded in the offhand
 #define ITEM_WEAPON_OFFHAND 2
@@ -45,15 +57,23 @@
 
 typedef struct Item {
     int id;
+    // Type (armor, weapon, etc)
     int type;
+    // one-handed, two-handed, head, boots, etc
+    int subclass;
+
     String *name;
+
+    // Whether or not is a natural weapon
+    int is_natural;
 
     void *data;
 } Item;
 
 typedef struct Slot {
-    // Corresponds to item type
-    int id;
+    // Corresponds to slot type
+    int type;
+
     /**
      * TODO: Enable extensibility for slots
      * Custom slots, multi-handed creatures, etc
@@ -79,11 +99,10 @@ typedef struct Armor{
 typedef struct Consumable {
 } Consumable;
 
-Slot *getWeapon(Tree *equip);
-int rollDamage(Weapon weapon, Tree *def);
+int rollDamage(Array *attack_equip, Array *def_equip);
 
-void initEquipment(Tree *tree);
-void closeEquipment(Tree *tree);
+Array *createEquipment(const int *slots);
+void deleteEquipment(Array *tree);
 
 int elementStrToInt(char *src);
 int elementIntToStr(int src, char *dest);

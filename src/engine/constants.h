@@ -12,8 +12,8 @@
 
 #define FRAME_TIME 16666
 
-#define MAX_WIDTH 1920
-#define MAX_HEIGHT 600
+#define MAX_WIDTH 120
+#define MAX_HEIGHT 36
 
 // Event ids
 #define INIT_EVENT_COUNT 64

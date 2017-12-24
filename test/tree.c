@@ -5,26 +5,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-void terminate(int a) {
-    closeLog();
-    exit(0);
-}
-
-int main(int argc, char **argv) {
+int main() {
     initLog();
-    signal(SIGINT, terminate);
 
     int i;
-    struct Tree tree;
-    struct Iterator *it;
+    Tree tree;
+    Iterator it;
     initTree(&tree);
 
     it = initIterator(&tree);
-    while (!done(it)) {
-        printf("id: %d\n", getNext(it)->id);
+    while (!done(&it)) {
+        printf("id: %d\n", getNext(&it)->id);
     }
-    closeIterator(it);
 
     for (i = 1; i <= 100; i++) {
         insert(&tree, NULL, i);
@@ -32,6 +24,16 @@ int main(int argc, char **argv) {
     for (i = 200; i > 100; i--) {
         insert(&tree, NULL, i);
     }
+
+    it = initIterator(&tree);
+    int sum = 0;
+    while (!done(&it)) {
+        Node *next = getNext(&it);
+        printf("id: %d\t", next->id);
+        sum += next->id;
+    }
+    printf("\nExpect sum: %d to be %d\n", sum, 200 * 201 / 2);
+
     for (i = 201; i <= 300; i++) {
         insert(&tree, NULL, i);
     }
@@ -51,11 +53,10 @@ int main(int argc, char **argv) {
     printf("Expect 300\n");
     
     it = initIterator(&tree);
-    while (!done(it)) {
-        printf("id: %d\n", getNext(it)->id);
+    while (!done(&it)) {
+        printf("id: %d\t", getNext(&it)->id);
     }
-    closeIterator(it);
-
+    printf("\n");
 
     for (i = 25; i < 75; i += 2) {
         removeId(&tree, i);
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
     printf("Tree: %d\n", tree.count);
     printf("Expect 0\n");
 
-    terminate(0);
+    closeLog();
 
     return 0;
 }

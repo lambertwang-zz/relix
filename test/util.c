@@ -4,53 +4,65 @@
 
 #include <stdio.h>
 
-int main(int argc, char **argv) {
+int main() {
     initLog();
 
-    Dice test1 = parseDice("5d4+100");
+    String *tmp = createString();
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
+    Dice test1 = parseDice(tmp);
 
-    test1 = parseDice("d6");
+    sputf(tmp, "5d4+100");
+    test1 = parseDice(tmp);
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
-    printf("Rolling %s: %d\n", test1.label, rollDice(test1));
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
 
-    test1 = parseDice("10d144+32");
+    sputf(tmp, "d6");
+    test1 = parseDice(tmp);
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
+    printf("Rolling %s: %d\n", tmp->s, rollDice(test1));
 
-    test1 = parseDice("d123+10");
+    sputf(tmp, "10d144+32");
+    test1 = parseDice(tmp);
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
+
+    sputf(tmp, "d123+10");
+    test1 = parseDice(tmp);
+
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
     
-    test1 = parseDice("3d14-99");
+    sputf(tmp, "3d14-99");
+    test1 = parseDice(tmp);
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
     
-    test1 = parseDice("d12-3");
+    sputf(tmp, "d12-3");
+    test1 = parseDice(tmp);
 
-    printf("Dice %s: %dd%d%+d\n", test1.label, test1.count, test1.sides, test1.flat);
+    printf("Dice %s: %dd%d%+d\n", tmp->s, test1.count, test1.sides, test1.flat);
+
+    deleteString(tmp);
 
     printf("\n\bBegin Color Tests\n\n");
 
@@ -58,6 +70,7 @@ int main(int argc, char **argv) {
     printf("Expect 1 = %d\n", (95 - 6) / 45);
     printf("\e[48;5;58mWhat color is this?\e[0m\n");
 
+    /*
     Color test2 = (Color){0, 0, 0};
     printf("Color %d, %d, %d\nResult: %d\nExpect: %d\n", test2.r, test2.g, test2.b, rgbToTerm(test2), 16);
 
@@ -69,6 +82,7 @@ int main(int argc, char **argv) {
 
     test2 = (Color){95, 95, 0};
     printf("Color %d, %d, %d\nResult: %d\nExpect: %d\n", test2.r, test2.g, test2.b, rgbToTerm(test2), 58);
+    */
    
     closeLog();
 

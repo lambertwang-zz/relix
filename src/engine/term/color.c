@@ -74,6 +74,7 @@ Color rgbToHsl(Color c) {
 
 Color hslToRgb(Color hsl) {
     Color rgb;
+    rgb.a = hsl.a;
     unsigned char region, remainder, p, q, t;
     if (hsl.g == 0) {
         rgb.r = hsl.b;

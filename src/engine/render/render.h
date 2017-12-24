@@ -20,11 +20,12 @@ int rawPutString(Screen *s, int id, int start, int end, Point pos, String *str, 
 int putString(Screen *s, Point pos, String *str, Color fg, Color bg);
 int putStringL(Screen *s, Point pos, String *str, Color fg, Color bg);
 int oputString(Screen *s, int id, Point pos, String *str, Color fg, Color bg);
+int oputStringL(Screen *s, int id, Point pos, String *str, Color fg, Color bg);
 
-int putRect(Screen *s, int x, int y, Rect rect, Color bg);
-int putRectL(Screen *s, int x, int y, Rect rect, Color bg);
-int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg);
-int oputRectL(Screen *s, int id, int x, int y, Rect rect, Color bg);
+int putRect(Screen *s, Rect rect, Color bg);
+int putRectL(Screen *s, Rect rect, Color bg);
+int oputRect(Screen *s, int id, Rect rect, Color bg);
+int oputRectL(Screen *s, int id, Rect rect, Color bg);
 
 // Normal rendering functions
 int putPixel(Screen *s, int x, int y, Pixel p);
@@ -34,7 +35,6 @@ int putPixelA(Screen *s, int x, int y, Pixel p);
 
 // Unsafe function. Writes directly to the pixel buffer without any bounds-checking.
 int putPixelRgb(Screen *s, int x, int y, Color c);
-
 
 int putLight(Screen *s, int x, int y, Color l);
 // Linear point light

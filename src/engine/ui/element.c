@@ -59,13 +59,15 @@ int onRenderDefaultElement(Element *e, Screen *s) {
             break;
     }
 
-    e->_bounds = (Rect){0, height, 0, width};
+
+    // Calculate bounds and draw
+    e->_bounds = (Rect){pos.y, pos.y + height, pos.x, pos.x + width};
 
     if (e->sizing != SIZE_NONE) {
         if (getFocus() == e) {
-            oputRectL(s, e->id, pos.x, pos.y, e->_bounds, e->bg_c_focus);
+            oputRectL(s, e->id, e->_bounds, e->bg_c_focus);
         } else {
-            oputRectL(s, e->id, pos.x, pos.y, e->_bounds, e->bg_c);
+            oputRectL(s, e->id, e->_bounds, e->bg_c);
         }
     }
     int row = 0;
@@ -79,13 +81,11 @@ int onRenderDefaultElement(Element *e, Screen *s) {
     }
 
     // Render children
-    Iterator *it;
-    it = initIterator(&e->_children);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
+    Iterator it = initIterator(&e->_children);
+    while (!done(&it)) {
+        Element *elem = getNext(&it)->data;
         elem->onRender(elem, s);
     }
-    closeIterator(it);
 
     return 1;
 }
@@ -136,6 +136,7 @@ Element *createElement() {
     new_elem->onRender = &onRenderDefaultElement;
     new_elem->onEvent = &onEventDefaultElement;
     new_elem->onClick = NULL;
+    new_elem->onDelete = NULL;
     initTree(&new_elem->event_listeners);
 
     new_elem->data = NULL;
@@ -148,16 +149,19 @@ Element *createElement() {
 }
 
 int deleteElement(Element *elem) {
+    if (elem->onDelete != NULL) {
+        elem->onDelete(elem);
+    }
+
     deleteString(elem->tag);
     deleteString(elem->text);
     
     // Remove element from listener trees
-    Iterator *it = initIterator(&elem->event_listeners);
-    while (!done(it)) {
-        Node *n = getNext(it);
+    Iterator it = initIterator(&elem->event_listeners);
+    while (!done(&it)) {
+        Node *n = getNext(&it);
         unregisterUiListener(elem, n->id);
     }
-    closeIterator(it);
     closeTree(&elem->event_listeners);
 
     if (elem->data != NULL) {
@@ -165,11 +169,10 @@ int deleteElement(Element *elem) {
     }
 
     it = initIterator(&elem->_children);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
+    while (!done(&it)) {
+        Element *elem = getNext(&it)->data;
         deleteElement(elem);
     }
-    closeIterator(it);
 
     closeTree(&elem->_children);
 

@@ -15,9 +15,10 @@ int clearArray(Array *array);
 int closeArray(Array *array);
 
 // getDataArray is a little bit pointless.
-void *getDataArray(Array *array, unsigned int index);
+void *getDataArray(const Array *array, unsigned int index);
 int push(Array *array, void *data);
 void *pop(Array *array);
+void *deleteArrayIndex(Array *array, unsigned int index);
 
 #endif
 

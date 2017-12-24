@@ -8,5 +8,8 @@ Object *addPlayer(Point start);
 
 int renderPlayerLight(Object *o, Screen *s);
 
+// Listeners
+int playerListener(Object *o, Event *ev);
+
 #endif
 

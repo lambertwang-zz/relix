@@ -7,7 +7,7 @@
 // Game
 #include "../asset/asset.h"
 
-Object *createMonster(const MonsterEntry *entry);
+Object *createMonster(MonsterEntry *entry);
 
 #endif
 

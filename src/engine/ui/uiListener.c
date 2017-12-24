@@ -58,12 +58,9 @@ int sendUiEvent(Event *ev) {
         return 1;
     }
 
-    Iterator *it;
-
-    // it = initIterator(getData(object_manager.event_listeners[ev.id]);
-    it = initIterator(getData(&ui_manager->event_listeners, ev->id));
-    while (!done(it) && !ev->stop_propagation) {
-        Element *el = getNext(it)->data;
+    Iterator it = initIterator(getData(&ui_manager->event_listeners, ev->id));
+    while (!done(&it) && !ev->stop_propagation) {
+        Element *el = getNext(&it)->data;
 
         int (*listener)(Element *, Event *) = getData(&el->event_listeners, ev->id);
         if (listener == NULL) {
@@ -72,8 +69,6 @@ int sendUiEvent(Event *ev) {
         }
         listener(el, ev);
     }
-    closeIterator(it);
-
 
     return 0;
 }

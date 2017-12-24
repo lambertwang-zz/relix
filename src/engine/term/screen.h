@@ -42,6 +42,8 @@ typedef struct ScreenManager {
 
     sem_t writes_allowed;
     sem_t reads_allowed;
+
+    char *_line_buffer;
 } ScreenManager;
 
 ScreenManager screen_manager;
@@ -57,6 +59,8 @@ void clearScreen(Screen *screen);
 int closeScreen(Screen *screen);
 
 int swapScreen();
+
+Pixel getPixel(Screen *s, Point p);
 
 #endif
 

@@ -57,9 +57,11 @@ void closeGame() {
 }
 
 int changeStatusMode(Element *el, MouseEvent ev) {
+    el = el;
     if (ev.status == MOUSE_PRESS) {
         status_mode = (status_mode + 1) % 3;
     }
+    return 0;
 }
 
 void useStatusLine() {

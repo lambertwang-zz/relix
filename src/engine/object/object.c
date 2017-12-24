@@ -40,12 +40,11 @@ int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event *)) {
 void closeDefault(Object *o) {
     deleteString(o->type);
 
-    Iterator *it = initIterator(&o->event_listeners);
-    while (!done(it)) {
-        Node *n = getNext(it);
+    Iterator it = initIterator(&o->event_listeners);
+    while (!done(&it)) {
+        Node *n = getNext(&it);
         unregisterListener(o, n->id);
     }
-    closeIterator(it);
     closeTree(&o->event_listeners);
 
     if (o->data != NULL) {

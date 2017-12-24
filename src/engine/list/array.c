@@ -1,8 +1,12 @@
+#include "array.h"
+
 // Library
 #include <stdlib.h>
 #include <string.h>
 
-#include "array.h"
+// Engine
+#include "log/log.h"
+
 
 int initArray(struct Array *array) {
     array->size = INIT_ARRAY_SIZE;
@@ -25,7 +29,11 @@ int closeArray(struct Array *array) {
     return 0;
 }
 
-void *getDataArray(struct Array *array, unsigned int index) {
+void *getDataArray(const Array *array, unsigned int index) {
+    if (index >= array->count) {
+        writeLog(LOG_GAME, "array::getDataArray(): Error, index out of range '%d'.", index);
+        return NULL;
+    }
     return array->data[index];
 }
 
@@ -45,3 +53,17 @@ void *pop(struct Array *array) {
     return array->data[--array->count];
 }
 
+void *deleteArrayIndex(Array *array, unsigned int index) {
+    if (index >= array->count) {
+        return NULL;
+    }
+
+    void *result = array->data[index];
+    unsigned int i;
+    array->count--;
+    for (i = index; i < array->count; i++) {
+        array->data[i] = array->data[i + 1];
+    }
+    array->data[i] = NULL;
+    return result;
+}

@@ -65,6 +65,7 @@ Color scaleColor(Color c, float f);
 Color alphaComposite(Color a, Color b);
 
 Color rgbToHsl(Color c);
+// 
 Color hslToRgb(Color c);
 
 #endif

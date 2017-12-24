@@ -87,7 +87,7 @@ int render_menu(Object *o, Screen *s) {
         }
 
         int y = s->ts.lines / 2 - (MENU_BUTTON_HEIGHT + 1) * (menu->item_count / 2 - i);
-        putRectL(s, x, y, button, bg);
+        // putRectL(s, x, y, button, bg);
         menu->items[i].pos = (Point){x, y, 0};
         menu->items[i].bounds = button;
         putStringL(

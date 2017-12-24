@@ -38,21 +38,18 @@ int initUi() {
 
 int clearUi() {
     writeLog(LOG_UI, "ui::clearUi(): Clearing UI.");
-    Iterator *it;
 
-    it = initIterator(&ui_manager.ui_tree);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
+    Iterator it = initIterator(&ui_manager.ui_tree);
+    while (!done(&it)) {
+        Element *elem = getNext(&it)->data;
         deleteElement(elem);
     }
-    closeIterator(it);
 
     it = initIterator(&ui_manager.event_listeners);
-    while (!done(it)) {
-        Tree *tree = getNext(it)->data;
+    while (!done(&it)) {
+        Tree *tree = getNext(&it)->data;
         clearTree(tree);
     }
-    closeIterator(it);
 
 
     return 0;
@@ -63,13 +60,12 @@ int closeUi() {
     clearUi();
     closeTree(&ui_manager.ui_tree);
 
-    Iterator *it = initIterator(&ui_manager.event_listeners);
-    while (!done(it)) {
-        Tree *tree = getNext(it)->data;
+    Iterator it = initIterator(&ui_manager.event_listeners);
+    while (!done(&it)) {
+        Tree *tree = getNext(&it)->data;
         closeTree(tree);
         free(tree);
     }
-    closeIterator(it);
     closeTree(&ui_manager.event_listeners);
 
     return 0;
@@ -77,14 +73,11 @@ int closeUi() {
 
 int renderUi() {
     int elements_rendered = 0;
-    Iterator *it;
-
-    it = initIterator(&ui_manager.ui_tree);
-    while (!done(it)) {
-        Element *elem = getNext(it)->data;
+    Iterator it = initIterator(&ui_manager.ui_tree);
+    while (!done(&it)) {
+        Element *elem = getNext(&it)->data;
         elements_rendered += elem->onRender(elem, &screen_manager.main_screen);
     }
-    closeIterator(it);
 
     return elements_rendered;
 }

@@ -35,12 +35,9 @@ int sendEvent(Event ev) {
         return 0;
     }
 
-    struct Iterator *it;
-
-    // it = initIterator(getData(object_manager.event_listeners[ev.id]);
-    it = initIterator(getData(&object_manager.event_listeners, ev.id));
-    while (!done(it) && !ev.stop_propagation) {
-        struct Object *obj= getNext(it)->data;
+    Iterator it = initIterator(getData(&object_manager.event_listeners, ev.id));
+    while (!done(&it) && !ev.stop_propagation) {
+        struct Object *obj= getNext(&it)->data;
 
         int (*listener)(struct Object *m, Event *ev) = getData(&obj->event_listeners, ev.id);
         if (listener == NULL) {
@@ -49,7 +46,6 @@ int sendEvent(Event ev) {
         }
         listener(obj, &ev);
     }
-    closeIterator(it);
 
     if (ev.data != NULL) {
         free(ev.data);
@@ -120,36 +116,31 @@ int initObjects() {
 
 int clearObjects() {
     writeLog(LOG_OBJECTMANAGER, "objectManager::clearObjects(): Clearing game state");
-    struct Iterator *it;
+    Iterator it;
 
     it = initIterator(&object_manager.insert_queue);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        struct Object *obj = getNext(&it)->data;
         obj->close(obj);
     }
-    closeIterator(it);
 
     it = initIterator(&object_manager.remove_queue);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        struct Object *obj = getNext(&it)->data;
         obj->close(obj);
     }
-    closeIterator(it);
 
     it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        struct Object *obj = getNext(&it)->data;
         obj->close(obj);
     }
-    closeIterator(it);
 
     it = initIterator(&object_manager.event_listeners);
-    while (!done(it)) {
-        Tree *tree = getNext(it)->data;
+    while (!done(&it)) {
+        Tree *tree = getNext(&it)->data;
         clearTree(tree);
     }
-    closeIterator(it);
-
 
     clearTree(&object_manager.insert_queue);
     clearTree(&object_manager.object_list);
@@ -165,13 +156,12 @@ int closeObjects() {
     closeTree(&object_manager.object_list);
     closeTree(&object_manager.remove_queue);
 
-    Iterator *it = initIterator(&object_manager.event_listeners);
-    while (!done(it)) {
-        Tree *tree = getNext(it)->data;
+    Iterator it = initIterator(&object_manager.event_listeners);
+    while (!done(&it)) {
+        Tree *tree = getNext(&it)->data;
         closeTree(tree);
         free(tree);
     }
-    closeIterator(it);
     closeTree(&object_manager.event_listeners);
     
     return 0;
@@ -190,7 +180,7 @@ int removeObject(struct Object *obj) {
 }
 
 int updateObjects() {
-    struct Iterator *it;
+    Iterator it;
 
     if (clearGame != NULL) {
         clearObjects();
@@ -199,67 +189,63 @@ int updateObjects() {
     }
 
     it = initIterator(&object_manager.insert_queue);
-    while (!done(it)) {
-        struct Node *node = getNext(it);
+    while (!done(&it)) {
+        Node *node = getNext(&it);
         if (insert(&object_manager.object_list, node->data, node->id)) {
             writeLog(LOG_OBJECTMANAGER, "objectManager::updateObjects(): Error attempting to remove object id %d", node->id);
         }
     }
-    closeIterator(it);
     clearTree(&object_manager.insert_queue);
 
     it = initIterator(&object_manager.remove_queue);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        struct Object *obj = getNext(&it)->data;
         if (removeId(&object_manager.object_list, obj->id)) {
             writeLog(LOG_OBJECTMANAGER, "objectManager::updateObjects(): Error attempting to remove object id %d", obj->id);
         }
         obj->close(obj);
     }
-    closeIterator(it);
     clearTree(&object_manager.remove_queue);
 
     it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        Object *obj = getNext(&it)->data;
         if (obj->update != NULL) {
             obj->update(obj);
         }
     }
-    closeIterator(it);
 
     return 0;
 }
 
 int renderObjectLights() {
-    Iterator *it;
+    Iterator it;
     int lights_rendered = 0;
 
     // Render lights
     it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        Object *obj = getNext(&it)->data;
         if (obj->renderLight != NULL) {
             lights_rendered += obj->renderLight(obj, &screen_manager.main_screen);
         }
     }
-    closeIterator(it);
 
     return lights_rendered;
 }
 
 int renderObjects() {
-    struct Iterator *it;
+    Iterator it;
     int objects_rendered = 0;
 
-    struct Tree depth_tree;
+    Tree depth_tree;
     initTree(&depth_tree);
 
     // Insert objects into the depth tree
     it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
-        struct Array *depth_node = getData(&depth_tree, obj->pos.z);
+    while (!done(&it)) {
+        Object *obj = getNext(&it)->data;
+        Array *depth_node = getData(&depth_tree, obj->pos.z);
         if (depth_node == NULL) {
             depth_node = malloc(sizeof(struct Array));
             initArray(depth_node);
@@ -267,13 +253,12 @@ int renderObjects() {
         }
         push(depth_node, obj);
     }
-    closeIterator(it);
 
 
     // Render objects by sorted by depth
     it = initIterator(&depth_tree);
-    while (!done(it)) {
-        Node *node = getNext(it);
+    while (!done(&it)) {
+        Node *node = getNext(&it);
         // Array *depth_node = getNext(it)->data;
         Array *depth_node = node->data;
         unsigned int i;
@@ -284,7 +269,6 @@ int renderObjects() {
         closeArray(depth_node);
         free(depth_node);
     }
-    closeIterator(it);
 
     closeTree(&depth_tree);
 
@@ -292,17 +276,16 @@ int renderObjects() {
 }
 
 int getObjAt(Array *array, Point p, int solid) {
-    struct Iterator *it;
+    Iterator it;
     it = initIterator(&object_manager.object_list);
-    while (!done(it)) {
-        struct Object *obj = getNext(it)->data;
+    while (!done(&it)) {
+        struct Object *obj = getNext(&it)->data;
         if ((solid && obj->solid) || (!solid && !obj->solid)) {
             if (p.x == obj->pos.x && p.y == obj->pos.y) {
                 push(array, obj);
             }
         }
     }
-    closeIterator(it);
 
     return array->count;
 }

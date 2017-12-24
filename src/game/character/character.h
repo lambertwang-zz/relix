@@ -6,8 +6,15 @@
 #include "string/string.h"
 #include "object/object.h"
 
+// Game
+#include "../asset/asset.h"
+
 typedef struct CharacterData {
     String *name;
+
+    // Points to an existing resource entry.
+    // Does not need to be freed
+    MonsterEntry *entry;
 
     int max_health;
     int health;
@@ -15,9 +22,11 @@ typedef struct CharacterData {
     int level;
 
     // Equipped on person
-    Tree equipment;
+    // Array of slots
+    // Must be manually initialized
+    Array *equipment;
     // In bag
-    Tree inventory;
+    Array inventory;
 } CharacterData;
 
 CharacterData *createCharData();

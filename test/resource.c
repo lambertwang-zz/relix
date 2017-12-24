@@ -2,10 +2,10 @@
 
 // Game
 #include "../src/game/relix.h"
-#include "../src/game/resource/resource.h"
+#include "../src/game/asset/asset.h"
 
 
-int main(int argc, char **argv) {
+int main() {
     initLog();
 
     addLogLevel(LOG_LOAD_V);

@@ -9,36 +9,21 @@
 #include "stdlib.h"
 #include "string.h"
 
-void nothing() {
-    // pass
-}
-
 int testkeyboardListener(struct Object *o, Event *ev) {
-    writeLog(10, "Received keyboard event");
+    o = o;
     KeyboardEvent k_ev = *(KeyboardEvent *)ev->data;
     switch (k_ev.type) {
         case KEYBOARD_NORMAL:
-            switch (k_ev.value) {
-                case 'q':
-                case 'Q':
-                    queueClear(&nothing);
-                    break;
-            }
             return 0;
         case KEYBOARD_ESCAPE:
-            writeLog(10, "Received keyboard escape %d", k_ev.value);
             switch (k_ev.value) {
                 case ARROW_UP:
-                    o->pos.y--;
                     break;
                 case ARROW_DOWN:
-                    o->pos.y++;
                     break;
                 case ARROW_LEFT:
-                    o->pos.x--;
                     break;
                 case ARROW_RIGHT:
-                    o->pos.x++;
                     break;
             }
             return 0;
@@ -47,33 +32,39 @@ int testkeyboardListener(struct Object *o, Event *ev) {
     return 0;
 }
 
-int renderTestObj(Object *o, Screen *s) {
-    o->pix.depth = o->pos.z;
-    // Position on the screen
-    Point rel_pos = (Point){
-            o->pos.x - s->camera_bounds.left,
-            o->pos.y - s->camera_bounds.top,
-            0
-    };
+static int counter;
 
-    if (putPixelL(s, rel_pos.x, rel_pos.y, o->pix)) {
-        return 0;
+int renderTest(Object *o, Screen *s) {
+    o = o;
+    Pixel p = PIXEL_BLANK;
+
+    int result;
+
+    int i, j;
+    for (j = 0; j < s->ts.lines; j++) {
+        for (i = 0; i < s->ts.cols; i++) {
+            p.bg = hslToRgb((Color){(i + j * 2 + counter) % 256, 64 + j, 255, 1.0});
+            p.fg = hslToRgb((Color){(j * 3 - i - counter) % 256, 255 - j, 128, 1.0});
+            strcpy(p.chr, "Ꙁ");
+            p.chr[2] += (i - j + 300 + counter) % 30;
+            result += putPixelL(s, i, j, p);
+        }
     }
+    counter++;
 
-    return 1;
+    return result;
 }
 
 
 int main() {
     initGame();
-
-    addLogLevel(LOG_INPUT_V);
+    addLogLevel(0xffffffff);
 
     struct Object *o_1 = createObject();
 
-    strcpy(o_1->pix.chr, "@");
-    o_1->pix.fg = (Color){192, 128, 48, 1.0};
-    o_1->render = &renderTestObj;
+    counter = 0;
+
+    o_1->render = &renderTest;
 
     listenEvent(o_1, EVENT_KEYBOARD, &testkeyboardListener);
 

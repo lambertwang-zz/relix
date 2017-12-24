@@ -62,6 +62,21 @@ void initScreen(Screen *screen) {
         screen->prev_pixel_buffer[i].bg = COLOR_UNDEFINED;
         screen->prev_pixel_buffer[i].fg = COLOR_UNDEFINED;
     }
+
+    if (screen_manager._line_buffer != NULL) {
+        free(screen_manager._line_buffer);
+        screen_manager._line_buffer = NULL;
+    }
+
+    /**
+     * Line-buffer
+     * TODO: Clear still-reachable memory block (not a leak)
+     * Max size for each char: \e[38;5;100;100;100m (20 * 2 for color codes)
+     * ~40 bytes for rgb ansi color codes
+     * ~4 bytes for utf-8 unicode
+     * ~44 bytes max per char
+     */
+    screen_manager._line_buffer = malloc(sizeof(char) * 48 * screen->ts.cols);
 }
 
 // Clears a screen buffer
@@ -82,6 +97,18 @@ int closeScreen(Screen *screen) {
     free(screen->current_pixel_buffer);
     free(screen->prev_pixel_buffer);
 
+    if (screen_manager._line_buffer != NULL) {
+        free(screen_manager._line_buffer);
+        screen_manager._line_buffer = NULL;
+    }
+
+
     return 0;
 }
 
+Pixel getPixel(Screen *s, Point p) {
+    if (p.x < 0 || p.y < 0 || p.x >= s->ts.cols || p.y >= s->ts.lines) {
+        return PIXEL_BLANK;
+    }
+    return s->pixel_buffer[p.x + p.y * s->ts.cols];
+}

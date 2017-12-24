@@ -9,7 +9,7 @@
 typedef struct Iterator {
     const struct Tree *tree;
 
-    struct Array stack;
+    // struct Array stack;
 
     unsigned int index;
     struct Node *current;
@@ -61,15 +61,14 @@ int insert(Tree *tree, void *data, int id);
 int removeId(Tree *tree, int id);
 
 // Iterator functions
-Iterator *initIterator(Tree *tree);
+Iterator initIterator(Tree *tree);
 Node *getNode(const Iterator *it);
 void *getItem(const Iterator *it);
 Node *getNext(Iterator *it);
 int done(const Iterator *it);
-int closeIterator(Iterator *it);
 
 // Unused
-void generate(Iterator *it);
+// void generate(Iterator *it);
 
 #endif
 

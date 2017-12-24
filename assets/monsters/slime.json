@@ -12,7 +12,13 @@
       "name": "Blue Slime",
       "level": 1,
       "hit_dice": "d6",
-      "natural_weapon": "d6",
+      "natural_weapon": {
+        "name": "Slime",
+        "level": 1,
+        "damage": {
+            "physical": "1d4-1"
+        }
+      },
       "color": [
         0, 0, 255
       ]
@@ -21,17 +27,44 @@
       "name": "Green Slime",
       "level": 2,
       "hit_dice": "d8",
-      "natural_weapon": "d6",
+      "natural_weapon": {
+        "name": "Slime",
+        "level": 2,
+        "damage": {
+            "physical": "1d6"
+        }
+      },
       "color": [
         0, 255, 0
+      ]
+    },
+    {
+      "name": "Cyan Slime",
+      "level": 4,
+      "hit_dice": "d8",
+      "natural_weapon": {
+        "name": "Chilled Slime",
+        "level": 4,
+        "damage": {
+            "ice": "1d8+1"
+        }
+      },
+      "char": "S",
+      "color": [
+        96, 96, 255
       ]
     },
     {
       "name": "Red Slime",
       "level": 5,
       "hit_dice": "d8",
-      "natural_weapon": "d10+1",
-      "natural_damage": "fire",
+      "natural_weapon": {
+        "name": "Flaming Slime",
+        "level": 5,
+        "damage": {
+            "fire": "1d8+2"
+        }
+      },
       "char": "S",
       "color": [
         255, 0, 0

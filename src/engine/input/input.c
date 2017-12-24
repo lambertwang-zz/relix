@@ -136,8 +136,8 @@ int createMouseEvent(int x, int y, int button, char status) {
     Event ev;
     ev.id = EVENT_MOUSE;
     ev.data = malloc(sizeof(MouseEvent));
-    ((MouseEvent *) ev.data)->x = x - 1;
-    ((MouseEvent *) ev.data)->y = y - 1;
+    ((MouseEvent *) ev.data)->x = x - 1 - screen_manager.main_screen.margin_x;
+    ((MouseEvent *) ev.data)->y = y - 1 - screen_manager.main_screen.margin_y;
     ((MouseEvent *) ev.data)->value = button;
     ((MouseEvent *) ev.data)->status = status;
     sendEvent(ev);

@@ -70,7 +70,6 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
     return 0;
 }
 
-// Ignores precomponted values for bg and fg and computes them based on c_bg and c_fg
 int putPixel(Screen *s, int x, int y, Pixel p) {
     p.bg.a = 1.0;
 
@@ -116,32 +115,36 @@ int oputString(Screen *s, int id, Point pos, String *str, Color fg, Color bg) {
     return rawPutString(s, id, 0, s->ts.cols, pos, str, fg, bg, 0);
 }
 
-int _putRect(Screen *s, int id, int x, int y, Rect rect, Color bg, int no_light) {
+int oputStringL(Screen *s, int id, Point pos, String *str, Color fg, Color bg) {
+    return rawPutString(s, id, 0, s->ts.cols, pos, str, fg, bg, 1);
+}
+
+int _putRect(Screen *s, int id, Rect rect, Color bg, int no_light) {
     int i, j;
     // Pixel p = (Pixel){0, 0, COLOR_BLANK, bg, NULL, id, UI_DEPTH};
     Pixel p = (Pixel){COLOR_BLANK, bg, " ", id, UI_DEPTH};
-    for (j = rect.top + y < 0 ? 0 : rect.top + y; j < rect.bottom + y && j < s->ts.lines; j++) {
-        for (i = rect.left + x < 0 ? 0 : rect.left + x; i < rect.right + x && i < s->ts.cols; i++) {
+    for (j = rect.top < 0 ? 0 : rect.top; j < rect.bottom && j < s->ts.lines; j++) {
+        for (i = rect.left < 0 ? 0 : rect.left; i < rect.right && i < s->ts.cols; i++) {
             _putPixel(s, i, j, p, no_light);
         }
     }
     return i;
 }
 
-int putRect(Screen *s, int x, int y, Rect rect, Color bg) {
-    return _putRect(s, -1, x, y, rect, bg, 0);
+int putRect(Screen *s, Rect rect, Color bg) {
+    return _putRect(s, -1, rect, bg, 0);
 }
 
-int putRectL(Screen *s, int x, int y, Rect rect, Color bg) {
-    return _putRect(s, -1, x, y, rect, bg, 1);
+int putRectL(Screen *s, Rect rect, Color bg) {
+    return _putRect(s, -1, rect, bg, 1);
 }
 
-int oputRect(Screen *s, int id, int x, int y, Rect rect, Color bg) {
-    return _putRect(s, id, x, y, rect, bg, 0);
+int oputRect(Screen *s, int id, Rect rect, Color bg) {
+    return _putRect(s, id, rect, bg, 0);
 }
 
-int oputRectL(Screen *s, int id, int x, int y, Rect rect, Color bg) {
-    return _putRect(s, id, x, y, rect, bg, 1);
+int oputRectL(Screen *s, int id, Rect rect, Color bg) {
+    return _putRect(s, id, rect, bg, 1);
 }
 
 // Very unsafe function

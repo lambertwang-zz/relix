@@ -61,6 +61,7 @@ typedef struct Element {
     int (*onRender)(struct Element *, Screen *);
     int (*onEvent)(struct Element *, Event *);
     int (*onClick)(struct Element *, MouseEvent);
+    void (*onDelete)(struct Element *);
     Tree event_listeners;
 
     // Data for use by this element
@@ -72,14 +73,18 @@ typedef struct Element {
     Rect _bounds;
 } Element;
 
-
+// Ui Event functions
 int registerUiListener(const Element *el, int ev_id);
 int unregisterUiListener(const Element *el, int ev_id);
+int sendUiEvent(Event *ev);
 
+// Element Functions
+int onRenderDefaultElement(Element *e, Screen *s);
 Element *createElement();
 int deleteElement(Element *elem);
 int listenUiEvent(Element *el, int ev_id, int (*listener)(Element *, Event *));
 
+// General UI Functions
 UiManager *getUiManager();
 
 Element *getFocus();
@@ -90,8 +95,6 @@ int registerUiElement(Element *e);
 int initUi();
 int closeUi();
 int renderUi();
-
-int sendUiEvent(Event *ev);
 
 #endif
 

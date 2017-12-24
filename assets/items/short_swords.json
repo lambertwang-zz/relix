@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Short Sword",
+        "level": 1,
+        "damage": {
+            "physical": "1d6"
+        }
+    },
+    {
+        "name": "Scimitar",
+        "level": 3,
+        "damage": {
+            "physical": "1d8+1"
+        }
+    },
+    {
+        "name": "Gladius",
+        "level": 6,
+        "damage": {
+            "physical": "2d6+2"
+        }
+    },
+    {
+        "name": "Baselard",
+        "level": 10,
+        "damage": {
+            "physical": "3d6+3"
+        }
+    }
+]

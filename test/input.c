@@ -7,18 +7,19 @@
 #include <time.h>
 
 
-void terminate(int a) {
+void end() {
     closeInput();
+    closeLog();
     exit(0);
 }
 
-int main(int argc, char **argv) {
+int main() {
     initLog();
     initInput();
 
     addLogLevel(LOG_INPUT_V);
 
-    signal(SIGINT, terminate);
+    signal(SIGINT, end);
 
     struct timespec sleep_time;
     sleep_time.tv_sec = 0;
@@ -29,7 +30,7 @@ int main(int argc, char **argv) {
         nanosleep(&sleep_time, NULL);
     }
 
-    terminate(0);
+    end();
 
     return 0;
 }

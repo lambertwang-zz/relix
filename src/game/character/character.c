@@ -17,15 +17,15 @@ CharacterData *createCharData() {
 
     data->level = 1;
 
-    initEquipment(&data->equipment);
-    initTree(&data->inventory);
+    data->equipment = NULL;
+    initArray(&data->inventory);
 
     return data;
 }
 
 void closeCharData(CharacterData *data) {
     deleteString(data->name);
-    closeEquipment(&data->equipment);
-    closeTree(&data->inventory);
+    deleteEquipment(data->equipment);
+    closeArray(&data->inventory);
 }
 
