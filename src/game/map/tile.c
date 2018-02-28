@@ -55,6 +55,8 @@ void putDoor(struct Tile *tile) {
     tile->p.fg = COLOR_BLACK;
     initTile(tile);
 
-    strncpy(tile->p.chr, "▓", UNICODE_MAX);
+    // TODO: Unicode switcher
+    // strncpy(tile->p.chr, "▓", UNICODE_MAX);
+    strncpy(tile->p.chr, "|", UNICODE_MAX);
 }
 

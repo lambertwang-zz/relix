@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Short Sword",
+        "damage": {
+            "physical": "1d6"
+        }
+    },
+    {
+        "name": "Scimitar",
+        "damage": {
+            "physical": "1d8-1"
+        }
+    },
+    {
+        "name": "Gladius",
+        "damage": {
+            "physical": "2d4"
+        }
+    },
+    {
+        "name": "Baselard",
+        "damage": {
+            "physical": "1d8"
+        }
+    },
+    {
+        "name": "Iron Sword",
+        "damage": {
+            "physical": "1d8-1"
+        }
+    },
+    {
+        "name": "Rapier",
+        "damage": {
+            "physical": "3d4-3"
+        }
+    },
+    {
+        "name": "Estoc",
+        "damage": {
+            "physical": "1d8"
+        }
+    },
+    {
+        "name": "War Sword",
+        "damage": {
+            "physical": "2d4+1"
+        }
+    }
+]

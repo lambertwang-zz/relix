@@ -290,31 +290,32 @@ int captureInput() {
 
 #if defined _WIN32 || defined _WIN64
 int winMouseEvent(MOUSE_EVENT_RECORD ev) {
-    static int prev_button_state = 0;
+    static unsigned int prev_button_state = 0;
 
     int x_pos = ev.dwMousePosition.X;
     int y_pos = ev.dwMousePosition.Y;
-    int button = 0;
+    int button = MOUSE_NONE;
     char status = MOUSE_RELEASE;
-    int state_diff = prev_button_state ^ ev.dwButtonState;
+    // int state_diff = prev_button_state ^ ev.dwButtonState;
 
     switch (ev.dwEventFlags) {
         case 0:
-            if (state_diff ^ FROM_LEFT_1ST_BUTTON_PRESSED) {
-                button = MOUSE_LEFT;
-                if (ev.dwButtonState ^ FROM_LEFT_1ST_BUTTON_PRESSED) {
-                    status = MOUSE_PRESS;
-                } 
-            } else if (state_diff ^ RIGHTMOST_BUTTON_PRESSED) {
-                button = MOUSE_RIGHT;
-                if (ev.dwButtonState ^ RIGHTMOST_BUTTON_PRESSED) {
-                    status = MOUSE_PRESS;
-                } 
-            } else if (state_diff ^ FROM_LEFT_2ND_BUTTON_PRESSED) {
-                button = MOUSE_MIDDLE;
-                if (ev.dwButtonState ^ FROM_LEFT_2ND_BUTTON_PRESSED) {
-                    status = MOUSE_PRESS;
-                } 
+            if (ev.dwButtonState == prev_button_state) {
+                break;
+            }
+            switch (ev.dwButtonState) {
+                case FROM_LEFT_1ST_BUTTON_PRESSED:
+                    button = MOUSE_LEFT;
+                    break;
+                case RIGHTMOST_BUTTON_PRESSED:
+                    button = MOUSE_RIGHT;
+                    break;
+                case FROM_LEFT_2ND_BUTTON_PRESSED:
+                    button = MOUSE_MIDDLE;
+                    break;
+            }
+            if (button != MOUSE_NONE) {
+                status = MOUSE_PRESS;
             }
             break;
         case MOUSE_MOVED:
@@ -337,7 +338,7 @@ int captureInputEvents() {
     INPUT_RECORD input;
     DWORD in_result;
     DWORD num_events;
-    int i;
+    unsigned int i;
     GetNumberOfConsoleInputEvents(h_stdin, &num_events);
 
     for (i = 0; i < num_events; i++) {

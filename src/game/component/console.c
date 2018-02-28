@@ -53,9 +53,11 @@ int onRenderConsoleElement(Element *e, Screen *s) {
 int expandConsole(Element *el, MouseEvent ev) {
     if (ev.status == MOUSE_PRESS) {
         if (el->height == VSIZE_1_HALF) {
+            writeLog(LOG_USER, "console::expandConsole(): Expanding console");
             el->pos = (Point){HSPACE_GAP, VPOS_HALF_1, 0.0};
             el->height = VSIZE_2_HALF;
         } else {
+            writeLog(LOG_USER, "console::expandConsole(): Collapsing console");
             el->pos = (Point){HSPACE_GAP, VPOS_HALF_2, 0.0};
             el->height = VSIZE_1_HALF;
         }

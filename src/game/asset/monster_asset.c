@@ -63,11 +63,15 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
             continue;
         }
         if (!strcmp(prop->key->s, TOK_MON_HD)) {
-            loadDiceToEntry(&new_entry->hit_dice, prop->value);
+            if (loadDiceToEntry(&new_entry->hit_dice, prop->value)) {
+                writeLog(LOG_LOAD, "monster_asset::parseMonsterEntry(): Could not load property %s.", prop->key->s);
+            }
             continue;
         }
         if (!strcmp(prop->key->s, TOK_MON_NAT_WEAPON)) {
-            loadDiceToEntry(&new_entry->nat_weapon, prop->value);
+            if (loadDiceToEntry(&new_entry->nat_weapon, prop->value)) {
+                writeLog(LOG_LOAD, "monster_asset::parseMonsterEntry(): Could not load property %s.", prop->key->s);
+            }
             continue;
         }
         if (!strcmp(prop->key->s, TOK_MON_NAT_DAMAGE)) {

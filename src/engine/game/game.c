@@ -124,7 +124,19 @@ int loop() {
 
         // Check that it's okay to write to the buffer
         // Otherwise, skip this frame
+#if defined __linux__
         if (sem_trywait(&screen_manager.writes_allowed)) {
+#elif defined _WIN32 || defined _WIN64
+        DWORD dwWaitResult; 
+
+        // zero-second time-out interval
+        dwWaitResult = WaitForSingleObject(screen_manager.writes_allowed, 0L);
+
+        switch (dwWaitResult) 
+        { 
+            // The semaphore object was signaled.
+            case WAIT_OBJECT_0: 
+#endif
             for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
                 screen->light_buffer[i] = COLOR_BLANK;
                 screen->pixel_buffer[i] = PIXEL_BLANK;
@@ -143,7 +155,11 @@ int loop() {
             writeLog(LOG_GAME_V, "game::loop(): Rendered %d UI elements", elementsRendered);
 
             // Let the renderer know that we're done preparing the frame
+#if defined __linux__
             sem_post(&screen_manager.reads_allowed);
+#elif defined _WIN32 || defined _WIN64
+            ReleaseSemaphore(screen_manager.reads_allowed, 1, NULL);
+#endif
             writeLog(LOG_GAME_V, "game::loop(): Posted buffer to renderer.");
 
             if (status_line != NULL) {
@@ -173,6 +189,12 @@ int loop() {
                 stringCopy(status_line->text, status_label);
                 deleteString(status_label);
             }
+#if defined _WIN32 || defined _WIN64
+            break;
+            case WAIT_TIMEOUT:
+            default:
+                writeLog(LOG_GAME_V, "game::loop(): Renderer not ready for writes.");
+#endif
         }
 
         if (frame_count % 30 == 0) {

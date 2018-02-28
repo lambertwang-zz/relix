@@ -45,8 +45,8 @@ Node *uncle(const Node *node);
 void rotateLeft(Node *node);
 void rotateRight(Node *node);
 
-Node **max(Node **node);
-Node **min(Node **node);
+Node **maxNode(Node **node);
+Node **minNode(Node **node);
 
 Node *newNode(void *data, int id);
 

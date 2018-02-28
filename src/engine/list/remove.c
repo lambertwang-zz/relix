@@ -151,7 +151,7 @@ int removeNodeOneChild(Node **indirect) {
 void removeNode(Node **indirect) {
     Node *node = *indirect;
     if (node->left != NULL && node->right != NULL) {
-		Node **target = min(&node->right);
+		Node **target = minNode(&node->right);
         replaceNode(node, *target);
         indirect = target;
     }

@@ -17,7 +17,7 @@ int initResources() {
 
 int loadStringToEntry(String *dest, JsonNode *node) {
     if (node == NULL || node->type != JSON_STRING) {
-        writeLog(LOG_LOAD, "monster_load::loadStringToEntry(): ERROR: Expected string property.");
+        writeLog(LOG_LOAD, "asset::loadStringToEntry(): ERROR: Expected string property.");
         return 1;
     }
 
@@ -27,9 +27,13 @@ int loadStringToEntry(String *dest, JsonNode *node) {
 }
 
 int loadDiceToEntry(Dice *dest, JsonNode *node) {
-    if (node == NULL || node->type != JSON_STRING) {
-        writeLog(LOG_LOAD, "monster_load::loadStringToEntry(): ERROR: Expected dice property.");
+    if (node == NULL) {
+        writeLog(LOG_LOAD, "asset::loadDiceToEntry(): ERROR: node is NULL.");
         return 1;
+    }
+    if (node->type != JSON_STRING) {
+        writeLog(LOG_LOAD, "asset::loadDiceToEntry(): ERROR: Expected node to be string.");
+        return 2;
     }
 
     *dest = parseDice(node->data);
@@ -39,7 +43,7 @@ int loadDiceToEntry(Dice *dest, JsonNode *node) {
 
 int loadCharToEntry(char *dest, JsonNode *node) {
     if (node == NULL || node->type != JSON_STRING) {
-        writeLog(LOG_LOAD, "monster_load::loadCharToEntry(): ERROR: Expected char property.");
+        writeLog(LOG_LOAD, "asset::loadCharToEntry(): ERROR: Expected char property.");
         return 1;
     }
 
@@ -50,7 +54,7 @@ int loadCharToEntry(char *dest, JsonNode *node) {
 
 int loadIntToEntry(int *dest, JsonNode *node) {
     if (node == NULL || node->type != JSON_INT) {
-        writeLog(LOG_LOAD, "monster_load::loadIntToEntry(): ERROR: Expected int property.");
+        writeLog(LOG_LOAD, "asset::loadIntToEntry(): ERROR: Expected int property.");
         return 1;
     }
 

@@ -19,6 +19,7 @@ int main() {
     addLogLevel(0xffffffff);
     addLogLevel(LOG_USER);
     removeLogLevel(LOG_GAME_V);
+    removeLogLevel(LOG_RESOURCE_V);
 
     if (initResources()) {
         closeGame();

@@ -220,18 +220,18 @@ void rotateRight(Node *node) {
     }
 }
 
-Node **max(Node **node) {
+Node **maxNode(Node **node) {
     if ((*node)->right == NULL) {
         return node;
     }
-    return max(&(*node)->right);
+    return maxNode(&(*node)->right);
 }
 
-Node **min(Node **node) {
+Node **minNode(Node **node) {
     if ((*node)->left== NULL) {
         return node;
     }
-    return min(&(*node)->left);
+    return minNode(&(*node)->left);
 }
 
 int initTree(Tree *tree) {

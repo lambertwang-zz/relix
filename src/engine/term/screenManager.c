@@ -6,13 +6,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
+
+#if defined __linux__
 #include <pthread.h>
+#elif defined _WIN32 || defined _WIN64
+#include <windows.h>
+#else
+#error "unknown platform"
+#endif
 
 #include "utility/utility.h"
 #include "log/log.h"
 
 static int abort_output_thread_flag;
+
+#if defined __linux__
 static pthread_t output_thread;
+#elif defined _WIN32 || defined _WIN64
+static DWORD output_thread_id;
+static HANDLE output_thread;
+#endif
 
 // SIGWINCH is called when the window is resized.
 // void handle_winch(int sig) {
@@ -31,9 +44,15 @@ void *outputThreadWork() {
 
 void initScreenManager() {
     writeLog(LOG_SCREEN, "screenManager::initScreenManager(): Initializing screen manager.");
-    // writes_allowed starts at 1 to allow the first frame to render
+
+#if defined __linux__
     sem_init(&screen_manager.writes_allowed, 0, 1);
     sem_init(&screen_manager.reads_allowed, 0, 0);
+#elif defined _WIN32 || defined _WIN64
+    screen_manager.writes_allowed = CreateSemaphore(NULL, 1, 1, NULL);
+    screen_manager.reads_allowed = CreateSemaphore(NULL, 0, 1, NULL);
+#endif
+
     resize_flag = 0;
     abort_output_thread_flag = 0;
 
@@ -55,7 +74,12 @@ void initScreenManager() {
     // Clear terminal
     printf("\033[2J");
 
+#if defined __linux__
     pthread_create(&output_thread, NULL, outputThreadWork, NULL);
+#elif defined _WIN32 || defined _WIN64
+    output_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE) outputThreadWork, NULL, 0, &output_thread_id);
+#endif
+
     writeLog(LOG_SCREEN, "screenManager::initScreenManager(): Successfully initialized screen manager.");
 }
 
@@ -65,13 +89,23 @@ void closeScreenManager() {
     // There's no way that the engine can write to the buffer anymore, so wake
     // up the output thread to flush the last frame and check the exit flag.
     abort_output_thread_flag = 1;
+#if defined __linux__
     sem_post(&screen_manager.reads_allowed);
     pthread_join(output_thread, NULL);
+#elif defined _WIN32 || defined _WIN64
+    ReleaseSemaphore(screen_manager.reads_allowed, 1, NULL);
+    WaitForSingleObject(output_thread, INFINITE);
+#endif
 
     closeScreen(&screen_manager.main_screen);
 
+#if defined __linux__
     sem_destroy(&screen_manager.reads_allowed);
     sem_destroy(&screen_manager.writes_allowed);
+#elif defined _WIN32 || defined _WIN64
+    CloseHandle(screen_manager.reads_allowed);
+    CloseHandle(screen_manager.writes_allowed);
+#endif
 
     // Reset colors
     printf("\e[39m\e[49m");
@@ -92,7 +126,11 @@ int renderScreens() {
     Screen *screen = &screen_manager.main_screen;
 
     // Wait for the engine to finish preparing this frame
+#if defined __linux__
     sem_wait(&screen_manager.reads_allowed);
+#elif defined _WIN32 || defined _WIN64
+    WaitForSingleObject(screen_manager.reads_allowed, INFINITE);
+#endif
 
     // Resizing can only happen when the engine isn't touching the buffer
     if (resize_flag) {
@@ -113,7 +151,11 @@ int renderScreens() {
     memcpy(screen->current_pixel_buffer, screen->pixel_buffer, sizeof(Pixel) * screen->ts.cols * screen->ts.lines);
 
     // Let the engine know that it's safe to continue rendering
+#if defined __linux__
     sem_post(&screen_manager.writes_allowed);
+#elif defined _WIN32 || defined _WIN64
+    ReleaseSemaphore(screen_manager.writes_allowed, 1, NULL);
+#endif
 
     unsigned int index;
 
@@ -156,29 +198,30 @@ int renderScreens() {
             }
 
             // If preceding pixels are unchanged, skip characters
-            if (unchangedPixels > 0) {
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "\e[%dC", unchangedPixels);
-                unchangedPixels = 0;
-            }
+            // if (unchangedPixels > 0) {
+            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "\e[%dC", unchangedPixels);
+            //     unchangedPixels = 0;
+            // }
 
             if (compareColor(prevFg, fg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[38;5;%dm", fg.r);
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
-                        "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
+                // charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
+                        // "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
                 prevFg = fg;
             }
             if (compareColor(prevBg, bg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg.r);
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
-                        "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
+                // charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
+                        // "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
                 prevBg = bg;
             }
             
-            if (chr[0] != '\0') {
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "%s", chr); 
-            } else {
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, " "); 
-            }
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "s"); 
+            // if (chr[0] != '\0') {
+            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "%s", chr); 
+            // } else {
+            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, " "); 
+            // }
         }
 
         fwrite(screen_manager._line_buffer, sizeof(char), charsPrinted, stdout);

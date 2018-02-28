@@ -20,6 +20,7 @@
 #define KEYBOARD_ESCAPE 2
 
 // Mouse action values
+#define MOUSE_NONE -1
 #define MOUSE_LEFT 0
 #define MOUSE_RIGHT 2
 #define MOUSE_MIDDLE 1

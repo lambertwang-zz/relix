@@ -3,19 +3,35 @@
 // Library
 #include <stdarg.h>
 #include <stdio.h>
+
+#if defined __linux__
 #include <pthread.h>
+#elif defined _WIN32 || defined _WIN64
+#include <windows.h>
+#else
+#error "unknown platform"
+#endif
 
 // Engine
 #include "utility/clock.h"
 #include "game/game.h"
 
+#if defined __linux__
 static pthread_mutex_t log_mutex;
+#elif defined _WIN32 || defined _WIN64
+static HANDLE log_mutex;
+#endif
 
 void initLog() {
     flushLog = 1;
     logLevel = LOG_LEVEL_DEFAULT;
     relixLogFile = fopen(LOG_FILE, "w");
+
+#if defined __linux__
     pthread_mutex_init(&log_mutex, NULL);
+#elif defined _WIN32 || defined _WIN64
+    log_mutex = CreateMutex(NULL, FALSE, NULL);
+#endif
 
     writeLog(LOG_INIT, "log::initLog(): Initialized logging");
 }
@@ -23,7 +39,12 @@ void initLog() {
 void closeLog() {
     writeLog(LOG_INIT, "log::closeLog(): Closing logging");
     fclose(relixLogFile);
+
+#if defined __linux__
     pthread_mutex_destroy(&log_mutex);
+#elif defined _WIN32 || defined _WIN64
+    CloseHandle(log_mutex);
+#endif
 }
 
 void setFlush(unsigned int on) {
@@ -68,18 +89,21 @@ int nwriteLog(int level, const char *format, ...) {
     if (relixLogFile == NULL) {
         return -1;
     }
-                //if (this->p_f && this->isStarted()) {
-    // Print timestring and frame number to log file
-    // df::GameManager &game_manager = df::GameManager::getInstance();
 
+#if defined __linux__
     pthread_mutex_lock(&log_mutex);
+#elif defined _WIN32 || defined _WIN64
+    WaitForSingleObject(log_mutex, INFINITE);
+#endif
 
     fprintf(relixLogFile, "%8s  %6d : ", timeString(), frame_count);
+
     // Format arguments
     va_list args;
     va_start(args, format);
     int chars_printed = vfprintf(relixLogFile, format, args);
     va_end(args);
+
     // Add newline to log file
     chars_printed += fwrite("\n", sizeof(char), 1, relixLogFile);
     
@@ -88,11 +112,12 @@ int nwriteLog(int level, const char *format, ...) {
         fflush(relixLogFile);
     }
 
+#if defined __linux__
     pthread_mutex_unlock(&log_mutex);
+#elif defined _WIN32 || defined _WIN64
+    ReleaseMutex(log_mutex);
+#endif
 
     return chars_printed;
-    // }
-    // }
-    // return -1;
 }
 

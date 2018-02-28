@@ -1,7 +1,13 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 
+#if defined __linux__
 #include <semaphore.h>
+#elif defined _WIN32 || defined _WIN64
+#include <windows.h>
+#else
+#error "unknown platform"
+#endif
 
 // Engine
 #include "color.h"
@@ -40,8 +46,13 @@ typedef struct Screen {
 typedef struct ScreenManager {
     Screen main_screen;
 
+#if defined __linux__
     sem_t writes_allowed;
     sem_t reads_allowed;
+#elif defined _WIN32 || defined _WIN64
+    HANDLE writes_allowed;
+    HANDLE reads_allowed;
+#endif
 
     char *_line_buffer;
 } ScreenManager;
