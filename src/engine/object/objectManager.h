@@ -13,12 +13,22 @@ struct ObjectManager {
     Tree remove_queue; 
 
     Tree event_listeners;
+
+    int (*global_listener)(Event *);
 };
 
+int registerEvent(int ev_id);
 int sendEvent(Event ev);
+
+// Register event listeners for specific objects
 int registerListener(const Object *obj, int ev_id);
 int unregisterListener(const Object *obj, int ev_id);
-int registerEvent(int ev_id);
+
+// Register the global event listener.
+// Only one global event listener may be set.
+// The global event listener listens to all events.
+void registerGlobalListener(int (*listener)(Event *));
+void clearGlobalListener();
 
 int initObjects();
 int closeObjects();

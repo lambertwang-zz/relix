@@ -64,6 +64,10 @@ void initScreenManager() {
     screen_manager.main_screen.times_init = 0;
     initScreen(&screen_manager.main_screen);
 
+    // Change the code page to Unicode/65001
+    #if defined _WIN32 || defined _WIN64
+        system("CHCP 65001");
+    #endif
 
     // Set auto flush
     // setbuf(stdout, NULL);
@@ -121,9 +125,9 @@ void closeScreenManager() {
     writeLog(LOG_SCREEN, "screenManager::closeScreenManager(): Successfully closed the screen manager.");
 }
 
-int renderScreens() {
-    int i, j;
-    Screen *screen = &screen_manager.main_screen;
+ renderScreens() {
+ int i, j;
+ Screen *screen = &screen_manager.main_screen;
 
     // Wait for the engine to finish preparing this frame
 #if defined __linux__
@@ -198,30 +202,30 @@ int renderScreens() {
             }
 
             // If preceding pixels are unchanged, skip characters
-            // if (unchangedPixels > 0) {
-            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "\e[%dC", unchangedPixels);
-            //     unchangedPixels = 0;
-            // }
+            if (unchangedPixels > 0) {
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "\e[%dC", unchangedPixels);
+                unchangedPixels = 0;
+            }
 
             if (compareColor(prevFg, fg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[38;5;%dm", fg.r);
-                // charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
-                        // "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
+                        "\e[38;2;%d;%d;%dm", fg.r, fg.g, fg.b);
                 prevFg = fg;
             }
             if (compareColor(prevBg, bg)) {
                 // charsPrinted += sprintf(buffer + charsPrinted, "\e[48;5;%dm", bg.r);
-                // charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
-                        // "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, 
+                        "\e[48;2;%d;%d;%dm", bg.r, bg.g, bg.b);
                 prevBg = bg;
             }
             
-                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "s"); 
-            // if (chr[0] != '\0') {
-            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "%s", chr); 
-            // } else {
-            //     charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, " "); 
-            // }
+            if (chr[0] != '\0') {
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "%s", chr); 
+            } else {
+                // charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, " "); 
+                charsPrinted += sprintf(screen_manager._line_buffer + charsPrinted, "║"); 
+            }
         }
 
         fwrite(screen_manager._line_buffer, sizeof(char), charsPrinted, stdout);

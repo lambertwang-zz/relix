@@ -251,6 +251,8 @@ int escape() {
         switch (buff) {
             case '[':
                 return csi();
+            case 0:
+                return createKeyboardEvent('\e', KEYBOARD_NORMAL);
             default:
                 writeLog(LOG_INPUT, "input::escape(): Unsupported escape character: '%d'", buff);
         }

@@ -5,10 +5,7 @@
 
 relix
 relix.exe
-test/tree
-test/input
-test/event
-test/render
-test/resource
-test/util
+test/*.exe
 *.sh
+
+relix_engine.a

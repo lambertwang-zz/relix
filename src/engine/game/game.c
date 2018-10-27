@@ -20,6 +20,7 @@
 static Element *status_line;
 static int status_mode;
 static int is_gameover;
+static int clear_screen_mode;
 
 void terminate() {
     is_gameover = 1;
@@ -27,9 +28,10 @@ void terminate() {
 
 int initGame() {
     is_gameover = 0;
+    clear_screen_mode = CLEAR_BEFORE_RENDER;
     frame_count = 0;
 
-    initLog();
+    // initLog();
     initRandom_s(9877);
     // Init objects and event registration
     initObjects();
@@ -73,6 +75,10 @@ void useStatusLine() {
     status_line->onClick = &changeStatusMode;
 
     registerUiElement(status_line);
+}
+
+void setClearScreenMode(int new_clear_screen_mode) {
+    clear_screen_mode = new_clear_screen_mode;
 }
 
 int loop() {
@@ -137,9 +143,11 @@ int loop() {
             // The semaphore object was signaled.
             case WAIT_OBJECT_0: 
 #endif
-            for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
-                screen->light_buffer[i] = COLOR_BLANK;
-                screen->pixel_buffer[i] = PIXEL_BLANK;
+            if (clear_screen_mode == CLEAR_BEFORE_RENDER) {
+                for (i = 0; i < screen->ts.lines * screen->ts.cols; i++) {
+                    screen->light_buffer[i] = COLOR_BLANK;
+                    screen->pixel_buffer[i] = PIXEL_BLANK;
+                }
             }
 
             // Render lighting before rendering objects

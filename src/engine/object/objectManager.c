@@ -26,6 +26,10 @@ int sendEvent(Event ev) {
     }
     ev.stop_propagation = 0;
 
+    if (object_manager.global_listener != NULL) {
+        writeLog(LOG_OBJECTMANAGER_V, "objectManager::sendEvent(): Sending event to global event listener.");
+        object_manager.global_listener(&ev);
+    }
     writeLog(LOG_OBJECTMANAGER_V, "objectManager::sendEvent(): Sending event to UI.");
     sendUiEvent(&ev);
     if (ev.stop_propagation) {
@@ -78,6 +82,14 @@ int unregisterListener(const struct Object *obj, int ev_id) {
     }
     
     return 0;
+}
+
+void registerGlobalListener(int (*listener)(Event *)) {
+    object_manager.global_listener = listener;
+}
+
+void clearGlobalListener() {
+    object_manager.global_listener = NULL;
 }
 
 int registerEvent(int ev_id) {

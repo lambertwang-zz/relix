@@ -45,7 +45,7 @@ int renderTest(Object *o, Screen *s) {
         for (i = 0; i < s->ts.cols; i++) {
             p.bg = hslToRgb((Color){(i + j * 2 + counter) % 256, 64 + j, 255, 1.0});
             p.fg = hslToRgb((Color){(j * 3 - i - counter) % 256, 255 - j, 128, 1.0});
-            strcpy(p.chr, "Ꙁ");
+            strcpy(p.chr, "║");
             p.chr[2] += (i - j + 300 + counter) % 30;
             result += putPixelL(s, i, j, p);
         }

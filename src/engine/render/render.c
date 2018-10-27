@@ -48,10 +48,12 @@ int _putPixel(Screen *s, int x, int y, Pixel p, int no_light) {
 
     // BG pixel is always opaque
     p.bg = alphaComposite(p.bg, s->pixel_buffer[index].bg);
+    p.fg = alphaComposite(p.fg, s->pixel_buffer[index].fg);
     if (!no_light) {
         // p.c_bg = minColor(p.c_bg, s->light_buffer[index]);
         // p.c_fg = minColor(p.c_fg, s->light_buffer[index]);
         p.bg = colorMultL(p.bg, s->light_buffer[index]);
+        p.fg = colorMultL(p.fg, s->light_buffer[index]);
         /* Rendered characters ignore lighting.
         if (p.chr != NULL) {
             p.c_fg = colorMultL(p.c_fg, s->light_buffer[index]);

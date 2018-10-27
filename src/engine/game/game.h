@@ -5,6 +5,7 @@ unsigned int frame_count;
 
 int initGame();
 void closeGame();
+void setClearScreenMode(int new_clear_screen_mode);
 void useStatusLine();
 int loop();
 
