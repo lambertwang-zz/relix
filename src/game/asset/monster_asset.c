@@ -27,15 +27,15 @@ MonsterEntry *createEmptyMonsterEntry() {
     new_entry->nat_damage = ELEM_PHYS;
     new_entry->loot_qual = 100;
 
-    new_entry->name = createString();
-    new_entry->chr = createString();
+    new_entry->name = new String();
+    new_entry->chr = new String();
 
     return new_entry;
 }
 
 void deleteMonsterEntry(MonsterEntry *monster) {
-    deleteString(monster->name);
-    deleteString(monster->chr);
+    delete monster->name);
+    delete monster->chr);
     free(monster);
 }
 
@@ -115,8 +115,8 @@ MonsterEntry *parseMonsterEntry(JsonNode *monster_json) {
 MonsterFamily *createEmptyMonsterFamily() {
     MonsterFamily *new_family = malloc(sizeof(MonsterFamily));
 
-    new_family->name = createString();
-    new_family->default_chr = createString();
+    new_family->name = new String();
+    new_family->default_chr = new String();
 
     initArray(&new_family->entries);
     new_family->min_level = 0;
@@ -135,8 +135,8 @@ void closeMonsterFamily(void *data) {
     }
 
     closeArray(&family->entries);
-    deleteString(family->name);
-    deleteString(family->default_chr);
+    delete family->name);
+    delete family->default_chr);
 }
 
 int loadMonsterFile(FILE *file) {
@@ -214,7 +214,7 @@ void closeMonsterResources() {
 }
 
 int loadMonsterResources() {
-    String *monster_dir = createString();
+    String *monster_dir = new String();
     sputf(monster_dir, "%s%s", ASSET_DIR, MONSTER_DIR);
 
     struct dirent *p_dirent;
@@ -254,7 +254,7 @@ int loadMonsterResources() {
     }
     closedir(p_dir);
 
-    deleteString(monster_dir);
+    delete monster_dir);
 
     return entries;
 }

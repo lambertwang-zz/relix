@@ -3,72 +3,136 @@
 
 // Engine
 #include "array.h"
+#include "constants.h"
 
 #define INIT_STACK_SIZE 16
 
-typedef struct Iterator {
-    const struct Tree *tree;
+namespace rlx {
+    template <class T>
+    class Node;
 
-    // struct Array stack;
+    template <class T>
+    class Tree;
 
-    unsigned int index;
-    struct Node *current;
-} Iterator;
+    template <class T>
+    class Iterator;
 
-typedef struct Tree {
-    struct Node *root;
-    unsigned int count;
-} Tree;
+    template <class T>
+    class Node {
+    private:
+        friend class Tree<T>;
+        friend class Iterator<T>;
+        T *data;
+        bool is_red;
 
-typedef struct Node {
-    void *data;
-    int id;
-    char isRed;
+        Node<T> *left;
+        Node<T> *right;
+        Node<T> *parent;
 
-    struct Node *left;
-    struct Node *right;
-    struct Node *parent;
+        Tree<T> *tree;
 
-    struct Tree *tree;
-} Node;
+        Node<T> *grandParent() const;
+        Node<T> *sibling() const;
+        Node<T> *uncle() const;
+        Node<T> *getRoot();
 
-// Internal tree functions
-void validateTree(const Tree *tree);
+        void rotateLeft();
+        void rotateRight();
 
-void printTree(const Node *node);
-void printNode(const Node *node);
+        // Insertion helpers
+        int insertRecurse(Node<T> *n);
 
-Node *grandParent(const Node *node);
-Node *sibling(const Node *node);
-Node *uncle(const Node *node);
+        Node<T> *insert2();
+        void insert3_next();
+        void insert3();
+        Node<T> *insert_repair();
 
-void rotateLeft(Node *node);
-void rotateRight(Node *node);
+        // Deletion helpers
+        void delete1();
+        void delete2();
+        void delete3();
+        void delete4();
+        void delete5();
+        void delete6();
 
-Node **maxNode(Node **node);
-Node **minNode(Node **node);
+        static void replaceNode(Node<T> *dest, Node<T> *target);
+        static void swapNode(Node<T> **dest, Node<T> *target);
+        static T *removeNodeOneChild(Node<T> **indirect);
+        static T *removeNode(Node<T> **indirect);
+        static T *removeFromTree(Node<T> **node, unsigned long id);
 
-Node *newNode(void *data, int id);
+        static Node<T> **maxNode(Node<T> **node);
+        static Node<T> **minNode(Node<T> **node);
+        static Node<T> *search(Node<T> *node, unsigned long id);
 
-// External tree functions
-int initTree(Tree *tree);
-int closeTree(Tree *tree);
-int clearTree(Tree *tree);
+        int depth() const;
+        static int checkRedChildren(const Node<T> *node);
+        static int minDistToNil(const Node<T> *node);
+        static int maxDistToNil(const Node *node);
+        static int checkNilDist(const Node *node);
+        static void checkRefs(const Node *node);
 
-void *getData(Tree *tree, int id);
-Node *getTreeNode(Tree *tree, int id);
-int insert(Tree *tree, void *data, int id);
-int removeId(Tree *tree, int id);
+        void print() const;
+        void printTree() const;
+    public:
+        Node(Tree<T> *init_root, T *init_data);
 
-// Iterator functions
-Iterator initIterator(Tree *tree);
-Node *getNode(const Iterator *it);
-void *getItem(const Iterator *it);
-Node *getNext(Iterator *it);
-int done(const Iterator *it);
+        unsigned long getId() const { return data->getId(); }
+        T *getData() const { return data; }
+    };
 
-// Unused
-// void generate(Iterator *it);
+    template <class T>
+    class Tree: public Unique {
+    private:
+        friend class Node<T>;
+        friend class Iterator<T>;
+        Node<T> *root;
+        unsigned int count;
+
+        static void freeNodes(Node<T> *node);
+
+    public:
+        Tree();
+        ~Tree();
+        void clear();
+
+        unsigned int getCount() const {
+            return count;
+        }
+
+        void validate() const;
+
+        T *get(unsigned long id) const;
+        Node<T> *getNode(unsigned long id) const;
+
+        int insert(T *data);
+        T *remove(const T *data);
+        T *removeId(unsigned long id);
+
+        int merge(const Tree<T> *other);
+    };
+
+    template <class T>
+    class Iterator {
+    private:
+        const Tree<T> *tree;
+
+        unsigned int index;
+        Node<T> *current;
+    public:
+        Iterator(const Tree<T> *init_tree);
+        Iterator<T>& operator=(const Iterator<T> &other);
+
+        Node<T> *getNode() const;
+        T *getItem() const;
+        Node<T> *getNextNode();
+        T *getNext();
+        bool done() const;
+    };
+
+    template class Node<Unique>;
+    template class Tree<Unique>;
+    template class Iterator<Unique>;
+}
 
 #endif
-

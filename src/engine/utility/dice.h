@@ -7,19 +7,31 @@
 
 #define NULL_DICE (Dice){0, 0, 0}
 
-typedef struct Dice {
-    // [count]d[sides]+[flat]
-    int count;
-    int sides;
-    int flat;
-} Dice;
+namespace rlx {
+    class Dice {
+    private:
+        // [count]d[sides]+[flat]
+        int count;
+        int sides;
+        int flat;
+    public:
+        Dice(int init_count,
+            int init_sides,
+            int init_flat) {
 
-Dice parseDice(String *label);
+            count = init_count,
+            sides = init_sides;
+            flat = init_flat;
+        }
 
-int rollDice(const Dice dice);
-int maxDice(const Dice dice);
+        Dice(String *label);
 
-int sprintDice(String *dest, const Dice dice);
+        int roll() const;
+        int max() const;
+        int sprint(String *dest) const;
+        int print() const;
+    };
+}
 
 #endif
 

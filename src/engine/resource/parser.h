@@ -3,43 +3,113 @@
 
 // Library
 #include <stdio.h>
+#include <string.h>
 
 // Engine
 #include "constants.h"
 #include "list/array.h"
 #include "string/string.h"
 
-// Value types
-#define JSON_NULL 0
-#define JSON_STRING 1
-#define JSON_INT 2
-#define JSON_OBJ 3
-#define JSON_ARRAY 4
-#define JSON_TRUE 5
-#define JSON_FALSE 6
+namespace rlx {
+    class JsonNode;
 
-typedef struct JsonVal {
-} JsonVal;
+    class JsonValue {
+    protected:
+        JsonValue();
+    public:
+        virtual ~JsonValue();
+    };
 
-// Resource Node
-typedef struct JsonNode {
-    int type;
-    void *data;
-} JsonNode;
+    class JsonNull: public JsonValue {
+    public:
+        JsonNull() { }
+    };
 
-typedef struct JsonObjProp {
-    String *key;
-    JsonNode *value;
-} JsonObjProp;
+    class JsonString: public JsonValue {
+    private:
+        String *data;
+    public:
+        JsonString(FILE *file, char *c_buf);
+        ~JsonString() {
+            delete data;
+        }
 
-typedef struct JsonObjData {
-    Array props;
-} JsonObjData;
+        char *getString() { return data->getBuffer(); }
+    };
 
-int closeJsonNode(JsonNode *node);
-JsonNode *parseFile(FILE *file);
+    class JsonInt: public JsonValue {
+    private:
+        int data;
+    public:
+        JsonInt(FILE *file, char *c_buf);
+        ~JsonInt() { }
+    };
 
-JsonNode *getObjValue(JsonNode *node, char *key);
+    class JsonNode {
+    private:
+        JsonString *key;
+        JsonValue *value;
+
+        JsonNode();
+    public:
+        JsonNode(JsonString *initial_key, JsonValue *initial_value) {
+            key = initial_key;
+            value = initial_value;
+        }
+
+        ~JsonNode() {
+            delete key;
+            delete value;
+        }
+
+        JsonNode *getObjValue(char *key);
+
+        JsonString *getKey() { return key; }
+        JsonValue *getValue() { return value; }
+    };
+
+    class JsonObject: public JsonValue {
+    private:
+        Array<JsonNode> *data;
+    public:
+        JsonObject(FILE *file, char *c_buf);
+
+        ~JsonObject() {
+            unsigned int i;
+            for (i = 0; i < data->getCount(); i++) {
+                delete data->get(i);
+            }
+            delete data;
+        }
+
+        JsonNode *getItem(char *key) {
+            unsigned int i;
+            for (i = 0; i < data->getCount(); i++) {
+                JsonNode *node= data->get(i);
+                if (!strcmp(node->getKey()->getString(), key)) {
+                    return node;
+                }
+            }
+
+            return NULL;
+        }
+    };
+
+    class JsonArray: public JsonValue {
+    private:
+        Array<JsonValue> *data;
+    public:
+        JsonArray(FILE *file, char *c_buf);
+
+        ~JsonArray() {
+            unsigned int i;
+            for (i = 0; i < data->getCount(); i++) {
+                delete data->get(i);
+            }
+            delete data;
+        }
+    };
+}
 
 #endif
 

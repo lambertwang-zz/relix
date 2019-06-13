@@ -2,6 +2,7 @@
 #define __OBJECT_H__
 
 // Engine
+#include "list/unique.h"
 #include "event/event.h"
 #include "term/screen.h"
 
@@ -11,35 +12,31 @@
 #define OBJ_ETHER 0 // Ethereal
 #define OBJ_SOFT 0
 
-typedef struct Object {
-    unsigned int id;
-    String *type;
+namespace rlx {
+    class Object: public Unique {
+    private:
+        String *type;
 
-    // pos.z is used for depth rendering and checking.
-    // Note: depth 1024 is reserved for UI elements
-    Point pos;
-    Pixel pix;
+        // pos.z is used for depth rendering and checking.
+        // Note: depth 1024 is reserved for UI elements
+        Point position;
+        Pixel pix;
 
-    // Whether or not the object should generate collisions
-    int solid;
+        // Whether or not the object should generate collisions
+        bool isSolid;
+    public:
+        Object();
+        virtual ~Object();
 
-    int (*renderLight)(struct Object *, Screen *);
-    int (*render)(struct Object *, Screen *);
-    int (*update)(struct Object *);
-    void (*close)(struct Object *);
+        Point getPosition() const { return position; }
+        bool getIsSolid() const { return isSolid; }
 
-    Tree event_listeners;
-    // int (**event_listeners)(struct Object *m, Event ev);
-    // int events_size;
+        int render(Screen *s);
+        int renderLight(Screen *s);
 
-    void *data;
-} Object;
-
-int renderDefault(Object *o, Screen *s);
-void closeDefault(Object *o);
-
-int listenEvent(Object *o, int ev_id, int (*listener)(Object *, Event *));
-Object *createObject();
+        virtual int update();
+    };
+}
 
 #endif
 

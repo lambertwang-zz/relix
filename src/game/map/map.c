@@ -76,7 +76,7 @@ void clearMap(Map *map) {
 
 void closeMap(Map *map) {
     clearMap(map);
-    deleteString(map->type);
+    delete map->type);
 }
 
 void initMap(Map *map) {
@@ -84,7 +84,7 @@ void initMap(Map *map) {
     map->id = map_id_iterator++;
 
     map->challenge = 1;
-    map->type = createString();
+    map->type = new String();
 
     map->tiles = NULL;
     map->width = -1;

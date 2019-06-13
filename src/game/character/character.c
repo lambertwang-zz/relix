@@ -11,7 +11,7 @@
 CharacterData *createCharData() {
     CharacterData *data = malloc(sizeof(CharacterData));
 
-    data->name = createString();
+    data->name = new String();
     data->max_health = 0;
     data->health = 0;
 
@@ -24,7 +24,7 @@ CharacterData *createCharData() {
 }
 
 void closeCharData(CharacterData *data) {
-    deleteString(data->name);
+    delete data->name);
     deleteEquipment(data->equipment);
     closeArray(&data->inventory);
 }

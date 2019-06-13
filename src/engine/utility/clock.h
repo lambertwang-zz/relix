@@ -1,16 +1,19 @@
 #ifndef __CLOCK_H__
 #define __CLOCK_H__
 
-typedef struct Clock {
-    unsigned long previous_time;
-} Clock;
+namespace rlx {
+    class Clock {
+    private:
+        unsigned long previous_time;
+    public:
+        Clock();
 
-char *timeString();
-int initClock(Clock *c);
+        unsigned long split() const;
+        unsigned long delta();
+    };
 
-unsigned long split(Clock *c);
-
-unsigned long delta(Clock *c);
+    char *timeString();
+}
 
 #endif
 

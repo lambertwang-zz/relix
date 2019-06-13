@@ -20,7 +20,7 @@ int updateMonsterDefault(Object *o) {
         Event action;
         action.id = EVENT_MESSAGE;
         action.data = malloc(sizeof(String **));
-        *((String **) action.data) = createString();
+        *((String **) action.data) = new String();
         sputf(*((String **) action.data), "%s has died!", data->name->s);
         sendEvent(action);
 

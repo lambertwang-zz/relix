@@ -3,26 +3,38 @@
 
 #define INIT_STR_SIZE 8
 
-typedef struct String {
-    char *s;
-    int size;
-    int len;
-} String;
+namespace rlx {
+    class String {
+    private:
+        char *buffer;
+        int size;
+        int len;
 
-String *createString();
-void deleteString(String *s);
-// Double the size of the string
-int strInc(String *s);
+        // Double the size of the string
+        int incrementSize();
 
-int stringCompare(const String *a, const String *b);
+    public:
+        String();
+        ~String();
 
-char *stringCopy(String *dest, const String *src);
+        char *getBuffer() const {
+            return buffer;
+        }
 
+        void clear();
 
-int sputf(String *s, const char *format, ...);
-int spush(String *s, const char c);
-int sgetc(String *dest, const String *src, const int index);
-// status_label, " Loop: %5d Frame: %5d Obj rendered: %3d", loop_time_saved, frame_count, objectsRendered);
+        int compare(const String *other) const;
+        char *copy(const String *src);
+
+        int sputf(const char *format, ...);
+        int spush(const char c);
+        int sgetc(String *dest, const int index) const;
+
+        int print() const;
+    };
+
+    int stringCompare(const String *a, const String *b);
+}
 
 #endif
 

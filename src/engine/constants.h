@@ -8,7 +8,7 @@
 // Debug defines
 // #define DEBUG_INPUT
 // #define DEBUG_TREES
-//
+
 // Max length of supported unicode characters
 #define UNICODE_MAX 5
 // Reserved depth for ui elements
@@ -27,6 +27,9 @@
 #define EVENT_STEP 0
 #define EVENT_MOUSE 4
 #define EVENT_KEYBOARD 5
+
+// String constants
+#define DEFAULT_WINDOW_NAME "Relix"
 
 
 #endif

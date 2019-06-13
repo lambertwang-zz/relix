@@ -65,7 +65,7 @@ int listenCharInfo(Element *el, Event *ev) {
 }
 
 void deleteCharPanelEl(Element *el) {
-    deleteString(((struct CharPanel *) el->data)->buffer);
+    delete ((struct CharPanel *) el->data)->buffer);
 }
 
 
@@ -87,7 +87,7 @@ void createCharPanel() {
     struct CharPanel *data = malloc(sizeof(struct CharPanel));
     char_panel->data = data;
     data->data = NULL;
-    data->buffer = createString();
+    data->buffer = new String();
 
     char_panel->onRender = &onRenderCharPanelEl;
     char_panel->onDelete = &deleteCharPanelEl;

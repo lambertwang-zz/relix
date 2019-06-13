@@ -3,46 +3,54 @@
 
 // Engine
 #include "object.h"
+#include "manager/manager.h"
 
-struct ObjectManager object_manager;
+namespace rlx {
+    class ObjectManager: public Manager {
+    private:
+        // TODO: Enable storing and retrieving game states
+        static Tree<Object> *insert_queue;
+        static Tree<Object> *object_list;
+        static Tree<Object> *remove_queue; 
 
-struct ObjectManager {
-    // TODO: Enable storing and retrieving game states
-    Tree insert_queue;
-    Tree object_list;
-    Tree remove_queue; 
+        static Tree<Tree<Listener<Object>>> *object_event_listeners;
 
-    Tree event_listeners;
+        static Listener<Manager> *global_listener;
+        static bool should_clear_game;
 
-    int (*global_listener)(Event *);
-};
+        static int ensureEventExists(char *function, int ev_type);
+        static int clearObjects();
+    public:
+        static int registerEvent(int ev_id);
+        static int sendEvent(Event *ev);
 
-int registerEvent(int ev_id);
-int sendEvent(Event ev);
+        // Register event listeners for specific objects
+        static int registerListener(Listener<Object> *listener, int ev_type);
+        static int unregisterListener(const Object *obj, int ev_type);
+        
+        // Register the global event listener.
+        // Only one global event listener may be set.
+        // The global event listener listens to all events.
+        static void registerGlobalListener(Listener<Manager> *listener);
+        static void clearGlobalListener();
+        
+        static int initObjects();
+        static void clearGame();
+        static int closeObjects();
+        static void queueClear(void (next)());
+        
+        static int addObject(Object *obj);
+        static int removeObject(Object *obj);
+        
+        static int updateObjects();
+        static int renderObjectLights();
+        static int renderObjects();
+        
+        // Exhaustive search
+        static int getObjAt(Array<Object> *out_array, Point p, int solid);
+    };
+}
 
-// Register event listeners for specific objects
-int registerListener(const Object *obj, int ev_id);
-int unregisterListener(const Object *obj, int ev_id);
-
-// Register the global event listener.
-// Only one global event listener may be set.
-// The global event listener listens to all events.
-void registerGlobalListener(int (*listener)(Event *));
-void clearGlobalListener();
-
-int initObjects();
-int closeObjects();
-void queueClear(void (*next)());
-
-int addObject(struct Object *obj);
-int removeObject(struct Object *obj);
-
-int updateObjects();
-int renderObjectLights();
-int renderObjects();
-
-// Exhaustive search
-int getObjAt(Array *array, Point p, int solid);
 
 #endif
 

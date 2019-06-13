@@ -9,7 +9,7 @@
 
 int ensureUiEventExists(char *function, int ev_id) {
     if (getData(&getUiManager()->event_listeners, ev_id) == NULL) {
-        writeLog(LOG_OBJECTMANAGER, "uiListener::%s(): ERROR: Event id %d not registered", function, ev_id);
+        writeLog(LOG_ObjectManager, "uiListener::%s(): ERROR: Event id %d not registered", function, ev_id);
         return 2;
     }
 
@@ -64,7 +64,7 @@ int sendUiEvent(Event *ev) {
 
         int (*listener)(Element *, Event *) = getData(&el->event_listeners, ev->id);
         if (listener == NULL) {
-            writeLog(LOG_OBJECTMANAGER, "uiListener::sendUiEvent(): WARNING: No listener for Event id %d for element", ev->id, el->id);
+            writeLog(LOG_ObjectManager, "uiListener::sendUiEvent(): WARNING: No listener for Event id %d for element", ev->id, el->id);
             continue;
         }
         listener(el, ev);
@@ -79,7 +79,7 @@ int registerUiListener(const Element *el, int ev_id) {
     }
 
     if (insert(getData(&getUiManager()->event_listeners, ev_id), (void *)el, el->id)) {
-        writeLog(LOG_OBJECTMANAGER, "uiListener::registerUiListener(): WARN: Object id %d already registered to event id %d", el->id, ev_id);
+        writeLog(LOG_ObjectManager, "uiListener::registerUiListener(): WARN: Object id %d already registered to event id %d", el->id, ev_id);
         return 1;
     }
     
@@ -92,7 +92,7 @@ int unregisterUiListener(const Element *el, int ev_id) {
     }
 
     if (removeId(getData(&getUiManager()->event_listeners, ev_id), el->id)) {
-        writeLog(LOG_OBJECTMANAGER, "uiListener::unregisterUiListener(): WARN: Object id %d already unregistered from event id %d", el->id, ev_id);
+        writeLog(LOG_ObjectManager, "uiListener::unregisterUiListener(): WARN: Object id %d already unregistered from event id %d", el->id, ev_id);
         return 1;
     }
     

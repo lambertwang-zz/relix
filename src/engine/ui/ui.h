@@ -8,93 +8,97 @@
 #include "term/screen.h"
 #include "string/string.h"
 #include "input/input.h"
+#include "manager/manager.h"
 
-// Style definitions
-// Positioned to top-left of parent
-#define POS_STATIC 0
-// Position in pixels
-#define POS_ABS 1
-// Position in % of parent
-#define POS_REL 2
 
-#define SIZE_NONE 0
-// Absolute size in pixels
-#define SIZE_ABS 1
-// Size relative to parent in percentage
-#define SIZE_REL 2
-// Match size to parent
-#define SIZE_PARENT 3
+namespace rlx {
+    enum UiPositioning {
+        // Positioned to top-left of parent
+        PosStatic = 0,
+        // Position in pixels
+        PosAbsolute,
+        // Position in % of parent
+        PosRelative
+    };
 
-typedef struct UiManager {
-    Tree ui_tree;
+    enum UiSizing {
+        SizeNone = 0,
+        // Absolute size in pixels
+        SizeAbsolute,
+        // Size relative to parent in percentage
+        SizeRelative,
+        // Match size to parent
+        SizeParent
 
-    Tree event_listeners;
-} UiManager;
+    };
 
-typedef struct Element {
-    int id;
+    class Element: public Unique {
+    private:
+        // Unique label for the element
+        String *tag;
 
-    // Unique label for the element
-    String *tag;
+        // Text content of the element
+        String *text;
 
-    int focusable;
+        // Styling
+        UiPositioning positioning;
+        UiSizing sizing;
 
-    // Text content of the element
-    String *text;
+        int width;
+        int height;
 
-    // Styling
-    int positioning;
-    int sizing;
+        // Top left coordinates for the element
+        Point pos;
 
-    int width;
-    int height;
+        // Function callbacks
+        int (*onRender)(struct Element *, Screen *);
+        int (*onEvent)(struct Element *, Event *);
+        void (*onDelete)(struct Element *);
+        Tree<Listener<Element>> event_listeners;
 
-    // Top left coordinates for the element
-    Point pos;
+        Element *parent;
+        Tree<Element> children;
+        Rect bounds;
+    protected:
+        bool focusable;
 
-    // Text and background color
-    Color text_c;
-    Color bg_c;
-    Color bg_c_focus;
+        // Text and background color
+        Color text_c;
+        Color bg_c;
+        Color bg_c_focus;
+    public:
+        Element();
 
-    // Function callbacks
-    int (*onRender)(struct Element *, Screen *);
-    int (*onEvent)(struct Element *, Event *);
-    int (*onClick)(struct Element *, MouseEvent);
-    void (*onDelete)(struct Element *);
-    Tree event_listeners;
+        void setText(String *to_copy);
 
-    // Data for use by this element
-    void *data;
+        virtual int onClick();
+    };
 
-    // Private
-    struct Element *_parent;
-    Tree _children;
-    Rect _bounds;
-} Element;
+    class UiManager: public Manager {
+    private:
+        Tree<Element> *ui_tree;
+        Tree<Tree<Listener<Element>>> *event_listeners;
+    public:
+        static int initUi();
+        static int closeUi();
+        static int renderUi();
 
-// Ui Event functions
-int registerUiListener(const Element *el, int ev_id);
-int unregisterUiListener(const Element *el, int ev_id);
-int sendUiEvent(Event *ev);
+        // Ui Event functions
+        static int registerUiListener(const Element *el, int ev_id);
+        static int unregisterUiListener(const Element *el, int ev_id);
+        static int sendEvent(Event *ev);
 
-// Element Functions
-int onRenderDefaultElement(Element *e, Screen *s);
-Element *createElement();
-int deleteElement(Element *elem);
-int listenUiEvent(Element *el, int ev_id, int (*listener)(Element *, Event *));
+        // Element Functions
+        static int onRenderDefaultElement(Element *e, Screen *s);
+        static int deleteElement(Element *elem);
+        static int listenUiEvent(Element *el, int ev_id, int (*listener)(Element *, Event *));
 
-// General UI Functions
-UiManager *getUiManager();
+        static void setFocus(Element *elem);
 
-Element *getFocus();
-void setFocus(Element *elem);
+        static int registerUiElement(Element *e);
 
-int registerUiElement(Element *e);
-
-int initUi();
-int closeUi();
-int renderUi();
+        static Element *getFocus();
+    };
+}
 
 #endif
-

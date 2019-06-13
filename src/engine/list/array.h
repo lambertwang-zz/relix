@@ -1,24 +1,32 @@
 #ifndef __ARRAY_H__
 #define __ARRAY_H__
 
+// Engine includes
+#include "unique.h"
+
 #define INIT_ARRAY_SIZE 64
 
-// Unsorted dynamic array
-typedef struct Array {
-    void **data;
-    unsigned int size;
-    unsigned int count;
-} Array;
+namespace rlx {
+    template <class T>
+    class Array: private Unique {
+    private:
+        T *data;
+        unsigned int size;
+        unsigned int count;
 
-int initArray(Array *array);
-int clearArray(Array *array);
-int closeArray(Array *array);
+    public:
+        Array();
+        ~Array();
 
-// getDataArray is a little bit pointless.
-void *getDataArray(const Array *array, unsigned int index);
-int push(Array *array, void *data);
-void *pop(Array *array);
-void *deleteArrayIndex(Array *array, unsigned int index);
+        void clear();
+
+        T *get(unsigned int index) const;
+        int push(T *data);
+        T *pop();
+        T *deleteIndex(unsigned int index);
+
+        unsigned int getCount() const { return count; }
+    };
+}
 
 #endif
-

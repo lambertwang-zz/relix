@@ -117,8 +117,8 @@ Element *createElement() {
 
     Element *new_elem = malloc(sizeof(Element));
     new_elem->id = ui_elem_iterator++;
-    new_elem->tag = createString();
-    new_elem->text = createString();
+    new_elem->tag = new String();
+    new_elem->text = new String();
 
     // Default Styling
     new_elem->focusable = 0;
@@ -153,8 +153,8 @@ int deleteElement(Element *elem) {
         elem->onDelete(elem);
     }
 
-    deleteString(elem->tag);
-    deleteString(elem->text);
+    delete elem->tag);
+    delete elem->text);
     
     // Remove element from listener trees
     Iterator it = initIterator(&elem->event_listeners);

@@ -67,7 +67,7 @@ void playerAttack(Object *player, Object *other) {
     Event action;
     action.id = EVENT_MESSAGE;
     action.data = malloc(sizeof(String **));
-    *((String **) action.data) = createString();
+    *((String **) action.data) = new String();
     sputf(*((String **) action.data), "Attacked %s for %d damage!", ((CharacterData *) other->data)->name->s, damage);
     sendEvent(action);
 

@@ -6,24 +6,33 @@
 #include "list/array.h"
 #include "utility/dice.h"
 #include "string/string.h"
+#include "manager/manager.h"
 
-typedef struct ResourceEntry {
-    String *tag;
-    void *data;
-} ResourceEntry;
+namespace rlx {
+    class ResourceEntry {
+    private:
+        String *tag;
+    public:
+        virtual ~ResourceEntry() {
+            delete tag;
+        }
 
-typedef struct ResourceManager {
-    Array store;
+        String *getTag() {
+            return tag;
+        }
+    };
 
-    // delete data callback
-    void (*deleteData)(void *);
-} ResourceManager;
+    class ResourceManager: public Manager {
+    private:
+        Array<ResourceEntry> *store;
+    public:
+        ResourceManager();
+        ~ResourceManager();
 
-void initResourceManager(ResourceManager *manager, void (*deleteData)(void *));
-void closeResourceManager(ResourceManager *res);
-
-int registerResource(ResourceManager *res, String *tag, void *data);
-void *retrieveResource(ResourceManager *res, String *tag);
+        int registerResource(ResourceEntry *entry);
+        ResourceEntry *retrieveResource(String *tag);
+    };
+}
 
 #endif
 

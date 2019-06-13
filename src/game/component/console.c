@@ -23,7 +23,7 @@ int onRenderConsoleElement(Element *e, Screen *s) {
 
     // Delete excess messages
     while (console_lines.count > MAX_SAVED_MESSAGES) {
-        deleteString(deleteArrayIndex(&console_lines, 0));
+        delete deleteArrayIndex(&console_lines, 0));
     }
 
     Point pos = (Point){e->_bounds.left + 1, e->_bounds.top + 1, 0};
@@ -79,15 +79,15 @@ void deleteConsoleElement(Element *el) {
     el = el;
     unsigned int i;
     for (i = 0; i < console_lines.count; i++) {
-        deleteString(getDataArray(&console_lines, i));
+        delete getDataArray(&console_lines, i));
     }
     closeArray(&console_lines);
-    deleteString(console_name);
+    delete console_name);
 }
 
 void createConsole() {
     initArray(&console_lines);
-    console_name = createString();
+    console_name = new String();
     sputf(console_name, CONSOLE_NAME);
 
     Element *console;
